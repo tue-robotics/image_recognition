@@ -32,7 +32,7 @@ def callback(data):
     cv2.imshow("Image window", cv_image)
     key = cv2.waitKey(10)
 
-    if key: 
+    if key != -1: 
         print recognize_srv(image=data)
 
     return
