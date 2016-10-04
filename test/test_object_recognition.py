@@ -6,7 +6,7 @@ import rospy
 import cv2
 import sys
 
-from object_recognition_msgs.srv import Recognize
+from object_recognition_srvs.srv import Recognize
 from std_srvs.srv import Empty
 
 bridge = CvBridge()
