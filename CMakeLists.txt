@@ -3,7 +3,7 @@ project(tensorflow_object_recognition)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
-  object_recognition_msgs
+  object_recognition_srvs
 )
 
 catkin_package()

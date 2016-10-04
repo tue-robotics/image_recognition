@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import rospy
-from object_recognition_msgs.srv import Recognize
-from object_recognition_msgs.msg import Recognition
+from object_recognition_srvs.srv import Recognize
+from object_recognition_srvs.msg import Recognition
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
 
