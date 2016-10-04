@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(object_recognition_msgs)
+project(object_recognition_srvs)
 
 find_package(catkin REQUIRED COMPONENTS
   message_generation
