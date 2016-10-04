@@ -17,7 +17,7 @@ class ObjectRecognition:
         except CvBridgeError as e:
             error_msg = "Could not convert to opencv image: %s" % e
             rospy.logerr(error_msg)
-            return {"error_msg": error_msg}
+            raise Exception(error_msg)
 
         cv2.imshow("image", bgr_image)
         cv2.waitKey(1000)
