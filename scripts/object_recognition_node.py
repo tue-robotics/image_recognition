@@ -21,11 +21,12 @@ from object_recognition_srvs.msg import Recognition
 
 class ObjectRecognition:
     """ Performs object recognition using Tensorflow neural networks """
-    def __init__(self, db_path, models_path):
+    def __init__(self, db_path, models_path, show_images):
         """ Constructor
         :param db_path: string with path + filename (incl. extension) indicating the database location
         :param models_path: string with path + filename (incl. extension) indicating the location of the text file
         with labels etc.
+        :param show_images: bool indicating whether to show images as a means of debugging
         """
         self._bridge = CvBridge()
         self._recognize_srv = rospy.Service('recognize', Recognize, self._recognize_srv_callback)
@@ -34,6 +35,7 @@ class ObjectRecognition:
         self._filename = "/tmp/tf_obj_rec.jpg"  # Temporary file name
         self._models_path = models_path
         self._recognition = None
+        self._show_images = show_images
 
         """1. Create a graph from saved GraphDef file """
         start = rospy.Time.now()
@@ -57,8 +59,9 @@ class ObjectRecognition:
             rospy.logerr(error_msg)
             raise Exception(error_msg)
 
-        cv2.imshow("image", bgr_image)
-        cv2.waitKey(1000)
+        if self._show_images:
+            cv2.imshow("image", bgr_image)
+            cv2.waitKey(1000)
 
         # Write the image to file
         # ToDo: directly in memory, saves file operations
@@ -118,16 +121,23 @@ class ObjectRecognition:
         self._do_recognition = False
 
 if __name__ == '__main__':
+
+    # Start ROS node
     rospy.init_node('object_recognition')
 
-    # ToDo: don't hardcode locations
-    object_recognition = ObjectRecognition(db_path='/home/amigo/ros/indigo/system/src/tensorflow_playground/model/'
-                                           'classify_image_graph_def.pb',
-                                           models_path='/home/amigo/ros/indigo/system/src/tensorflow_playground/'
-                                                       'model/imagenet_synset_to_human_label_map.txt')
+    # Get parameters
+    _db_path = rospy.get_param("~database_path")
+    _models_path = rospy.get_param("~models_path")
+    _show_images = rospy.get_param("~show_image", False)
+    rospy.loginfo("\nDB: {}\nModels: {}\nShow image: {}".format(_db_path, _models_path, _show_images))
+
+    # Create object
+    object_recognition = ObjectRecognition(db_path=_db_path,
+                                           models_path=_models_path,
+                                           show_images=_show_images)
+
+    # Start update loop
     r = rospy.Rate(20.0)
     while not rospy.is_shutdown():
         object_recognition.update()
         r.sleep()
-
-    print "Closing down..."

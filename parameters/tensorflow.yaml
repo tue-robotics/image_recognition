@@ -1,0 +1,2 @@
+database_path: /home/amigo/ros/indigo/system/src/tensorflow_playground/model/classify_image_graph_def.pb
+models_path: /home/amigo/ros/indigo/system/src/tensorflow_playground/model/imagenet_synset_to_human_label_map.txt

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <!-- Main node -->
+    <node pkg="tensorflow_object_recognition" type="object_recognition_node.py" name="tensorflow_object_recognition" output="screen" args="show_image">
+        <!-- Settings file-->
+        <rosparam command="load" file="$(find tensorflow_object_recognition)/parameters/tensorflow.yaml" />
+        <param name="show_image" value="true"/>
+    </node>
+
+</launch>
