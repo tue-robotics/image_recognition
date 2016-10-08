@@ -45,6 +45,11 @@ class ObjectRecognition:
         cv2.imshow("image", bgr_image)
         cv2.waitKey(1000)
 
+        # Write the image to file
+        # ToDo: directly in memory, saves file operations
+        filename = "/tmp/tf_obj_rec.jpg"
+        cv2.imwrite(filename=filename, img=bgr_image)
+
         """1. Create a graph from saved GraphDef file """
         start = rospy.Time.now()
         # with open(args.model, 'rb') as f:
@@ -69,7 +74,8 @@ class ObjectRecognition:
             start = rospy.Time.now()
             predictions = []
             # with open(args.image, 'rb') as f:
-            with open('/home/amigo/ros/indigo/system/src/tensorflow_playground/model/cropped_panda.jpg', 'rb') as f:
+            # with open('/home/amigo/ros/indigo/system/src/tensorflow_playground/model/cropped_panda.jpg', 'rb') as f:
+            with open(filename, 'rb') as f:
                 predictions = sess.run(result_tensor, {'DecodeJpeg/contents:0': f.read()})
                 predictions = np.squeeze(predictions)
             rospy.loginfo("Step {} took {} seconds".format(4, (rospy.Time.now() - start).to_sec()))
