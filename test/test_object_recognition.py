@@ -32,10 +32,18 @@ def callback(data):
     cv2.imshow("Image window", cv_image)
     key = cv2.waitKey(10)
 
-    if key != -1: 
-        print recognize_srv(image=data)
+    if key != -1:
+        try:
+            print recognize_srv(image=data)
+        except:
+            pass
 
     return
+
+# Usage: run a camera node, e.g.:
+# - rosrun usb_cam usb_cam_node
+# Start this node with the right topic, in this case:
+# - rosrun object_recognition_srvs test_object_recognition image:=usb_cam/image_raw
 
 image_sub = rospy.Subscriber("image", Image, callback)
 rospy.loginfo("Listening to %s -- spinning .." % image_sub.name)
