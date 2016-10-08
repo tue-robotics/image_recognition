@@ -23,16 +23,18 @@ class ObjectRecognition:
     def __init__(self, db_path, models_path):
         self._bridge = CvBridge()
         self._recognize_srv = rospy.Service('recognize', Recognize, self._recognize_srv_callback)
+        self._do_update = False
+        self._filename = "/tmp/tf_obj_rec.jpg"
 
-        # """1. Create a graph from saved GraphDef file """
-        # start = rospy.Time.now()
-        # # with open(args.model, 'rb') as f:
-        # with open('/home/amigo/ros/indigo/system/src/tensorflow_playground/model/classify_image_graph_def.pb',
-        #           'rb') as f:
-        #     graph_def = tf.GraphDef()
-        #     graph_def.ParseFromString(f.read())
-        #     _ = tf.import_graph_def(graph_def, name='')
-        # rospy.loginfo("Step {} took {} seconds".format(1, (rospy.Time.now() - start).to_sec()))
+        """1. Create a graph from saved GraphDef file """
+        start = rospy.Time.now()
+        # with open(args.model, 'rb') as f:
+        with open('/home/amigo/ros/indigo/system/src/tensorflow_playground/model/classify_image_graph_def.pb',
+                  'rb') as f:
+            graph_def = tf.GraphDef()
+            graph_def.ParseFromString(f.read())
+            _ = tf.import_graph_def(graph_def, name='')
+        rospy.loginfo("Step {} took {} seconds".format(1, (rospy.Time.now() - start).to_sec()))
 
     def _recognize_srv_callback(self, req):
         try:
@@ -47,18 +49,23 @@ class ObjectRecognition:
 
         # Write the image to file
         # ToDo: directly in memory, saves file operations
-        filename = "/tmp/tf_obj_rec.jpg"
-        cv2.imwrite(filename=filename, img=bgr_image)
+        cv2.imwrite(filename=self._filename, img=bgr_image)
+        self._do_update = True
 
-        """1. Create a graph from saved GraphDef file """
-        start = rospy.Time.now()
-        # with open(args.model, 'rb') as f:
-        with open('/home/amigo/ros/indigo/system/src/tensorflow_playground/model/classify_image_graph_def.pb',
-                  'rb') as f:
-            graph_def = tf.GraphDef()
-            graph_def.ParseFromString(f.read())
-            _ = tf.import_graph_def(graph_def, name='')
-        rospy.loginfo("Step {} took {} seconds".format(1, (rospy.Time.now() - start).to_sec()))
+    def update(self):
+        """ Do the actual work """
+        if not self._do_update:
+            return
+
+        # """1. Create a graph from saved GraphDef file """
+        # start = rospy.Time.now()
+        # # with open(args.model, 'rb') as f:
+        # with open('/home/amigo/ros/indigo/system/src/tensorflow_playground/model/classify_image_graph_def.pb',
+        #           'rb') as f:
+        #     graph_def = tf.GraphDef()
+        #     graph_def.ParseFromString(f.read())
+        #     _ = tf.import_graph_def(graph_def, name='')
+        # rospy.loginfo("Step {} took {} seconds".format(1, (rospy.Time.now() - start).to_sec()))
 
         """2. Open tf session"""
         start = rospy.Time.now()
@@ -75,7 +82,7 @@ class ObjectRecognition:
             predictions = []
             # with open(args.image, 'rb') as f:
             # with open('/home/amigo/ros/indigo/system/src/tensorflow_playground/model/cropped_panda.jpg', 'rb') as f:
-            with open(filename, 'rb') as f:
+            with open(self._filename, 'rb') as f:
                 predictions = sess.run(result_tensor, {'DecodeJpeg/contents:0': f.read()})
                 predictions = np.squeeze(predictions)
             rospy.loginfo("Step {} took {} seconds".format(4, (rospy.Time.now() - start).to_sec()))
@@ -96,6 +103,7 @@ class ObjectRecognition:
         recognition = Recognition()
         recognition.label = sorted_result[-1][0].split('\t')[1]
         rospy.loginfo("Recognition result: {}".format(recognition))
+        self._do_update = False
         return {"recognitions": [recognition]}
 
 if __name__ == '__main__':
@@ -104,5 +112,9 @@ if __name__ == '__main__':
     # ToDo: don't hard
     object_recognition = ObjectRecognition('/home/amigo/ros/indigo/system/src/tensorflow_playground/model/'
                                            'classify_image_graph_def.pb', "")
-    rospy.spin()
+    r = rospy.Rate(20.0)
+    while not rospy.is_shutdown():
+        object_recognition.update()
+        r.sleep()
+
     print "Closing down..."
