@@ -95,7 +95,8 @@ class ObjectRecognition:
 
             """3. Get result tensor"""
             start = rospy.Time.now()
-            result_tensor = sess.graph.get_tensor_by_name("softmax:0")
+            # result_tensor = sess.graph.get_tensor_by_name("softmax:0")
+            result_tensor = sess.graph.get_tensor_by_name("final_result:0")
             rospy.loginfo("Step {} took {} seconds".format(3, (rospy.Time.now() - start).to_sec()))
 
             """4. Open Image and perform prediction"""
@@ -116,8 +117,9 @@ class ObjectRecognition:
 
         # For now, we only return the best result
         sorted_result = sorted(result.items(), key=operator.itemgetter(1))
-        self._recognition.label = sorted_result[-1][0].split('\t')[1]
-        rospy.loginfo("Recognition result: {}".format(self._recognition))
+        # self._recognition.label = sorted_result[-1][0].split('\t')[1]
+        self._recognition.label = sorted_result[-1][0]  #.split('\t')[1]
+        rospy.loginfo("Recognition result: {}\nProbability: {}".format(self._recognition, sorted_result[-1][1]))
         self._do_recognition = False
 
 if __name__ == '__main__':
