@@ -1,0 +1,3 @@
+#!/bin/bash
+
+rqt -s object_recognition_rqt.label.LabelPlugin
