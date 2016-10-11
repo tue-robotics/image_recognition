@@ -34,7 +34,8 @@ class ObjectRecognition:
         # be performed
         self._filename = "/tmp/tf_obj_rec.jpg"  # Temporary file name
         self._models_path = models_path
-        self._recognition = None
+        self._recognitions = []  # List with Recognition s
+        self._size = {'width': 0, 'height': 0}
         self._show_images = show_images
 
         """1. Create a graph from saved GraphDef file """
@@ -67,16 +68,16 @@ class ObjectRecognition:
         # ToDo: directly in memory, saves file operations
         cv2.imwrite(filename=self._filename, img=bgr_image)
         size = bgr_image.shape[:2]  # For now, we assume the entire image is the ROI
-        self._recognition = Recognition()
-        self._recognition.roi.height = size[0]
-        self._recognition.roi.width = size[1]
+        self._size['height'] = size[0]
+        self._size['width'] = size[1]
+        self._recognitions = []
         self._do_recognition = True
 
         # Wait until the request has been processed and return the result
-        r = rospy.Rate(20.0)
+        r = rospy.Rate(1000.0)  # Not a problem to spin quickly
         while not rospy.is_shutdown():
             if not self._do_recognition:
-                return {"recognitions": [self._recognition]}
+                return {"recognitions": self._recognitions}
 
         # Return an empty result if rospy has been shutdown
         return {"recognitions": []}
@@ -115,11 +116,20 @@ class ObjectRecognition:
                 result = dict(zip(labels, predictions))
             rospy.loginfo("Step {} took {} seconds".format(5, (rospy.Time.now() - start).to_sec()))
 
-        # For now, we only return the best result
+        # Sort the results
         sorted_result = sorted(result.items(), key=operator.itemgetter(1))
+
         # self._recognition.label = sorted_result[-1][0].split('\t')[1]
-        self._recognition.label = sorted_result[-1][0]  #.split('\t')[1]
-        rospy.loginfo("Recognition result: {}\nProbability: {}".format(self._recognition, sorted_result[-1][1]))
+        for res in reversed(sorted_result):
+            recognition = Recognition()
+            recognition.roi.height = self._size['height']
+            recognition.roi.width = self._size['width']
+            recognition.label = res[0]
+            recognition.probability = res[1]
+            self._recognitions.append(recognition)
+
+        rospy.loginfo("\nBest recognition result: {}\nProbability: {}".format(sorted_result[-1][0],
+                                                                              sorted_result[-1][1]))
         self._do_recognition = False
 
 if __name__ == '__main__':
@@ -139,7 +149,7 @@ if __name__ == '__main__':
                                            show_images=_show_images)
 
     # Start update loop
-    r = rospy.Rate(20.0)
+    r = rospy.Rate(100.0)
     while not rospy.is_shutdown():
         object_recognition.update()
         r.sleep()
