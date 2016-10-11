@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 # System
+import os
 import operator
+import sys
 
 # ROS
 import rospy
@@ -28,6 +30,12 @@ class ObjectRecognition:
         with labels etc.
         :param show_images: bool indicating whether to show images as a means of debugging
         """
+        # Check if the parameters are correct
+        if not (os.path.isfile(db_path) and os.path.isfile(models_path)):
+            err_msg = "DB file {} or models file {} does not exist".format(db_path, models_path)
+            rospy.logerr(err_msg)
+            sys.exit(err_msg)
+
         self._bridge = CvBridge()
         self._recognize_srv = rospy.Service('recognize', Recognize, self._recognize_srv_callback)
         self._do_recognition = False  # Indicates whether a new request has been received and thus recognition must
