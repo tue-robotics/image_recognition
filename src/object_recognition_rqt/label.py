@@ -1,6 +1,7 @@
 import os
 import rospy
 import rospkg
+import rostopic
 import subprocess
 
 from qt_gui.plugin import Plugin
@@ -191,9 +192,8 @@ class LabelPlugin(Plugin):
         # Bridge for opencv conversion
         self.bridge = CvBridge()
 
-        # Setup listener
-        self._sub = rospy.Subscriber("/usb_cam/image_raw", Image, self._image_callback)
-        rospy.loginfo("Listening to %s -- spinning .." % self._sub.name)
+        # Set subscriber to None
+        self._sub = None
 
     def _get_output_directory(self):
         self._set_output_directory(QFileDialog.getExistingDirectory(self._widget, "Select output directory"))
@@ -226,12 +226,26 @@ class LabelPlugin(Plugin):
 
         self._image_widget.set_image(cv_image)
 
+    def trigger_configuration(self):
+        topic_name, ok = QInputDialog.getItem(self._widget, "Select topic name", "Topic name", rostopic.find_by_type('sensor_msgs/Image'))
+        if ok:
+            self._create_subscriber(topic_name)
+
+    def _create_subscriber(self, topic_name):
+        if self._sub:
+            self._sub.unregister()
+        self._sub = rospy.Subscriber(topic_name, Image, self._image_callback)
+        rospy.loginfo("Listening to %s -- spinning .." % self._sub.name)
+        self._widget.setWindowTitle("Label plugin, listening to (%s)" % self._sub.name)
+
     def shutdown_plugin(self):
         pass
 
     def save_settings(self, plugin_settings, instance_settings):
         instance_settings.set_value("output_directory", self._image_widget.output_directory)
         instance_settings.set_value("labels", self._image_widget.labels)
+        if self._sub:
+            instance_settings.set_value("topic_name", self._sub.name)
 
     def restore_settings(self, plugin_settings, instance_settings):
         path = None
@@ -247,6 +261,8 @@ class LabelPlugin(Plugin):
         except:
             pass
         self._set_labels(labels)
+
+        self._create_subscriber(str(instance_settings.value("topic_name","/usb_cam/image_raw")))
 
     def _key_pressed(self, event):
         self._image_widget.store_image()
