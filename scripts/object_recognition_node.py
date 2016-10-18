@@ -52,7 +52,7 @@ class ObjectRecognition:
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(f.read())
             _ = tf.import_graph_def(graph_def, name='')
-        rospy.loginfo("Step {} took {} seconds".format(1, (rospy.Time.now() - start).to_sec()))
+        rospy.logdebug("Step {} took {} seconds".format(1, (rospy.Time.now() - start).to_sec()))
 
     def _recognize_srv_callback(self, req):
         """ Callback function for the recognize. It saves the image on a temporary location and sets _do_recognition
@@ -100,13 +100,13 @@ class ObjectRecognition:
         """2. Open tf session"""
         start = rospy.Time.now()
         with tf.Session() as sess:
-            rospy.loginfo("Step {} took {} seconds".format(2, (rospy.Time.now() - start).to_sec()))
+            rospy.logdebug("Step {} took {} seconds".format(2, (rospy.Time.now() - start).to_sec()))
 
             """3. Get result tensor"""
             start = rospy.Time.now()
             # result_tensor = sess.graph.get_tensor_by_name("softmax:0")
             result_tensor = sess.graph.get_tensor_by_name("final_result:0")
-            rospy.loginfo("Step {} took {} seconds".format(3, (rospy.Time.now() - start).to_sec()))
+            rospy.logdebug("Step {} took {} seconds".format(3, (rospy.Time.now() - start).to_sec()))
 
             """4. Open Image and perform prediction"""
             start = rospy.Time.now()
@@ -114,7 +114,7 @@ class ObjectRecognition:
             with open(self._filename, 'rb') as f:
                 predictions = sess.run(result_tensor, {'DecodeJpeg/contents:0': f.read()})
                 predictions = np.squeeze(predictions)
-            rospy.loginfo("Step {} took {} seconds".format(4, (rospy.Time.now() - start).to_sec()))
+            rospy.logdebug("Step {} took {} seconds".format(4, (rospy.Time.now() - start).to_sec()))
 
             """5. Open output_labels and construct dict from result"""
             start = rospy.Time.now()
@@ -122,7 +122,7 @@ class ObjectRecognition:
             with open(self._models_path, 'rb') as f:
                 labels = f.read().split("\n")
                 result = dict(zip(labels, predictions))
-            rospy.loginfo("Step {} took {} seconds".format(5, (rospy.Time.now() - start).to_sec()))
+            rospy.logdebug("Step {} took {} seconds".format(5, (rospy.Time.now() - start).to_sec()))
 
         # Sort the results
         sorted_result = sorted(result.items(), key=operator.itemgetter(1))
