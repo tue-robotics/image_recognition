@@ -3,18 +3,25 @@ import rospy
 import rospkg
 import subprocess
 
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
-from python_qt_binding import QtGui , QtCore, QtWidgets
+
+from python_qt_binding.QtWidgets import * 
+from python_qt_binding.QtGui import * 
+from python_qt_binding.QtCore import * 
+
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
 import datetime
 import re
+
+def _warn_msg(title, text):
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Warning)
+    msg.setText(text)
+    msg.setWindowTitle(title)
+    msg.exec_()
 
 def _sanitize(label):
     return re.sub(r'(\W+| )', '', label)
@@ -63,7 +70,7 @@ class LabelDialog(QDialog):
         if event.key() == Qt.Key_Return:
             self.accept()
 
-class ImageWidget(QtWidgets.QWidget):
+class ImageWidget(QWidget):
     def __init__(self, parent=None):
         super(ImageWidget, self).__init__(parent)   
         self._cv_image = None
@@ -85,8 +92,8 @@ class ImageWidget(QtWidgets.QWidget):
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setPen(QPen(Qt.cyan, 5.0))
         painter.drawRect(self.clip_rect)
-        painter.setFont(QtGui.QFont('Decorative', 10))
-        painter.drawText(self.clip_rect, QtCore.Qt.AlignCenter, self.label)   
+        painter.setFont(QFont('Decorative', 10))
+        painter.drawText(self.clip_rect, Qt.AlignCenter, self.label)   
         painter.end()
 
     def set_image(self, image):
@@ -118,25 +125,23 @@ class ImageWidget(QtWidgets.QWidget):
             return
 
         if not self.labels:
-            msg = QtWidgets.QMessageBox()
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setText("Please first specify some labels using the 'Edit labels' button")
-            msg.setWindowTitle("No labels specified!")
-
-            retval = msg.exec_()
+            _warn_msg("No labels specified!", "Please first specify some labels using the 'Edit labels' button")
             return
 
         dlg = LabelDialog(self.labels)
         if dlg.exec_():
             self.label = str(dlg.label_selector.currentText())
-            self.store_image()
+
+        self.store_image()
 
         self.dragging = False
 
     def store_image(self):
-        _write_image_to_file(self.output_directory, self._cv_image, self.clip_rect.x(), 
-            self.clip_rect.y(), self.clip_rect.width(), self.clip_rect.height(), self.label)
-
+        if not self.label:
+            _warn_msg("No label specified!", "Please specify a label first")
+        else:
+            _write_image_to_file(self.output_directory, self._cv_image, self.clip_rect.x(), 
+                self.clip_rect.y(), self.clip_rect.width(), self.clip_rect.height(), self.label)
 
 class LabelPlugin(Plugin):
 
@@ -146,37 +151,40 @@ class LabelPlugin(Plugin):
         # Widget setup
         self.setObjectName('Label Plugin')
 
-        self._widget = QtWidgets.QWidget()
+        self._widget = QWidget()
         context.add_widget(self._widget)
+
+        # add key handler
+        #self._widget.keyPressed.connect(self._key_pressed)
         
         # Layout and attach to widget
-        layout = QtWidgets.QVBoxLayout()  
+        layout = QVBoxLayout()  
         self._widget.setLayout(layout)
 
         self._image_widget = ImageWidget()
         layout.addWidget(self._image_widget)
 
         # Input field
-        grid_layout = QtWidgets.QGridLayout()
+        grid_layout = QGridLayout()
         layout.addLayout(grid_layout)
 
-        self._edit_path_button = QtWidgets.QPushButton("Edit path")
+        self._edit_path_button = QPushButton("Edit path")
         self._edit_path_button.clicked.connect(self._get_output_directory)
         grid_layout.addWidget(self._edit_path_button, 1, 1)
 
-        self._output_path_edit = QtWidgets.QLineEdit()
+        self._output_path_edit = QLineEdit()
         self._output_path_edit.setDisabled(True)
         grid_layout.addWidget(self._output_path_edit, 1, 2)
 
-        self._labels_edit = QtWidgets.QLineEdit()
+        self._labels_edit = QLineEdit()
         self._labels_edit.setDisabled(True)
         grid_layout.addWidget(self._labels_edit, 2, 2)
 
-        self._edit_labels_button = QtWidgets.QPushButton("Edit labels")
+        self._edit_labels_button = QPushButton("Edit labels")
         self._edit_labels_button.clicked.connect(self._get_labels)
         grid_layout.addWidget(self._edit_labels_button, 2, 1)
 
-        self._save_button = QtWidgets.QPushButton("Save another one")
+        self._save_button = QPushButton("Save another one")
         self._save_button.clicked.connect(self._image_widget.store_image)
         grid_layout.addWidget(self._save_button, 2, 3)
 
@@ -188,7 +196,7 @@ class LabelPlugin(Plugin):
         rospy.loginfo("Listening to %s -- spinning .." % self._sub.name)
 
     def _get_output_directory(self):
-        self._set_output_directory(QtWidgets.QFileDialog.getExistingDirectory(self._widget, "Select output directory"))
+        self._set_output_directory(QFileDialog.getExistingDirectory(self._widget, "Select output directory"))
 
     def _set_output_directory(self, path):
         if not path:
@@ -198,7 +206,7 @@ class LabelPlugin(Plugin):
         self._output_path_edit.setText("Saving images to %s" % path)
 
     def _get_labels(self):
-        text, ok = QtWidgets.QInputDialog.getText(self._widget, 'Text Input Dialog', 'Type labels semicolon separated, e.g. banana;apple:')
+        text, ok = QInputDialog.getText(self._widget, 'Text Input Dialog', 'Type labels semicolon separated, e.g. banana;apple:')
         if ok:
             labels = set([_sanitize(label) for label in str(text).split(";") if _sanitize(label)]) # Sanitize to alphanumeric, exclude spaces
             self._set_labels(labels)
@@ -239,3 +247,6 @@ class LabelPlugin(Plugin):
         except:
             pass
         self._set_labels(labels)
+
+    def _key_pressed(self, event):
+        self._image_widget.store_image()
