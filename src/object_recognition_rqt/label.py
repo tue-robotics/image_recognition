@@ -14,6 +14,10 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
 import datetime
+import re
+
+def _sanitize(label):
+    return re.sub(r'(\W+| )', '', label)
 
 def _write_image_to_file(path, image, x, y, width, height, label):
     # Check if path exists
@@ -40,12 +44,12 @@ def _convert_cv_to_qt_image(cv_image):
     return QImage(cv_image, width, height, byte_value, QImage.Format_RGB888)
 
 class LabelDialog(QDialog):
-    def __init__(self):
+    def __init__(self, labels):
         super(LabelDialog, self).__init__()
 
         self.layout = QGridLayout()
         self.label_selector = QComboBox()
-        self.label_selector.addItems(["omg", "blaat"])
+        self.label_selector.addItems(labels)
         self.layout.addWidget(QLabel("Label:"), 0, 0)
         self.layout.addWidget(self.label_selector, 0, 1)
         self.ok_button = QPushButton('ok')
@@ -53,7 +57,6 @@ class LabelDialog(QDialog):
         self.layout.addWidget(self.ok_button, 0, 2)
 
         self.setLayout(self.layout)
-        self.output_directory = "/tmp"
 
     def keyPressEvent(self, event):
         super(LabelDialog, self).keyPressEvent(event)
@@ -72,6 +75,8 @@ class ImageWidget(QtWidgets.QWidget):
         self.clip_rect = QRect(0,0,0,0)
         self.dragging = False
         self.drag_offset = QPoint()
+        self.labels = []
+        self.label = ""
 
     def paintEvent(self, event):
         painter = QPainter()
@@ -80,6 +85,8 @@ class ImageWidget(QtWidgets.QWidget):
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setPen(QPen(Qt.cyan, 5.0))
         painter.drawRect(self.clip_rect)
+        painter.setFont(QtGui.QFont('Decorative', 10))
+        painter.drawText(self.clip_rect, QtCore.Qt.AlignCenter, self.label)   
         painter.end()
 
     def set_image(self, image):
@@ -110,12 +117,25 @@ class ImageWidget(QtWidgets.QWidget):
         if not self.dragging:
             return
 
-        dlg = LabelDialog()
+        if not self.labels:
+            msg = QtWidgets.QMessageBox()
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setText("Please first specify some labels using the 'Edit labels' button")
+            msg.setWindowTitle("No labels specified!")
+
+            retval = msg.exec_()
+            return
+
+        dlg = LabelDialog(self.labels)
         if dlg.exec_():
-            _write_image_to_file(self.output_directory, self._cv_image, self.clip_rect.x(), self.clip_rect.y(), 
-                self.clip_rect.width(), self.clip_rect.height(), str(dlg.label_selector.currentText()))
+            self.label = str(dlg.label_selector.currentText())
+            self.store_image()
 
         self.dragging = False
+
+    def store_image(self):
+        _write_image_to_file(self.output_directory, self._cv_image, self.clip_rect.x(), 
+            self.clip_rect.y(), self.clip_rect.width(), self.clip_rect.height(), self.label)
 
 
 class LabelPlugin(Plugin):
@@ -124,7 +144,7 @@ class LabelPlugin(Plugin):
         super(LabelPlugin, self).__init__(context)
 
         # Widget setup
-        self.setObjectName('Record Plugin')
+        self.setObjectName('Label Plugin')
 
         self._widget = QtWidgets.QWidget()
         context.add_widget(self._widget)
@@ -137,13 +157,28 @@ class LabelPlugin(Plugin):
         layout.addWidget(self._image_widget)
 
         # Input field
-        self._edit = QtWidgets.QLineEdit()
-        self._edit.mousePressEvent = lambda _ : self._get_output_directory()
+        grid_layout = QtWidgets.QGridLayout()
+        layout.addLayout(grid_layout)
 
-        layout.addWidget(self._edit)
+        self._edit_path_button = QtWidgets.QPushButton("Edit path")
+        self._edit_path_button.clicked.connect(self._get_output_directory)
+        grid_layout.addWidget(self._edit_path_button, 1, 1)
 
-        # Record button
-        self._set_output_directory("/tmp")
+        self._output_path_edit = QtWidgets.QLineEdit()
+        self._output_path_edit.setDisabled(True)
+        grid_layout.addWidget(self._output_path_edit, 1, 2)
+
+        self._labels_edit = QtWidgets.QLineEdit()
+        self._labels_edit.setDisabled(True)
+        grid_layout.addWidget(self._labels_edit, 2, 2)
+
+        self._edit_labels_button = QtWidgets.QPushButton("Edit labels")
+        self._edit_labels_button.clicked.connect(self._get_labels)
+        grid_layout.addWidget(self._edit_labels_button, 2, 1)
+
+        self._save_button = QtWidgets.QPushButton("Save another one")
+        self._save_button.clicked.connect(self._image_widget.store_image)
+        grid_layout.addWidget(self._save_button, 2, 3)
 
         # Bridge for opencv conversion
         self.bridge = CvBridge()
@@ -156,8 +191,24 @@ class LabelPlugin(Plugin):
         self._set_output_directory(QtWidgets.QFileDialog.getExistingDirectory(self._widget, "Select output directory"))
 
     def _set_output_directory(self, path):
+        if not path:
+            path = "/tmp"
+
         self._image_widget.output_directory = path
-        self._edit.setText(path)
+        self._output_path_edit.setText("Saving images to %s" % path)
+
+    def _get_labels(self):
+        text, ok = QtWidgets.QInputDialog.getText(self._widget, 'Text Input Dialog', 'Type labels semicolon separated, e.g. banana;apple:')
+        if ok:
+            labels = set([_sanitize(label) for label in str(text).split(";") if _sanitize(label)]) # Sanitize to alphanumeric, exclude spaces
+            self._set_labels(labels)
+
+    def _set_labels(self, labels):
+        if not labels:
+            labels = []
+
+        self._image_widget.labels = labels
+        self._labels_edit.setText("%s" % labels)
 
     def _image_callback(self, msg):
         try:
@@ -171,12 +222,20 @@ class LabelPlugin(Plugin):
         pass
 
     def save_settings(self, plugin_settings, instance_settings):
-        #instance_settings.set_value("output_directory", self._output_directory)
-        pass
+        instance_settings.set_value("output_directory", self._image_widget.output_directory)
+        instance_settings.set_value("labels", self._image_widget.labels)
 
     def restore_settings(self, plugin_settings, instance_settings):
-        # try:
-        #     output_directory = self._set_output_directory(instance_settings.value("output_directory"))
-        # except:
-        #     pass
-        pass
+        path = None
+        try:
+            path = instance_settings.value("output_directory")
+        except:
+            pass
+        self._set_output_directory(path)
+
+        labels = None
+        try:
+            labels = instance_settings.value("labels")
+        except:
+            pass
+        self._set_labels(labels)
