@@ -105,7 +105,7 @@ class TestPlugin(Plugin):
             self._sub.unregister()
         self._sub = rospy.Subscriber(topic_name, Image, self._image_callback)
         rospy.loginfo("Listening to %s -- spinning .." % self._sub.name)
-        self._widget.setWindowTitle("Label plugin, listening to (%s)" % self._sub.name)
+        self._widget.setWindowTitle("Test plugin, listening to (%s)" % self._sub.name)
 
     def _create_service_client(self, srv_name):
         if self._srv:
