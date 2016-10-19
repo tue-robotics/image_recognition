@@ -2,6 +2,28 @@
 
 Contains rqt plugins for object recognition 
 
+## Test plugin
+
+RQT plugin to test servers that expose the service https://github.com/tue-robotics/object_recognition_srvs
+
+![GUI Overview](doc/img/test.png)
+
+### How to 
+
+Start the rqt plugin stand alone (if this does not work, try a `rqt --force-rediscover`):
+
+    rosrun object_recognition_rqt test_gui # Calls a rqt -s object_recognition_rqt.test.TestPlugin
+    
+Select a rostopic of type `sensor_msgs/Image` and a service of type `object_recognition_srvs/Recognize` with use of the configuration button in the menu-bar (gear wheel icon):
+
+![Select ROS topic](doc/img/select_topic.png)
+
+If you do not have any available topic, try to use your webcam with use of the usb_cam node (http://wiki.ros.org/usb_cam), you can start this node with:
+
+    rosrun usb_cam usb_cam_node # This step is optional ofcourse
+    
+Once you have an image stream in your GUI, you can draw a rectangle in the image feed, this ROI will be send to the object recognition srv.
+
 ## Label plugin
 
 ![GUI Overview](doc/img/choco_peanuts.png)

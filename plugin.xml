@@ -14,4 +14,19 @@
       <statustip>Label objects in images and write to disk the results.</statustip>
     </qtgui>
   </class>
+  <class name="Test Plugin" type="object_recognition_rqt.test.TestPlugin" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A Python GUI plugin for testing the object recognition srv
+    </description>
+    <qtgui>
+        <group>
+            <label>Object recognition</label>
+            <icon type="theme">folder</icon>
+            <statustip>Plugins related to object recogition.</statustip>
+        </group>
+      <label>Object Recognition test</label>
+      <icon type="theme">system-help</icon>
+      <statustip>Test object recognition using an sensor_msgs/Image input feed.</statustip>
+    </qtgui>
+  </class>
 </library>
