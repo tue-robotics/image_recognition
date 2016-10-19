@@ -57,7 +57,7 @@ class LabelDialog(QDialog):
 
         self.layout = QGridLayout()
         self.label_selector = QComboBox()
-        self.label_selector.addItems(labels)
+        self.label_selector.addItems(list(labels))
         self.layout.addWidget(QLabel("Label:"), 0, 0)
         self.layout.addWidget(self.label_selector, 0, 1)
         self.ok_button = QPushButton('ok')
