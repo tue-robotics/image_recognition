@@ -22,7 +22,6 @@ from image_widget import ImageWidget
 from dialogs import option_dialog, warning_dialog
 
 from object_recognition_srvs.srv import Recognize
-from std_srvs.srv import Empty
 
 class TestPlugin(Plugin):
 
