@@ -14,7 +14,6 @@ import shutil
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from itertools import groupby
-from sortedcontainers import SortedSet
 
 import numpy as np
 import tensorflow as tf
@@ -217,7 +216,7 @@ def main(image_dir, model_dir, output_dir, steps, batch):
         create_inception_graph(model_dir)
 
     images, labels = create_image_lists(image_dir, VALIDATION_PERCENTAGE, validation=False)
-    classes = SortedSet(labels)
+    classes = sorted(set(labels))
 
     class_count = len(classes)
     for k, g in groupby(sorted(zip(labels, images)), operator.itemgetter(0)):
