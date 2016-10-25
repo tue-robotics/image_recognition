@@ -6,4 +6,6 @@ find_package(catkin REQUIRED COMPONENTS
   object_recognition_srvs
 )
 
+catkin_python_setup()
+
 catkin_package()
