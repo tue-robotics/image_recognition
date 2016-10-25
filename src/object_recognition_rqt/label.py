@@ -20,8 +20,10 @@ import re
 from image_widget import ImageWidget
 from dialogs import option_dialog, warning_dialog
 
+
 def _sanitize(label):
     return re.sub(r'(\W+| )', '', label)
+
 
 def _write_image_to_file(path, image, label):
     # Check if path exists
@@ -34,10 +36,11 @@ def _write_image_to_file(path, image, label):
     if not os.path.exists(label_folder):
         os.makedirs(label_folder)
 
-    filename = "%s/%s.jpg" % (label_folder, datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
+    filename = "%s/%s.jpg" % (label_folder, datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S_%f"))
     cv2.imwrite(filename, image)
 
     rospy.loginfo("Wrote file to %s", filename)
+
 
 class LabelPlugin(Plugin):
 
