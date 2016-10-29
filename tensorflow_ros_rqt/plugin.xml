@@ -5,9 +5,9 @@
     </description>
     <qtgui>
         <group>
-            <label>Object recognition</label>
+            <label>Image recognition</label>
             <icon type="theme">folder</icon>
-            <statustip>Plugins related to object recogition.</statustip>
+            <statustip>Plugins related to image recogition.</statustip>
         </group>
       <label>Tensorflow Object Trainer</label>
       <icon type="theme">system-help</icon>
