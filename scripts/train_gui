@@ -1,0 +1,3 @@
+#!/bin/bash
+
+rqt -s tensorflow_object_recognition_rqt.train.TrainPlugin
