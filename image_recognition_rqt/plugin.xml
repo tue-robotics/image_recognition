@@ -1,0 +1,32 @@
+<library path="src">
+  <class name="Label Plugin" type="image_recognition_rqt.label.LabelPlugin" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A Python GUI plugin for labeling objects
+    </description>
+    <qtgui>
+        <group>
+            <label>Image recognition</label>
+            <icon type="theme">folder</icon>
+            <statustip>Plugins related to image recogition.</statustip>
+        </group>
+      <label>ROI labeler</label>
+      <icon type="theme">system-help</icon>
+      <statustip>Label objects in images and write to disk the results.</statustip>
+    </qtgui>
+  </class>
+  <class name="Test Plugin" type="image_recognition_rqt.test.TestPlugin" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A Python GUI plugin for testing the image_recognition_msgs interface
+    </description>
+    <qtgui>
+        <group>
+            <label>Image recognition</label>
+            <icon type="theme">folder</icon>
+            <statustip>Plugins related to image recogition.</statustip>
+        </group>
+      <label>Image recognition test</label>
+      <icon type="theme">system-help</icon>
+      <statustip>Test image recognition using an sensor_msgs/Image input feed.</statustip>
+    </qtgui>
+  </class>
+</library>

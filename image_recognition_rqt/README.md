@@ -1,10 +1,10 @@
-# object_recognition_rqt
+# image_recognition_rqt
 
-Contains rqt plugins for object recognition 
+Contains rqt plugins for image recognition 
 
 ## Test plugin
 
-RQT plugin to test servers that expose the service https://github.com/tue-robotics/object_recognition_srvs
+RQT plugin to test servers that expose the service https://github.com/tue-robotics/image_recognition/image_recognition_msgs
 
 ![GUI Overview](doc/img/test.png)
 
@@ -12,9 +12,9 @@ RQT plugin to test servers that expose the service https://github.com/tue-roboti
 
 Start the rqt plugin stand alone (if this does not work, try a `rqt --force-rediscover`):
 
-    rosrun object_recognition_rqt test_gui # Calls a rqt -s object_recognition_rqt.test.TestPlugin
+    rosrun image_recognition_rqt test_gui # Calls a rqt -s image_recognition_rqt.test.TestPlugin
     
-Select a rostopic of type `sensor_msgs/Image` and a service of type `object_recognition_srvs/Recognize` with use of the configuration button in the menu-bar (gear wheel icon):
+Select a rostopic of type `sensor_msgs/Image` and a service of type `image_recognition_msgs/Recognize` with use of the configuration button in the menu-bar (gear wheel icon):
 
 ![Select ROS topic](doc/img/select_topic.png)
 
@@ -53,7 +53,7 @@ This folder can be used for training for example a neural network. A Tensorflow 
 
 Start the rqt plugin stand alone (if this does not work, try a `rqt --force-rediscover`):
 
-    rosrun object_recognition_rqt label_gui # Calls a rqt -s object_recognition_rqt.label.LabelPlugin
+    rosrun image_recognition_rqt label_gui # Calls a rqt -s image_recognition_rqt.label.LabelPlugin
     
 Select a rostopic of type `sensor_msgs/Image` with use of the configuration button in the menu-bar (gear wheel icon):
 

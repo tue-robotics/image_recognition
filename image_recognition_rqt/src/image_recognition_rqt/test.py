@@ -21,7 +21,7 @@ import re
 from image_widget import ImageWidget
 from dialogs import option_dialog, warning_dialog
 
-from object_recognition_srvs.srv import Recognize
+from image_recognition_msgs.srv import Recognize
 
 class TestPlugin(Plugin):
 
@@ -90,7 +90,7 @@ class TestPlugin(Plugin):
         available_rosservices = []
         for s in rosservice.get_service_list():
             try:
-                if rosservice.get_service_type(s) == "object_recognition_srvs/Recognize":
+                if rosservice.get_service_type(s) == "image_recognition_msgs/Recognize":
                     available_rosservices.append(s)
             except:
                 pass

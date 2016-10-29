@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(object_recognition_rqt)
+project(image_recognition_rqt)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -14,7 +14,7 @@ catkin_python_setup()
 
 catkin_package()
 
-install(PROGRAMS scripts/object_recognition_rqt
+install(PROGRAMS scripts/image_recognition_rqt
 	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
