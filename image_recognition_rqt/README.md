@@ -4,7 +4,7 @@ Contains rqt plugins for image recognition
 
 ## Test plugin
 
-RQT plugin to test servers that expose the service https://github.com/tue-robotics/image_recognition/image_recognition_msgs
+RQT plugin to test servers that expose the interface defined in package: [image_recognition_msgs](https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_msgs)
 
 ![GUI Overview](doc/img/test.png)
 

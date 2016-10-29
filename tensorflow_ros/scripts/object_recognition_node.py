@@ -152,8 +152,8 @@ if __name__ == '__main__':
     rospy.loginfo("\nDB: {}\nModels: {}\nShow image: {}".format(_db_path, _models_path, _show_images))
 
     # Create object
-    object_recognition = ObjectRecognition(db_path=_db_path,
-                                           models_path=_models_path,
+    object_recognition = ObjectRecognition(db_path=os.path.expanduser(_db_path),
+                                           models_path=os.path.expanduser(_models_path),
                                            show_images=_show_images)
 
     # Start update loop
