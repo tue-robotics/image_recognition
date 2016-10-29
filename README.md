@@ -7,3 +7,17 @@ Packages for image recognition - Robocup TU/e Robotics
 - [tensorflow_ros](https://github.com/tue-robotics/image_recognition/tree/master/tensorflow_ros) - Object recognition with use of Tensorflow. The user can retrain the top layers of a neural network to perform classification with its own dataset.
 - [tensorflow_ros_rqt](https://github.com/tue-robotics/image_recognition/tree/master/tensorflow_ros_rqt) - RQT tools for retraining a Tensorflow neural network.
 
+## Installation
+
+Clone the repo in your catkin_ws:
+
+        git clone https://github.com/tue-robotics/image_recognition.git
+        
+Build your catkin workspace
+
+        catkin_make
+        
+## Quick start
+
+TODO!
+
