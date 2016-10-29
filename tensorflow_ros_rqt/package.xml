@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>tensorflow_object_recognition_rqt</name>
+  <name>tensorflow_ros_rqt</name>
   <version>0.0.0</version>
-  <description>The tensorflow_object_recognition_rqt package</description>
+  <description>The tensorflow_ros_rqt package</description>
 
   <maintainer email="reinzor@gmail.com">Rein Appeldoorn</maintainer>
 

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+rqt -s tensorflow_ros_rqt.train.TrainPlugin

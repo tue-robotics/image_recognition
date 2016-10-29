@@ -4,7 +4,7 @@ from python_qt_binding.QtWidgets import *
 from python_qt_binding.QtGui import * 
 from python_qt_binding.QtCore import *
 
-from tensorflow_object_recognition import retrain, utils
+from tensorflow_ros import retrain, utils
 
 
 def dialog(title, text, icon=QMessageBox.Information):

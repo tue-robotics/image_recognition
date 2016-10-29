@@ -1,4 +1,4 @@
-# tensorflow_object_recognition_rqt
+# tensorflow_ros_rqt
 
 Contains rqt plugins for training a neural network for object recognition using TensorFlow.
 
