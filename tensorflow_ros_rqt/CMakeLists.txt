@@ -7,6 +7,7 @@ project(tensorflow_ros_rqt)
 find_package(catkin REQUIRED COMPONENTS
   rqt_gui
   rqt_gui_py
+  tensorflow_ros
 )
 
 catkin_python_setup()
@@ -16,4 +17,3 @@ catkin_package()
 install(PROGRAMS scripts/tensorflow_ros_rqt
 	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-

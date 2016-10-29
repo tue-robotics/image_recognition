@@ -12,11 +12,11 @@
 
   <build_depend>rqt_gui</build_depend>
   <build_depend>rqt_gui_py</build_depend>
-  <build_depend>object_recognition</build_depend>
+  <build_depend>tensorflow_ros</build_depend>
 
   <run_depend>rqt_gui</run_depend>
   <run_depend>rqt_gui_py</run_depend>
-  <run_depend>object_recognition</run_depend>
+  <run_depend>tensorflow_ros</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

@@ -47,7 +47,7 @@ class TestPlugin(Plugin):
 
         self._info = QLineEdit()
         self._info.setDisabled(True)
-        self._info.setText("Draw a rectangle on the screen to perform object recognition of that ROI")
+        self._info.setText("Draw a rectangle on the screen to perform recognition of that ROI")
         layout.addWidget(self._info)
 
         # Bridge for opencv conversion
@@ -121,4 +121,4 @@ class TestPlugin(Plugin):
 
     def restore_settings(self, plugin_settings, instance_settings):
         self._create_subscriber(str(instance_settings.value("topic_name","/usb_cam/image_raw")))
-        self._create_service_client(str(instance_settings.value("service_name","/object_recognition/blaat")))
+        self._create_service_client(str(instance_settings.value("service_name","/image_recognition/my_service")))
