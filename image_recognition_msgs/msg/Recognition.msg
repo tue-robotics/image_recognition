@@ -1,3 +1,2 @@
-string label
-float32 probability
+CategoricalDistribution categorical_distribution
 sensor_msgs/RegionOfInterest roi
