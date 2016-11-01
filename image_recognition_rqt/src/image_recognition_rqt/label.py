@@ -16,10 +16,12 @@ from cv_bridge import CvBridge, CvBridgeError
 import cv2
 import datetime
 import re
+import rosservice
 
 from image_widget import ImageWidget
 from dialogs import option_dialog, warning_dialog
 
+_SUPPORTED_SERVICES = ["image_recognition_msgs/Annotate"]
 
 def _sanitize(label):
     return re.sub(r'(\W+| )', '', label)
@@ -89,6 +91,7 @@ class LabelPlugin(Plugin):
 
         # Set subscriber to None
         self._sub = None
+        self._srv = None
 
         self.labels = []
         self.roi_image = None
@@ -107,7 +110,24 @@ class LabelPlugin(Plugin):
             self.label = option
             self._image_widget.set_text(option)
 
+        self.annotate_srv()
         self.store_image()
+
+    def annotate_srv(self):
+        if not None in [self.roi_image, self.label, self._srv]:
+            try:
+                result = self._srv(image=self.bridge.cv2_to_imgmsg(roi_image, "bgr8"), label=self.label)
+            except Exception as e:
+                warning_dialog("Service Exception", str(e))
+                return
+
+    def _create_service_client(self, srv_name):
+        if self._srv:
+            self._srv.close()
+
+        if srv_name in rosservice.get_service_list():
+            rospy.loginfo("Creating proxy for service '%s'" % srv_name)
+            self._srv = rospy.ServiceProxy(srv_name, rosservice.get_service_class_by_name(srv_name))
             
     def store_image(self):
         if not None in [self.roi_image, self.label, self.output_directory]:
@@ -150,6 +170,18 @@ class LabelPlugin(Plugin):
         if ok:
             self._create_subscriber(topic_name)
 
+        available_rosservices = []
+        for s in rosservice.get_service_list():
+            try:
+                if rosservice.get_service_type(s) in _SUPPORTED_SERVICES:
+                    available_rosservices.append(s)
+            except:
+                pass
+
+        srv_name, ok = QInputDialog.getItem(self._widget, "Select service name", "Service name", available_rosservices)
+        if ok:
+            self._create_service_client(srv_name)
+
     def _create_subscriber(self, topic_name):
         if self._sub:
             self._sub.unregister()
@@ -182,3 +214,4 @@ class LabelPlugin(Plugin):
         self._set_labels(labels)
 
         self._create_subscriber(str(instance_settings.value("topic_name","/usb_cam/image_raw")))
+        self._create_service_client(str(instance_settings.value("service_name", "/image_recognition/my_service")))

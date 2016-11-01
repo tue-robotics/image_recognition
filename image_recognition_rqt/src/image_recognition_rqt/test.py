@@ -21,7 +21,8 @@ import re
 from image_widget import ImageWidget
 from dialogs import option_dialog, warning_dialog
 
-from image_recognition_msgs.srv import Recognize
+_SUPPORTED_SERVICES = ["image_recognition_msgs/Recognize", "image_recognition_msgs/GetFaceProperties"]
+
 
 class TestPlugin(Plugin):
 
@@ -90,7 +91,7 @@ class TestPlugin(Plugin):
         available_rosservices = []
         for s in rosservice.get_service_list():
             try:
-                if rosservice.get_service_type(s) == "image_recognition_msgs/Recognize":
+                if rosservice.get_service_type(s) in _SUPPORTED_SERVICES:
                     available_rosservices.append(s)
             except:
                 pass
@@ -109,8 +110,10 @@ class TestPlugin(Plugin):
     def _create_service_client(self, srv_name):
         if self._srv:
             self._srv.close()
-        rospy.loginfo("Creating proxy for service '%s'" % srv_name)
-        self._srv = rospy.ServiceProxy(srv_name, Recognize)
+
+        if srv_name in rosservice.get_service_list():
+            rospy.loginfo("Creating proxy for service '%s'" % srv_name)
+            self._srv = rospy.ServiceProxy(srv_name, rosservice.get_service_class_by_name(srv_name))
 
     def shutdown_plugin(self):
         pass
@@ -120,5 +123,5 @@ class TestPlugin(Plugin):
             instance_settings.set_value("topic_name", self._sub.name)
 
     def restore_settings(self, plugin_settings, instance_settings):
-        self._create_subscriber(str(instance_settings.value("topic_name","/usb_cam/image_raw")))
-        self._create_service_client(str(instance_settings.value("service_name","/image_recognition/my_service")))
+        self._create_subscriber(str(instance_settings.value("topic_name", "/usb_cam/image_raw")))
+        self._create_service_client(str(instance_settings.value("service_name", "/image_recognition/my_service")))

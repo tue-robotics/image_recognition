@@ -14,7 +14,7 @@ Start the rqt plugin stand alone (if this does not work, try a `rqt --force-redi
 
     rosrun image_recognition_rqt test_gui # Calls a rqt -s image_recognition_rqt.test.TestPlugin
     
-Select a rostopic of type `sensor_msgs/Image` and a service of type `image_recognition_msgs/Recognize` with use of the configuration button in the menu-bar (gear wheel icon):
+Select a rostopic of type `sensor_msgs/Image` and a service of type `image_recognition_msgs/Recognize` or `image_recognition_msgs/GetFaceProperties` with use of the configuration button in the menu-bar (gear wheel icon):
 
 ![Select ROS topic](doc/img/select_topic.png)
 
@@ -48,6 +48,8 @@ This RQT plugin (http://wiki.ros.org/rqt) enables easy labeling of objects using
     ...
     
 This folder can be used for training for example a neural network. A Tensorflow example can be found here: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/image_retraining/retrain.py
+
+This plugin can also be used to test / use the `Annotate.srv`
 
 ### How to 
 
