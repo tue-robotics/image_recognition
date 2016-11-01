@@ -69,11 +69,12 @@ class TestPlugin(Plugin):
             warning_dialog("Service Exception", str(e))
             return
 
-        text_array = [ "%s: %.2f" % (r.label, r.probability) for r in result.recognitions ]
+        for recognition in result.recognitions: # TODO Draw results of multiple recognitions correctly and deal with unknown
+            text_array = [ "%s: %.2f" % (p.label, p.probability) for p in recognition.categorical_distribution.probabilities ]
 
-        if text_array:
-            self._image_widget.set_text(text_array[0]) # Show first option in the image
-            option_dialog("Classification results", text_array) # Show all results in a dropdown
+            if text_array:
+                self._image_widget.set_text(text_array[0]) # Show first option in the image
+                option_dialog("Classification results", text_array) # Show all results in a dropdown
 
     def _image_callback(self, msg):
         try:
