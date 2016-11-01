@@ -18,7 +18,7 @@ import numpy as np
 
 # TU/e Robotics
 from image_recognition_msgs.srv import Recognize
-from image_recognition_msgs.msg import Recognition
+from image_recognition_msgs.msg import Recognition, CategoryProbability
 
 
 class ObjectRecognition:
@@ -128,13 +128,15 @@ class ObjectRecognition:
         sorted_result = sorted(result.items(), key=operator.itemgetter(1))
 
         # self._recognition.label = sorted_result[-1][0].split('\t')[1]
+        recognition = Recognition()
+        recognition.roi.height = self._size['height']
+        recognition.roi.width = self._size['width']
+        recognition.categorical_distribution.unknown_probability = 0.1 #TODO: How do we know this?
         for res in reversed(sorted_result):
-            recognition = Recognition()
-            recognition.roi.height = self._size['height']
-            recognition.roi.width = self._size['width']
-            recognition.label = res[0]
-            recognition.probability = res[1]
-            self._recognitions.append(recognition)
+            category_probabilty = CategoryProbability(label=res[0], probability=res[1])
+            recognition.categorical_distribution.probabilities.append(category_probabilty)
+
+        self._recognitions.append(recognition)
 
         rospy.loginfo("\nBest recognition result: {}\nProbability: {}".format(sorted_result[-1][0],
                                                                               sorted_result[-1][1]))
