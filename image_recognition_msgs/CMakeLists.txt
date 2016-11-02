@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
 # Generate messages in the 'msg' folder
 add_message_files(
   FILES
+  FaceProperties.msg
   CategoryProbability.msg
   CategoricalDistribution.msg
   Recognition.msg
