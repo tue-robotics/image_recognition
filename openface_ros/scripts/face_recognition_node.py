@@ -213,7 +213,7 @@ if __name__ == '__main__':
 
         save_images_folder = None
         if save_images:
-            save_images_folder = rospy.get_param("~save_images_folder", "/tmp/faces")
+            save_images_folder = rospy.get_param("~save_images_folder", "/tmp/openface")
     except KeyError as e:
         rospy.logerr("Parameter %s not found" % e)
         sys.exit(1)
