@@ -8,69 +8,12 @@ from image_recognition_msgs.msg import Recognition, CategoryProbability, Categor
 from sensor_msgs.msg import RegionOfInterest
 from std_srvs.srv import Empty
 
-import numpy as np
 import cv2
 import os
 from datetime import datetime
 import sys
 
-# Openface
-import dlib
-import openface
-
-
-def _draw_label(img, label, origin):
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    scale = 0.4
-    thickness = 1
-
-    text = cv2.getTextSize(label, font, scale, thickness)
-    p2 = (origin[0] + text[0][0], origin[1] -text[0][1])
-    cv2.rectangle(img, origin, p2, (0, 0, 0), -1)
-    cv2.putText(img, label, origin, font, scale, (255, 255, 255), thickness, 8)
-
-
-def _get_roi(bgr_image, detection, factor_x, factor_y):
-    # Get the roi
-    min_y = detection.top()
-    max_y = detection.bottom()
-    min_x = detection.left()
-    max_x = detection.right()
-
-    dx = max_x - min_x
-    dy = max_y - min_y
-
-    padding_x = int(factor_x * dx)
-    padding_y = int(factor_y * dy)
-
-    # Don't go out of bound
-    min_y = max(0, min_y - padding_y)
-    max_y = min(max_y + padding_y, bgr_image.shape[0]-1)
-    min_x = max(0, min_x - padding_x)
-    max_x = min(max_x + padding_x, bgr_image.shape[1]-1)
-
-    return bgr_image[min_y:max_y, min_x:max_x]
-
-
-def _get_min_l2_distance(vector_list_a, vector_b):
-    return min([np.dot(vector_a - vector_b, vector_a - vector_b) for vector_a in vector_list_a])
-
-
-class FaceRecognition:
-    def __init__(self, detection, image, factor_x=0.1, factor_y=0.2):
-        self.image = _get_roi(image, detection, factor_x, factor_y)
-        self.roi = RegionOfInterest()
-        self.roi.x_offset = detection.left()
-        self.roi.y_offset = detection.top()
-        self.roi.width = detection.width()
-        self.roi.height = detection.height()
-        self.categorical_distribution = CategoricalDistribution()
-
-
-class TrainedFace:
-    def __init__(self, label):
-        self.label = label
-        self.representations = []
+from openface_ros.face_recognizer import FaceRecognizer, RecognizedFace
 
 
 class OpenfaceROS:
@@ -80,11 +23,8 @@ class OpenfaceROS:
         self._recognize_srv = rospy.Service('recognize', Recognize, self._recognize_srv)
         self._clear_srv = rospy.Service('clear', Empty, self._clear_srv)
 
-        # Init align and net
-        self._align = openface.AlignDlib(os.path.expanduser(align_path))
-        self._net = openface.TorchNeuralNet(os.path.expanduser(net_path), imgDim=96, cuda=False)
-        self._face_detector = dlib.get_frontal_face_detector()
-        self._trained_faces = []
+        # Openface ROS
+        self._face_recognizer = FaceRecognizer(align_path, net_path)
 
         if save_images_folder and not os.path.exists(save_images_folder):
             save_images_folder = os.path.expanduser(save_images_folder)
@@ -96,58 +36,6 @@ class OpenfaceROS:
         rospy.loginfo(" - dlib_align_path=%s", align_path)
         rospy.loginfo(" - openface_net_path=%s", net_path)
         rospy.loginfo(" - save_images_folder=%s", save_images_folder)
-
-    def update_with_categorical_distribution(self, recognition):
-        if self._trained_faces:
-
-            # Initialize the categorical distribution with unknown probability value
-            default_value = 0.0  # TODO: When is it unknown?
-            recognition.categorical_distribution.unknown_probability = default_value
-            recognition.categorical_distribution.probabilities = [CategoryProbability(label=face.label,
-                                                                                      probability=default_value)
-                                                                  for face in self._trained_faces]
-
-            # Try to get a representation of the detected face
-            recognition_representation = None
-            try:
-                recognition_representation = self._get_representation(recognition.image)
-            except Exception as e:
-                rospy.logwarn("Could not get representation of face image but detector found one: %s" % str(e))
-
-            # If we have a representation, update with use of the l2 distance w.r.t. the face dict
-            if recognition_representation is not None:
-                l2_distances = [_get_min_l2_distance(face.representations, recognition_representation)
-                                for face in self._trained_faces]
-
-                # Convert these l2 distances to probabilities
-                for i in range(0, len(l2_distances)):
-                    recognition.categorical_distribution.probabilities[i].label = self._trained_faces[i].label
-                    recognition.categorical_distribution.probabilities[i].probability = l2_distances[i] / sum(l2_distances)
-
-            # Sort categorical_distribution probabilities, highest index 0
-            recognition.categorical_distribution.probabilities = \
-                sorted(recognition.categorical_distribution.probabilities, key=lambda x: x.probability, reverse=True)
-
-        return recognition
-
-    def _get_representation(self, bgr_image):
-        rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
-
-        bb = self._align.getLargestFaceBoundingBox(rgb_image)
-        if bb is None:
-            raise Exception("Unable to find a face in image")
-
-        aligned_face = self._align.align(96, rgb_image, bb, landmarkIndices=openface.AlignDlib.OUTER_EYES_AND_NOSE)
-        if aligned_face is None:
-            raise Exception("Unable to align face bb image")
-
-        return self._net.forward(aligned_face)
-
-    def _get_trained_face_index(self, label):
-        for i, f in enumerate(self._trained_faces):
-            if f.label is label:
-                return i
-        return -1
 
     def _annotate_srv(self, req):
         # Convert to opencv image
@@ -166,23 +54,16 @@ class OpenfaceROS:
                                                         annotation.label), roi_image)
 
             try:
-                face_representation = self._get_representation(roi_image)
+                self._face_recognizer.train(roi_image, annotation.label)
             except Exception as e:
                 raise Exception("Could not get representation of face image: %s" % str(e))
-
-            index = self._get_trained_face_index(annotation.label)
-            if index == -1:
-                self._trained_faces.append(TrainedFace(annotation.label))
-
-            self._trained_faces[index].representations.append(face_representation)
 
             rospy.loginfo("Succesfully learned face of '%s'" % annotation.label)
 
         return {}
 
     def _clear_srv(self, req):
-        rospy.loginfo("Cleared all faces")
-        self._trained_faces = []
+        self._face_recognizer.clear_trained_faces()
         return {}
 
     def _recognize_srv(self, req):
@@ -192,23 +73,43 @@ class OpenfaceROS:
         except CvBridgeError as e:
             raise Exception("Could not convert to opencv image: %s" % str(e))
 
-        # Get face recognitions
-        recognitions = [FaceRecognition(d, bgr_image) for d in self._face_detector(bgr_image, 1)]  # 1 = upsample factor
+        # Call openface
+        face_recognitions = self._face_recognizer.recognize(bgr_image)
 
-        # Try to add categorical distribution to detections
-        recognitions = [self.update_with_categorical_distribution(recognition) for recognition in recognitions]
+        # Fill recognitions
+        recognitions = []
+        for face_recognition in face_recognitions:
+
+            if self._save_images_folder:
+                now = datetime.now()
+                cv2.imwrite("%s/recognize_%s.jpeg" %
+                            (self._save_images_folder, now.strftime("%Y-%m-%d-%H-%M-%S-%f"), face_recognition.image))
+
+            recognitions.append(Recognition(
+                categorical_distribution=CategoricalDistribution(
+                    unknown_probability=0.0,  # TODO: When is it unknown?
+                    probabilities=[CategoryProbability(label=l2.label, probability=1.0/l2.distance)
+                                   for l2 in face_recognition.l2_distances]
+                ),
+                roi=RegionOfInterest(
+                    x_offset=face_recognition.roi.x_offset,
+                    y_offset=face_recognition.roi.y_offset,
+                    width=face_recognition.roi.width,
+                    height=face_recognition.roi.height
+                )
+            ))
 
         # Service response
-        return {"recognitions": [Recognition(categorical_distribution=r.categorical_distribution, roi=r.roi)
-                                 for r in recognitions]}
+        return {"recognitions": recognitions}
 
 if __name__ == '__main__':
 
     rospy.init_node("face_recognition")
 
     try:
-        dlib_shape_predictor_path = rospy.get_param("~align_path")
-        openface_neural_network_path = rospy.get_param("~net_path")
+        dlib_shape_predictor_path = rospy.get_param("~align_path",
+                                                    "~/openface/models/dlib/shape_predictor_68_face_landmarks.dat")
+        openface_neural_network_path = rospy.get_param("~net_path", "~/openface/models/openface/nn4.small2.v1.t7")
         save_images = rospy.get_param("~save_images", False)
 
         save_images_folder = None
