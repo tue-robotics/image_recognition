@@ -102,6 +102,10 @@ class TestPlugin(Plugin):
         info_dialog("Face Properties array", msg)
 
     def image_roi_callback(self, roi_image):
+        """
+        Callback triggered when the user has drawn an ROI on the image
+        :param roi_image: The opencv image in the ROI
+        """
         if self._srv is None:
             warning_dialog("No service specified!",
                            "Please first specify a service via the options button (top-right gear wheel)")
