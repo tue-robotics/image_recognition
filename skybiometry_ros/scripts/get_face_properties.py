@@ -22,11 +22,8 @@ args = parser.parse_args()
 # Read the image
 img = cv2.imread(args.image)
 
-# Optionally with provided API key
-if args.key and args.secret:
-    s = Skybiometry(args.key, args.secret)
-else:
-    s = Skybiometry()
+# Create Skybiometry iface
+s = Skybiometry(args.key, args.secret)
 
 if args.verbose:
     print "Trying Skybiometry API request for %d seconds" % args.timeout

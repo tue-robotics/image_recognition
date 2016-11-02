@@ -8,6 +8,8 @@ from skybiometry_ros import Skybiometry, SkyFaceProperties
 
 import os
 import sys
+import cv2
+import datetime
 
 
 class SkybiometryFaceProperties:
@@ -36,6 +38,14 @@ class SkybiometryFaceProperties:
             bgr_images = [self._bridge.imgmsg_to_cv2(image, "bgr8") for image in req.face_image_array]
         except CvBridgeError as e:
             raise Exception("Could not convert image to opencv image: %s" % str(e))
+
+        # Store images
+        if self._save_images_folder:
+            for image in bgr_images:
+                filename = "%s/get_face_properties_%s.jpeg" % \
+                           (self._save_images_folder, datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f"))
+                rospy.loginfo("Writing image to %s" % filename)
+                cv2.imwrite(filename, image)
 
         # Call the Skybiometry API
         rospy.loginfo("Trying Skybiometry API request for %d seconds" % self._api_timeout)
