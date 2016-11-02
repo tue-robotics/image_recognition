@@ -1,12 +1,8 @@
-import os
 import rospy
-import rospkg
 import rostopic
-import subprocess
 import rosservice
 
 from qt_gui.plugin import Plugin
-from python_qt_binding import loadUi
 
 from python_qt_binding.QtWidgets import * 
 from python_qt_binding.QtGui import * 
@@ -14,9 +10,7 @@ from python_qt_binding.QtCore import *
 
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
-import cv2
-import datetime
-import re
+from image_recognition_msgs.msg import CategoryProbability
 
 from image_widget import ImageWidget
 from dialogs import option_dialog, warning_dialog
@@ -58,7 +52,7 @@ class TestPlugin(Plugin):
         self._sub = None
         self._srv = None
 
-    def image_roi_callback(self, roi_image):
+    def image_roi_callback(self, roi_image, x, y, width, height):
         if self._srv is None:
             warning_dialog("No service specified!", "Please first specify a service via the options button (top-right gear wheel)")
             return
@@ -69,12 +63,20 @@ class TestPlugin(Plugin):
             warning_dialog("Service Exception", str(e))
             return
 
-        for recognition in result.recognitions: # TODO Draw results of multiple recognitions correctly and deal with unknown
-            text_array = [ "%s: %.2f" % (p.label, p.probability) for p in recognition.categorical_distribution.probabilities ]
+        for r in result.recognitions:
+            text_array = []
+            best = CategoryProbability(label="unknown", probability=r.categorical_distribution.unknown_probability)
+            for p in r.categorical_distribution.probabilities:
+                text_array.append("%s: %.2f" % (p.label, p.probability))
+                if p.probability > best.probability:
+                    best = p
+
+            self._image_widget.add_detection(r.roi.x_offset, r.roi.y_offset, r.roi.width, r.roi.height, best.label)
 
             if text_array:
-                self._image_widget.set_text(text_array[0]) # Show first option in the image
-                option_dialog("Classification results", text_array) # Show all results in a dropdown
+                option_dialog("Classification results (Unknown probability=%.2f)" %
+                              r.categorical_distribution.unknown_probability,
+                              text_array) # Show all results in a dropdown
 
     def _image_callback(self, msg):
         try:

@@ -12,6 +12,7 @@ import numpy as np
 import cv2
 import os
 from datetime import datetime
+import sys
 
 # Openface
 import dlib
@@ -80,21 +81,27 @@ class OpenfaceROS:
         self._clear_srv = rospy.Service('clear', Empty, self._clear_srv)
 
         # Init align and net
-        self._align = openface.AlignDlib(align_path)
-        self._net = openface.TorchNeuralNet(net_path, imgDim=96, cuda=False)
+        self._align = openface.AlignDlib(os.path.expanduser(align_path))
+        self._net = openface.TorchNeuralNet(os.path.expanduser(net_path), imgDim=96, cuda=False)
         self._face_detector = dlib.get_frontal_face_detector()
         self._trained_faces = []
 
         if save_images_folder and not os.path.exists(save_images_folder):
+            save_images_folder = os.path.expanduser(save_images_folder)
             os.makedirs(save_images_folder)
 
         self._save_images_folder = save_images_folder
+
+        rospy.loginfo("OpenfaceROS initialized:")
+        rospy.loginfo(" - dlib_align_path=%s", align_path)
+        rospy.loginfo(" - openface_net_path=%s", net_path)
+        rospy.loginfo(" - save_images_folder=%s", save_images_folder)
 
     def update_with_categorical_distribution(self, recognition):
         if self._trained_faces:
 
             # Initialize the categorical distribution with unknown probability value
-            default_value = 1.0 / len(self._trained_faces) # TODO, does this make sense?
+            default_value = 0.0  # TODO: When is it unknown?
             recognition.categorical_distribution.unknown_probability = default_value
             recognition.categorical_distribution.probabilities = [CategoryProbability(label=face.label,
                                                                                       probability=default_value)
@@ -108,7 +115,7 @@ class OpenfaceROS:
                 rospy.logwarn("Could not get representation of face image but detector found one: %s" % str(e))
 
             # If we have a representation, update with use of the l2 distance w.r.t. the face dict
-            if recognition_representation:
+            if recognition_representation is not None:
                 l2_distances = [_get_min_l2_distance(face.representations, recognition_representation)
                                 for face in self._trained_faces]
 
@@ -116,6 +123,10 @@ class OpenfaceROS:
                 for i in range(0, len(l2_distances)):
                     recognition.categorical_distribution.probabilities[i].label = self._trained_faces[i].label
                     recognition.categorical_distribution.probabilities[i].probability = l2_distances[i] / sum(l2_distances)
+
+            # Sort categorical_distribution probabilities, highest index 0
+            recognition.categorical_distribution.probabilities = \
+                sorted(recognition.categorical_distribution.probabilities, key=lambda x: x.probability, reverse=True)
 
         return recognition
 
@@ -145,23 +156,27 @@ class OpenfaceROS:
         except CvBridgeError as e:
             raise Exception("Could not convert to opencv image: %s" % str(e))
 
-        if self._save_images_folder:
-            now = datetime.now()
-            cv2.imwrite("%s/%s_annotate_%s.jpeg" % (self._save_images_folder, now.strftime("%Y-%m-%d-%H-%M-%S-%f"),
-                                                    req.label), bgr_image)
+        for annotation in req.annotations:
+            roi_image = bgr_image[annotation.roi.y_offset:annotation.roi.y_offset+annotation.roi.height,
+                                  annotation.roi.x_offset:annotation.roi.x_offset + annotation.roi.width]
 
-        try:
-            face_representation = self._get_representation(bgr_image)
-        except Exception as e:
-            raise Exception("Could not get representation of face image: %s" % str(e))
-        
-        index = self._get_trained_face_index(req.label)
-        if index == -1:
-            self._trained_faces.append(TrainedFace(req.label))
+            if self._save_images_folder:
+                now = datetime.now()
+                cv2.imwrite("%s/%s_annotate_%s.jpeg" % (self._save_images_folder, now.strftime("%Y-%m-%d-%H-%M-%S-%f"),
+                                                        annotation.label), roi_image)
 
-        self._trained_faces[index].representations.append(face_representation)
+            try:
+                face_representation = self._get_representation(roi_image)
+            except Exception as e:
+                raise Exception("Could not get representation of face image: %s" % str(e))
 
-        rospy.loginfo("Succesfully learned face of '%s'" % req.label)
+            index = self._get_trained_face_index(annotation.label)
+            if index == -1:
+                self._trained_faces.append(TrainedFace(annotation.label))
+
+            self._trained_faces[index].representations.append(face_representation)
+
+            rospy.loginfo("Succesfully learned face of '%s'" % annotation.label)
 
         return {}
 
@@ -178,7 +193,7 @@ class OpenfaceROS:
             raise Exception("Could not convert to opencv image: %s" % str(e))
 
         # Get face recognitions
-        recognitions = [FaceRecognition(d) for d in self._face_detector(bgr_image, 1)]  # 1 = upsample factor
+        recognitions = [FaceRecognition(d, bgr_image) for d in self._face_detector(bgr_image, 1)]  # 1 = upsample factor
 
         # Try to add categorical distribution to detections
         recognitions = [self.update_with_categorical_distribution(recognition) for recognition in recognitions]
@@ -191,13 +206,17 @@ if __name__ == '__main__':
 
     rospy.init_node("face_recognition")
 
-    dlib_shape_predictor_path = rospy.get_param("~align_path")
-    openface_neural_network_path = rospy.get_param("~net_path")
-    save_images = rospy.get_param("~save_images", False)
+    try:
+        dlib_shape_predictor_path = rospy.get_param("~align_path")
+        openface_neural_network_path = rospy.get_param("~net_path")
+        save_images = rospy.get_param("~save_images", False)
 
-    save_images_folder = None
-    if save_images:
-        save_images_folder = rospy.get_param("~save_images_folder", os.path.expanduser("/tmp/faces"))
+        save_images_folder = None
+        if save_images:
+            save_images_folder = rospy.get_param("~save_images_folder", "/tmp/faces")
+    except KeyError as e:
+        rospy.logerr("Parameter %s not found" % e)
+        sys.exit(1)
 
     openface_ros = OpenfaceROS(dlib_shape_predictor_path,
                                openface_neural_network_path,

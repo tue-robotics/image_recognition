@@ -24,7 +24,7 @@ If you do not have any available topic, try to use your webcam with use of the u
     
 Once you have an image stream in your GUI, you can draw a rectangle in the image feed, this ROI will be send to the object recognition srv.
 
-## Label plugin
+## Annotation plugin
 
 ![GUI Overview](doc/img/choco_peanuts.png)
 
@@ -55,7 +55,7 @@ This plugin can also be used to test / use the `Annotate.srv`
 
 Start the rqt plugin stand alone (if this does not work, try a `rqt --force-rediscover`):
 
-    rosrun image_recognition_rqt label_gui # Calls a rqt -s image_recognition_rqt.label.LabelPlugin
+    rosrun image_recognition_rqt annotation_gui # Calls a rqt -s image_recognition_rqt.annotation.AnnotationPlugin
     
 Select a rostopic of type `sensor_msgs/Image` with use of the configuration button in the menu-bar (gear wheel icon):
 

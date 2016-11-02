@@ -1,11 +1,8 @@
 import os
 import rospy
-import rospkg
 import rostopic
-import subprocess
 
 from qt_gui.plugin import Plugin
-from python_qt_binding import loadUi
 
 from python_qt_binding.QtWidgets import * 
 from python_qt_binding.QtGui import * 
@@ -21,7 +18,11 @@ import rosservice
 from image_widget import ImageWidget
 from dialogs import option_dialog, warning_dialog
 
+from image_recognition_msgs.msg import Annotation
+from sensor_msgs.msg import RegionOfInterest
+
 _SUPPORTED_SERVICES = ["image_recognition_msgs/Annotate"]
+
 
 def _sanitize(label):
     return re.sub(r'(\W+| )', '', label)
@@ -44,10 +45,10 @@ def _write_image_to_file(path, image, label):
     rospy.loginfo("Wrote file to %s", filename)
 
 
-class LabelPlugin(Plugin):
+class AnnotationPlugin(Plugin):
 
     def __init__(self, context):
-        super(LabelPlugin, self).__init__(context)
+        super(AnnotationPlugin, self).__init__(context)
 
         # Widget setup
         self.setObjectName('Label Plugin')
@@ -82,8 +83,8 @@ class LabelPlugin(Plugin):
         self._edit_labels_button.clicked.connect(self._get_labels)
         grid_layout.addWidget(self._edit_labels_button, 2, 1)
 
-        self._save_button = QPushButton("Save another one")
-        self._save_button.clicked.connect(self.store_image)
+        self._save_button = QPushButton("Annotate again!")
+        self._save_button.clicked.connect(self.annotate)
         grid_layout.addWidget(self._save_button, 2, 3)
 
         # Bridge for opencv conversion
@@ -98,7 +99,7 @@ class LabelPlugin(Plugin):
         self.label = ""
         self.output_directory = ""
 
-    def image_roi_callback(self, roi_image):
+    def image_roi_callback(self, roi_image, x, y, width, height):
         if not self.labels:
             warning_dialog("No labels specified!", "Please first specify some labels using the 'Edit labels' button")
             return
@@ -108,15 +109,21 @@ class LabelPlugin(Plugin):
         option = option_dialog("Label", self.labels)
         if option:
             self.label = option
-            self._image_widget.set_text(option)
+            self._image_widget.add_detection(0, 0, width, height, option)
+            self.annotate()
 
+    def annotate(self):
         self.annotate_srv()
         self.store_image()
 
     def annotate_srv(self):
-        if not None in [self.roi_image, self.label, self._srv]:
+        if self.roi_image is not None and self.label is not None and self._srv is not None:
+            width, height = self.roi_image.shape[:2]
             try:
-                result = self._srv(image=self.bridge.cv2_to_imgmsg(roi_image, "bgr8"), label=self.label)
+                self._srv(image=self.bridge.cv2_to_imgmsg(self.roi_image, "bgr8"),
+                          annotations=[Annotation(label=self.label,
+                                                  roi=RegionOfInterest(x_offset=0, y_offset=0,
+                                                                       width=width, height=height))])
             except Exception as e:
                 warning_dialog("Service Exception", str(e))
                 return
@@ -130,7 +137,7 @@ class LabelPlugin(Plugin):
             self._srv = rospy.ServiceProxy(srv_name, rosservice.get_service_class_by_name(srv_name))
             
     def store_image(self):
-        if not None in [self.roi_image, self.label, self.output_directory]:
+        if self.roi_image is not None and self.label is not None and self.output_directory is not None:
             _write_image_to_file(self.output_directory, self.roi_image, self.label)
 
     def _get_output_directory(self):
@@ -213,5 +220,5 @@ class LabelPlugin(Plugin):
             pass
         self._set_labels(labels)
 
-        self._create_subscriber(str(instance_settings.value("topic_name","/usb_cam/image_raw")))
+        self._create_subscriber(str(instance_settings.value("topic_name", "/usb_cam/image_raw")))
         self._create_service_client(str(instance_settings.value("service_name", "/image_recognition/my_service")))

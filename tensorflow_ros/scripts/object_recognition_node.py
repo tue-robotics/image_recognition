@@ -21,7 +21,7 @@ from image_recognition_msgs.srv import Recognize
 from image_recognition_msgs.msg import Recognition, CategoryProbability
 
 
-class ObjectRecognition:
+class TensorflowObjectRecognition:
     """ Performs object recognition using Tensorflow neural networks """
     def __init__(self, db_path, models_path, show_images):
         """ Constructor
@@ -131,7 +131,7 @@ class ObjectRecognition:
         recognition = Recognition()
         recognition.roi.height = self._size['height']
         recognition.roi.width = self._size['width']
-        recognition.categorical_distribution.unknown_probability = 0.1 #TODO: How do we know this?
+        recognition.categorical_distribution.unknown_probability = 0.1  # TODO: How do we know this?
         for res in reversed(sorted_result):
             category_probabilty = CategoryProbability(label=res[0], probability=res[1])
             recognition.categorical_distribution.probabilities.append(category_probabilty)
@@ -154,9 +154,9 @@ if __name__ == '__main__':
     rospy.loginfo("\nDB: {}\nModels: {}\nShow image: {}".format(_db_path, _models_path, _show_images))
 
     # Create object
-    object_recognition = ObjectRecognition(db_path=os.path.expanduser(_db_path),
-                                           models_path=os.path.expanduser(_models_path),
-                                           show_images=_show_images)
+    object_recognition = TensorflowObjectRecognition(db_path=os.path.expanduser(_db_path),
+                                                     models_path=os.path.expanduser(_models_path),
+                                                     show_images=_show_images)
 
     # Start update loop
     r = rospy.Rate(100.0)
