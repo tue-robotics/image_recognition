@@ -99,12 +99,13 @@ class AnnotationPlugin(Plugin):
         self.label = ""
         self.output_directory = ""
 
-    def image_roi_callback(self, roi_image, x, y, width, height):
+    def image_roi_callback(self, roi_image):
         if not self.labels:
             warning_dialog("No labels specified!", "Please first specify some labels using the 'Edit labels' button")
             return
 
         self.roi_image = roi_image
+        width, height = self.roi_image.shape[:2]
 
         option = option_dialog("Label", self.labels)
         if option:

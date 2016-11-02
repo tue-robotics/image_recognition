@@ -2,12 +2,22 @@ from python_qt_binding.QtWidgets import *
 from python_qt_binding.QtGui import * 
 from python_qt_binding.QtCore import * 
 
+
 def warning_dialog(title, text):
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Warning)
     msg.setText(text)
     msg.setWindowTitle(title)
     msg.exec_()
+
+
+def info_dialog(title, text):
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Information)
+    msg.setText(text)
+    msg.setWindowTitle(title)
+    msg.exec_()
+
 
 def option_dialog(title, options):
     class OptionDialog(QDialog):

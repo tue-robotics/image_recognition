@@ -74,7 +74,6 @@ class ImageWidget(QWidget):
 
         roi_image = self._cv_image[self.clip_rect.y(): self.clip_rect.y() + self.clip_rect.height(),
                                 self.clip_rect.x(): self.clip_rect.x() + self.clip_rect.width()]
-        self.image_roi_callback(roi_image, self.clip_rect.x(), self.clip_rect.y(),
-                                self.clip_rect.width(), self.clip_rect.height())
+        self.image_roi_callback(roi_image)
 
         self.dragging = False
