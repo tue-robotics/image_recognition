@@ -18,6 +18,12 @@ from openface_ros.face_recognizer import FaceRecognizer, RecognizedFace
 
 class OpenfaceROS:
     def __init__(self, align_path, net_path, save_images_folder):
+        """
+        OpenfaceROS class that wraps the FaceRecognizer in a ROS node
+        :param align_path: dlib face align path
+        :param net_path: openface neural net path
+        :param save_images_folder: path where to store the images
+        """
         self._bridge = CvBridge()
         self._annotate_srv = rospy.Service('annotate', Annotate, self._annotate_srv)
         self._recognize_srv = rospy.Service('recognize', Recognize, self._recognize_srv)
@@ -39,6 +45,11 @@ class OpenfaceROS:
 
     def _annotate_srv(self, req):
         # Convert to opencv image
+        """
+        Annotate service callback that trains the face of the user
+        :param req: Face annotation request
+        :return: Empty
+        """
         try:
             bgr_image = self._bridge.imgmsg_to_cv2(req.image, "bgr8")
         except CvBridgeError as e:
@@ -63,11 +74,21 @@ class OpenfaceROS:
         return {}
 
     def _clear_srv(self, req):
+        """
+        Service to clear the trained faces
+        :param req: Empty
+        :return: Empty
+        """
         self._face_recognizer.clear_trained_faces()
         return {}
 
     def _recognize_srv(self, req):
         # Convert to opencv image
+        """
+        Recognize service callback
+        :param req: The input image
+        :return: Recognitions
+        """
         try:
             bgr_image = self._bridge.imgmsg_to_cv2(req.image, "bgr8")
         except CvBridgeError as e:

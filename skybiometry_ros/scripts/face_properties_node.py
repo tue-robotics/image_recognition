@@ -14,6 +14,13 @@ import datetime
 
 class SkybiometryFaceProperties:
     def __init__(self, key, secret, timeout, save_images_folder):
+        """
+        ROS node that wraps the Skybiometry face property API
+        :param key: The authorization key of the Skybiometry API
+        :param secret: The secret of the Skybiometry API
+        :param timeout: Max time of the request, in order internet fails
+        :param save_images_folder: Where to store our input images
+        """
         self._bridge = CvBridge()
         self._properties_srv = rospy.Service('get_face_properties', GetFaceProperties, self._get_face_properties_srv)
         self._skybiometry = Skybiometry(key, secret)
@@ -33,6 +40,11 @@ class SkybiometryFaceProperties:
         rospy.loginfo(" - save_images_folder=%s", save_images_folder)
 
     def _get_face_properties_srv(self, req):
+        """
+        Callback when the GetFaceProperties service is called
+        :param req: Input image
+        :return: properties
+        """
         # Convert to opencv images
         try:
             bgr_images = [self._bridge.imgmsg_to_cv2(image, "bgr8") for image in req.face_image_array]

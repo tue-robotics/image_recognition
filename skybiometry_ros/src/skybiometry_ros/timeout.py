@@ -1,5 +1,6 @@
 import multiprocessing
-import time, sys
+import time
+import sys
 
 
 def _target(queue, function, *args, **kwargs):

@@ -5,6 +5,11 @@ from timeout import Timeout
 
 class Attribute:
     def __init__(self, value=0, confidence=0):
+        """
+        Face Attribute class
+        :param value: The value of the attribute
+        :param confidence: Confidence level
+        """
         self.value = value
         self.confidence = confidence
 
@@ -14,6 +19,9 @@ class Attribute:
 
 class SkyFaceProperties:
     def __init__(self):
+        """
+        Sky Face properties object
+        """
         self.age_est = Attribute()
         self.eyes = Attribute()
         self.gender = Attribute()
@@ -29,13 +37,30 @@ class SkyFaceProperties:
 
 class Skybiometry:
     def __init__(self, api_key, api_secret):
+        """
+        Python wrapper for the Skybiometry API
+        :param api_key: The authorization key of the Skybiometry API
+        :param api_secret: The secret of the Skybiometry API
+        """
         self._face_client = FaceClient(api_key, api_secret)
 
     def _external_request_with_timeout(self, buffers, timeout):
+        """
+        The actual request with a timeout
+        :param buffers: Image buffers
+        :param timeout: specified timeout
+        :return: query result
+        """
         timeout_function = Timeout(self._face_client.faces_recognize, timeout)
         return timeout_function(buffers)
 
     def get_face_properties(self, images, timeout):
+        """
+        Returns a SkyFace detections list based on a list of images
+        :param images: List of input images (Faces)
+        :param timeout: Request timeout
+        :return: The SkyFaces with their properties
+        """
         buffers = [cv2.imencode('.jpg', image)[1].tostring() for image in images]
 
         try:

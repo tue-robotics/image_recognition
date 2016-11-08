@@ -11,6 +11,14 @@ import openface
 
 def _get_roi_image(bgr_image, detection, factor_x, factor_y):
     # Get the roi
+    """
+    Get the image roi and the roi of a face detection
+    :param bgr_image: Input image
+    :param detection: Dlib detection
+    :param factor_x: scale-up factor x
+    :param factor_y: scale-up factor y
+    :return: roi_image, roi
+    """
     min_y = detection.top()
     max_y = detection.bottom()
     min_x = detection.left()
@@ -33,6 +41,12 @@ def _get_roi_image(bgr_image, detection, factor_x, factor_y):
 
 
 def _get_min_l2_distance(vector_list_a, vector_b):
+    """
+    Calculate the minimal l2 distance of a vector list w.r.t. an other vector
+    :param vector_list_a: Vector list
+    :param vector_b: Vector
+    :return: Minimal l2 distance
+    """
     return min([np.dot(vector_a - vector_b, vector_a - vector_b) for vector_a in vector_list_a])
 
 
@@ -43,6 +57,9 @@ class ROI:
     height = 0
 
     def __init__(self):
+        """
+        ROI class that holds a region of interest of an image
+        """
         pass
 
     def __repr__(self):
@@ -51,6 +68,11 @@ class ROI:
 
 class L2Distance:
     def __init__(self, distance, label):
+        """
+        L2 Distance that holds a l2 distance and an associated label
+        :param distance: the l2 distance
+        :param label: the label
+        """
         self.distance = distance
         self.label = label
 
@@ -60,6 +82,13 @@ class L2Distance:
 
 class RecognizedFace:
     def __init__(self, detection, image, factor_x=0.1, factor_y=0.2):
+        """
+        A Recognized face in an imaeg
+        :param detection: The actual detection from dlib
+        :param image: The original image
+        :param factor_x: Upscale factor x
+        :param factor_y: Upscale factor y
+        """
         self.image, self.roi = _get_roi_image(image, detection, factor_x, factor_y)
         self.l2_distances = []
 
@@ -76,12 +105,22 @@ class TrainedFace:
 class FaceRecognizer:
     def __init__(self, align_path, net_path):
         # Init align and net
+        """
+        Dlib / Openface Face recognizer
+        :param align_path: Dlib align path
+        :param net_path: Openface neural network path
+        """
         self._align = openface.AlignDlib(os.path.expanduser(align_path))
         self._net = openface.TorchNeuralNet(os.path.expanduser(net_path), imgDim=96, cuda=False)
         self._face_detector = dlib.get_frontal_face_detector()
         self._trained_faces = []
 
     def update_with_categorical_distribution(self, recognition):
+        """
+        Update the recognition with a categorical distribution of the trained faces
+        :param recognition: Input recognition
+        :return: Output recognition with an updated categorical distribution
+        """
         if self._trained_faces:
             # Try to get a representation of the detected face
             recognition_representation = None
@@ -101,6 +140,11 @@ class FaceRecognizer:
         return recognition
 
     def _get_representation(self, bgr_image):
+        """
+        Gets the vector of a face in the image
+        :param bgr_image: The input image
+        :return: The vector representation
+        """
         rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
 
         bb = self._align.getLargestFaceBoundingBox(rgb_image)
@@ -114,7 +158,11 @@ class FaceRecognizer:
         return self._net.forward(aligned_face)
 
     def recognize(self, image):
-
+        """
+        Method that tries to find faces in the specified image
+        :param image: The input image
+        :return: Returns the FaceRecognitions
+        """
         # Get face recognitions
         recognitions = [RecognizedFace(d, image) for d in self._face_detector(image, 1)]  # 1 = upsample factor
 
@@ -124,12 +172,22 @@ class FaceRecognizer:
         return recognitions
 
     def _get_trained_face_index(self, label):
+        """
+        Returns the index of the trained face
+        :param label: label of the trained face
+        :return: the index of the face in the self._trained faces list
+        """
         for i, f in enumerate(self._trained_faces):
             if f.label is label:
                 return i
         return -1
 
     def train(self, image, name):
+        """
+        Adds a face to the trained faces, creates a vector representation and adds this
+        :param image: Input image
+        :param name: The label of the face
+        """
         index = self._get_trained_face_index(name)
         if index == -1:
             self._trained_faces.append(TrainedFace(name))
@@ -142,4 +200,7 @@ class FaceRecognizer:
         self._trained_faces[index].representations.append(face_representation)
 
     def clear_trained_faces(self):
+        """
+        Clears all the trained faces
+        """
         self._trained_faces = []
