@@ -123,7 +123,7 @@ class AnnotationPlugin(Plugin):
             warning_dialog("No labels specified!", "Please first specify some labels using the 'Edit labels' button")
             return
 
-        width, height = roi_image.shape[:2]
+        height, width = roi_image.shape[:2]
 
         option = option_dialog("Label", self.labels)
         if option:
@@ -145,7 +145,7 @@ class AnnotationPlugin(Plugin):
         :param roi_image: The full opencv image we want to annotate
         """
         if roi_image is not None and self.label is not None and self._srv is not None:
-            width, height = roi_image.shape[:2]
+            height, width = roi_image.shape[:2]
             try:
                 self._srv(image=self.bridge.cv2_to_imgmsg(roi_image, "bgr8"),
                           annotations=[Annotation(label=self.label,

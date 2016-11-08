@@ -18,6 +18,20 @@ def _convert_cv_to_qt_image(cv_image):
     return QImage(cv_image, width, height, byte_value, QImage.Format_RGB888)
 
 
+def _get_roi_from_rect(rect):
+    """
+    Returns the ROI from a rectangle, the rectangle can have the top and bottom flipped
+    :param rect: Rect to get roi from
+    :return: x, y, width, height of ROI
+    """
+    x_min = min(rect.topLeft().x(), rect.bottomRight().x())
+    y_min = min(rect.topLeft().y(), rect.bottomRight().y())
+    x_max = max(rect.topLeft().x(), rect.bottomRight().x())
+    y_max = max(rect.topLeft().y(), rect.bottomRight().y())
+
+    return x_min, y_min, x_max - x_min, y_max - y_min
+
+
 class ImageWidget(QWidget):
 
     def __init__(self, parent, image_roi_callback):
@@ -77,7 +91,8 @@ class ImageWidget(QWidget):
         :param height: ROI_HEIGHT
         :param label: Text to draw
         """
-        self.detections.append((QRect(x+self.clip_rect.x(), y+self.clip_rect.y(), width, height), label))
+        roi_x, roi_y, roi_width, roi_height = _get_roi_from_rect(self.clip_rect)
+        self.detections.append((QRect(x+roi_x, y+roi_y, width, height), label))
 
     def mousePressEvent(self, event):
         """
@@ -111,8 +126,10 @@ class ImageWidget(QWidget):
         if not self.dragging:
             return
 
-        roi_image = self._cv_image[self.clip_rect.y(): self.clip_rect.y() + self.clip_rect.height(),
-                                self.clip_rect.x(): self.clip_rect.x() + self.clip_rect.width()]
+        # Flip if we have dragged the other way
+        x, y, width, height = _get_roi_from_rect(self.clip_rect)
+
+        roi_image = self._cv_image[y:y+height, x:x+width]
         self.image_roi_callback(roi_image)
 
         self.dragging = False
