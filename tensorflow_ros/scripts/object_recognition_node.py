@@ -18,10 +18,10 @@ import numpy as np
 
 # TU/e Robotics
 from image_recognition_msgs.srv import Recognize
-from image_recognition_msgs.msg import Recognition
+from image_recognition_msgs.msg import Recognition, CategoryProbability
 
 
-class ObjectRecognition:
+class TensorflowObjectRecognition:
     """ Performs object recognition using Tensorflow neural networks """
     def __init__(self, db_path, models_path, show_images):
         """ Constructor
@@ -128,13 +128,15 @@ class ObjectRecognition:
         sorted_result = sorted(result.items(), key=operator.itemgetter(1))
 
         # self._recognition.label = sorted_result[-1][0].split('\t')[1]
+        recognition = Recognition()
+        recognition.roi.height = self._size['height']
+        recognition.roi.width = self._size['width']
+        recognition.categorical_distribution.unknown_probability = 0.1  # TODO: How do we know this?
         for res in reversed(sorted_result):
-            recognition = Recognition()
-            recognition.roi.height = self._size['height']
-            recognition.roi.width = self._size['width']
-            recognition.label = res[0]
-            recognition.probability = res[1]
-            self._recognitions.append(recognition)
+            category_probabilty = CategoryProbability(label=res[0], probability=res[1])
+            recognition.categorical_distribution.probabilities.append(category_probabilty)
+
+        self._recognitions.append(recognition)
 
         rospy.loginfo("\nBest recognition result: {}\nProbability: {}".format(sorted_result[-1][0],
                                                                               sorted_result[-1][1]))
@@ -152,9 +154,9 @@ if __name__ == '__main__':
     rospy.loginfo("\nDB: {}\nModels: {}\nShow image: {}".format(_db_path, _models_path, _show_images))
 
     # Create object
-    object_recognition = ObjectRecognition(db_path=os.path.expanduser(_db_path),
-                                           models_path=os.path.expanduser(_models_path),
-                                           show_images=_show_images)
+    object_recognition = TensorflowObjectRecognition(db_path=os.path.expanduser(_db_path),
+                                                     models_path=os.path.expanduser(_models_path),
+                                                     show_images=_show_images)
 
     # Start update loop
     r = rospy.Rate(100.0)

@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+import argparse
+from openface_ros.face_recognizer import FaceRecognizer
+import cv2
+
+# Assign description to the help doc
+parser = argparse.ArgumentParser(description='Get face properties using the Skybiometry API')
+
+# Add arguments
+parser.add_argument('-i', '--image', type=str, help='Image', required=True)
+parser.add_argument('-k', '--align_path', type=str, help='DLib Align path', required=False,
+                    default="~/openface/models/dlib/shape_predictor_68_face_landmarks.dat")
+parser.add_argument('-s', '--net_path', type=str, help='Openface neural network path', required=False,
+                    default='~/openface/models/openface/nn4.small2.v1.t7')
+parser.add_argument(
+    '-v', '--verbose', help="Increase output verbosity", action="store_true")
+args = parser.parse_args()
+
+# Read the image
+img = cv2.imread(args.image)
+
+# Create openface interface
+face_recognizer = FaceRecognizer(args.align_path, args.net_path)
+
+# Pretty print the output
+try:
+    print face_recognizer.recognize(img)
+except Exception as e:
+    print "An error occurred: %s" % e

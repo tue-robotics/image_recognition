@@ -1,0 +1,5 @@
+# Interface that enables annotation of sensor_msgs/Image
+
+sensor_msgs/Image image
+Annotation[] annotations
+---

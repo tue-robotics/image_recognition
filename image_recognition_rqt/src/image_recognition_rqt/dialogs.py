@@ -2,14 +2,41 @@ from python_qt_binding.QtWidgets import *
 from python_qt_binding.QtGui import * 
 from python_qt_binding.QtCore import * 
 
+
 def warning_dialog(title, text):
+    """
+    Helper function for creating a warning dialog
+    :param title: Title of the dialog
+    :param text: Text of the dialog
+    """
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Warning)
     msg.setText(text)
     msg.setWindowTitle(title)
     msg.exec_()
 
+
+def info_dialog(title, text):
+    """
+    Helper function for creating a info dialog
+    :param title: Title of the dialog
+    :param text: Text of the dialog
+    """
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Information)
+    msg.setText(text)
+    msg.setWindowTitle(title)
+    msg.exec_()
+
+
 def option_dialog(title, options):
+    """
+    Helper function for creating an option dialog
+    :param title: Title of the dialog
+    :param options: Array of options
+    :return: The clicked option string
+    """
+
     class OptionDialog(QDialog):
         def __init__(self, title, options):
             super(OptionDialog, self).__init__()

@@ -9,13 +9,19 @@ find_package(catkin REQUIRED COMPONENTS
 # Generate messages in the 'msg' folder
 add_message_files(
   FILES
+  FaceProperties.msg
+  CategoryProbability.msg
+  CategoricalDistribution.msg
   Recognition.msg
+  Annotation.msg
 )
 
 # Generate services in the 'srv' folder
 add_service_files(
   FILES
   Recognize.srv
+  Annotate.srv
+  GetFaceProperties.srv
 )
 
 # Generate added messages and services with any dependencies listed here

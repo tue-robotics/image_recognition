@@ -1,0 +1,5 @@
+# Interface that can request Face Properties of an array of face imaegs
+
+sensor_msgs/Image[] face_image_array
+---
+FaceProperties[] properties_array

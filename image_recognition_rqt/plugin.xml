@@ -1,7 +1,7 @@
 <library path="src">
-  <class name="Label Plugin" type="image_recognition_rqt.label.LabelPlugin" base_class_type="rqt_gui_py::Plugin">
+  <class name="Annotation Plugin" type="image_recognition_rqt.annotation.AnnotationPlugin" base_class_type="rqt_gui_py::Plugin">
     <description>
-      A Python GUI plugin for labeling objects
+      A Python GUI plugin for annotating image regions
     </description>
     <qtgui>
         <group>
@@ -9,9 +9,9 @@
             <icon type="theme">folder</icon>
             <statustip>Plugins related to image recogition.</statustip>
         </group>
-      <label>ROI labeler</label>
+      <label>ROI Annotation</label>
       <icon type="theme">system-help</icon>
-      <statustip>Label objects in images and write to disk the results.</statustip>
+      <statustip>Annotate regions in images and write the result to disk and/or call the Annotate service.</statustip>
     </qtgui>
   </class>
   <class name="Test Plugin" type="image_recognition_rqt.test.TestPlugin" base_class_type="rqt_gui_py::Plugin">

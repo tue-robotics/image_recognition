@@ -3,6 +3,7 @@ import sys
 from six.moves import urllib
 import tarfile
 
+
 def maybe_download_and_extract(data_url, model_dir):
     """Download and extract model tar file."""
     dest_directory = model_dir

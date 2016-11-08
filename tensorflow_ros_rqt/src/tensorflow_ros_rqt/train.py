@@ -8,6 +8,12 @@ from tensorflow_ros import retrain, utils
 
 
 def dialog(title, text, icon=QMessageBox.Information):
+    """
+    Helper to pop-up a dialog
+    :param title: Title of the dialog
+    :param text: Dialog text
+    :param icon: Information / Warning / Error icon
+    """
     msg = QMessageBox()
     msg.setIcon(icon)
     msg.setText(text)
@@ -22,6 +28,10 @@ class TrainPlugin(Plugin):
     images_directory = "/tmp"
 
     def __init__(self, context):
+        """
+        RQT plugin for training a tensorflow graph
+        :param context: parent qt widget passed by RQT
+        """
         super(TrainPlugin, self).__init__(context)
 
         # Widget setup
@@ -55,6 +65,10 @@ class TrainPlugin(Plugin):
         layout.addWidget(self._train_button, 3, 2)
 
     def _set_images_directory(self, path):
+        """
+        Set the image directory
+        :param path: image dir
+        """
         if not path:
             path = "/tmp"
 
@@ -62,9 +76,16 @@ class TrainPlugin(Plugin):
         self._images_path_edit.setText("Using images from %s" % path)
 
     def _get_images_directory(self):
+        """
+        Get and set image directory with use of QFileDialog GUI
+        """
         self._set_images_directory(QFileDialog.getExistingDirectory(self._widget, "Select images directory"))
 
     def _set_output_directory(self, path):
+        """
+        Set the output directory
+        :param path: the path
+        """
         if not path:
             path = "/tmp"
 
@@ -72,9 +93,15 @@ class TrainPlugin(Plugin):
         self._output_path_edit.setText("Saving train output to %s" % path)
 
     def _get_output_directory(self):
+        """
+        Get the output directory with use of a QFileDialog
+        """
         self._set_output_directory(QFileDialog.getExistingDirectory(self._widget, "Select output directory"))
 
     def _train(self):
+        """
+        The train method that does the actual training of the neural net
+        """
         model_dir = "/tmp/inception"
         utils.maybe_download_and_extract("http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz",
                                          "/tmp/inception")
@@ -86,6 +113,9 @@ class TrainPlugin(Plugin):
             dialog("Retrain failed", "Something went wrong during retraining, '%s'" % str(e), QMessageBox.Warning)
 
     def trigger_configuration(self):
+        """
+        Triggered when RQT Config button is pressed
+        """
         batch, ok = QInputDialog.getInt(self._widget, "Set batch size", "Batch size", self.batch)
 
         # Update batch if ok
@@ -99,18 +129,34 @@ class TrainPlugin(Plugin):
         self._update_configuration_title()
 
     def shutdown_plugin(self):
+        """
+        Shutdown callback
+        """
         pass
 
     def save_settings(self, plugin_settings, instance_settings):
+        """
+        Save settings on shutdown
+        :param plugin_settings: Plugin settings
+        :param instance_settings: Settings instance
+        """
         instance_settings.set_value("output_directory", self.output_directory)
         instance_settings.set_value("images_directory", self.images_directory)
         instance_settings.set_value("steps", self.steps)
         instance_settings.set_value("batch", self.batch)
 
     def _update_configuration_title(self):
+        """
+        Update configuration title
+        """
         self._train_button.setText("Train (steps=%d, batch=%d)" % (self.steps, self.batch))
 
     def restore_settings(self, plugin_settings, instance_settings):
+        """
+        Restore settings on startup
+        :param plugin_settings: Plugin settings
+        :param instance_settings: Settings instance
+        """
         try:
             self._set_output_directory(instance_settings.value("output_directory"))
             self._set_images_directory(instance_settings.value("images_directory"))

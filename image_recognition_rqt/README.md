@@ -14,7 +14,7 @@ Start the rqt plugin stand alone (if this does not work, try a `rqt --force-redi
 
     rosrun image_recognition_rqt test_gui # Calls a rqt -s image_recognition_rqt.test.TestPlugin
     
-Select a rostopic of type `sensor_msgs/Image` and a service of type `image_recognition_msgs/Recognize` with use of the configuration button in the menu-bar (gear wheel icon):
+Select a rostopic of type `sensor_msgs/Image` and a service of type `image_recognition_msgs/Recognize` or `image_recognition_msgs/GetFaceProperties` with use of the configuration button in the menu-bar (gear wheel icon):
 
 ![Select ROS topic](doc/img/select_topic.png)
 
@@ -24,7 +24,7 @@ If you do not have any available topic, try to use your webcam with use of the u
     
 Once you have an image stream in your GUI, you can draw a rectangle in the image feed, this ROI will be send to the object recognition srv.
 
-## Label plugin
+## Annotation plugin
 
 ![GUI Overview](doc/img/choco_peanuts.png)
 
@@ -49,11 +49,13 @@ This RQT plugin (http://wiki.ros.org/rqt) enables easy labeling of objects using
     
 This folder can be used for training for example a neural network. A Tensorflow example can be found here: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/image_retraining/retrain.py
 
+This plugin can also be used to test / use the `Annotate.srv`
+
 ### How to 
 
 Start the rqt plugin stand alone (if this does not work, try a `rqt --force-rediscover`):
 
-    rosrun image_recognition_rqt label_gui # Calls a rqt -s image_recognition_rqt.label.LabelPlugin
+    rosrun image_recognition_rqt annotation_gui # Calls a rqt -s image_recognition_rqt.annotation.AnnotationPlugin
     
 Select a rostopic of type `sensor_msgs/Image` with use of the configuration button in the menu-bar (gear wheel icon):
 
