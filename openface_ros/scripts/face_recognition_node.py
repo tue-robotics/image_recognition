@@ -78,6 +78,8 @@ class OpenfaceROS:
 
         # Fill recognitions
         recognitions = []
+
+        rospy.loginfo("Face recognitions: %s", face_recognitions)
         for face_recognition in face_recognitions:
 
             if self._save_images_folder:

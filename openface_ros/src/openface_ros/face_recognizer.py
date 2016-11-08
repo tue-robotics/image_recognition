@@ -23,12 +23,13 @@ def _get_roi_image(bgr_image, detection, factor_x, factor_y):
     padding_y = int(factor_y * dy)
 
     # Don't go out of bound
-    min_y = max(0, min_y - padding_y)
-    max_y = min(max_y + padding_y, bgr_image.shape[0]-1)
-    min_x = max(0, min_x - padding_x)
-    max_x = min(max_x + padding_x, bgr_image.shape[1]-1)
+    roi = ROI()
+    roi.y_offset = max(0, min_y - padding_y)
+    roi.height = min(max_y + padding_y, bgr_image.shape[0]) - roi.y_offset
+    roi.x_offset = max(0, min_x - padding_x)
+    roi.width = min(max_x + padding_x, bgr_image.shape[1]) - roi.x_offset
 
-    return bgr_image[min_y:max_y, min_x:max_x]
+    return bgr_image[min_y:min_y+roi.height, min_x:min_x+roi.width], roi
 
 
 def _get_min_l2_distance(vector_list_a, vector_b):
@@ -59,12 +60,7 @@ class L2Distance:
 
 class RecognizedFace:
     def __init__(self, detection, image, factor_x=0.1, factor_y=0.2):
-        self.image = _get_roi_image(image, detection, factor_x, factor_y)
-        self.roi = ROI()
-        self.roi.x_offset = detection.left()
-        self.roi.y_offset = detection.top()
-        self.roi.width = detection.width()
-        self.roi.height = detection.height()
+        self.image, self.roi = _get_roi_image(image, detection, factor_x, factor_y)
         self.l2_distances = []
 
     def __repr__(self):
