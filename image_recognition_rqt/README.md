@@ -24,6 +24,8 @@ If you do not have any available topic, try to use your webcam with use of the u
     
 Once you have an image stream in your GUI, you can draw a rectangle in the image feed, this ROI will be send to the object recognition srv.
 
+See https://github.com/tue-robotics/openface_ros for an example on faces.
+
 ## Annotation plugin
 
 ![GUI Overview](doc/img/choco_peanuts.png)
@@ -49,7 +51,7 @@ This RQT plugin (http://wiki.ros.org/rqt) enables easy labeling of objects using
     
 This folder can be used for training for example a neural network. A Tensorflow example can be found here: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/image_retraining/retrain.py
 
-This plugin can also be used to test / use the `Annotate.srv`
+This plugin can also be used to test / use the `Annotate.srv`, see https://github.com/tue-robotics/openface_ros
 
 ### How to 
 
