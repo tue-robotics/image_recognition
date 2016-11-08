@@ -18,8 +18,3 @@ Clone the repo in your catkin_ws:
 Build your catkin workspace
 
         catkin_make
-        
-## Quick start
-
-TODO!
-
