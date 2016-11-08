@@ -12,7 +12,9 @@ See https://github.com/tue-robotics/image_recognition for installation instructi
 1. Annotate images with use of annotation tool provided in https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_rqt
 2. Retrain the neural network: https://github.com/tue-robotics/image_recognition/tree/master/tensorflow_ros_rqt
 3. Start the ROS node with the net as parameter:
+
     ```
     rosrun tensorflow_ros object_recognition_node.py _database_path:=[path_to_db]
     ```
+
 4. Test the classifier with use the test tool in https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_rqt
