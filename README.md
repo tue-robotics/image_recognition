@@ -2,6 +2,8 @@
 Packages for image recognition - Robocup TU/e Robotics
 
 ## Packages
+- [image_recognition](https://github.com/tue-robotics/image_recognition/tree/master/image_recognition) - Meta package for all image_recognition packages.
+- [image_recognition_util](https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_util) - Utils shared among image recognition packages
 - [image_recognition_msgs](https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_msgs) - Interface definition for image recognition
 - [image_recognition_rqt](https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_rqt) - RQT tools with helpers testing this interface and training/labeling data.
 - [tensorflow_ros](https://github.com/tue-robotics/image_recognition/tree/master/tensorflow_ros) - Object recognition with use of Tensorflow. The user can retrain the top layers of a neural network to perform classification with its own dataset as described in this tutorial (https://www.tensorflow.org/versions/r0.9/how_tos/image_retraining/index.html).
