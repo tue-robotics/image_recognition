@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>image_recognition</name>
+  <version>0.0.0</version>
+  <description>The image_recognition package</description>
+
+  <maintainer email="reinzor@gmail.com">Rein Appeldoorn</maintainer>
+
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>image_recognition_msgs</run_depend>
+
+  <run_depend>tensorflow_ros</run_depend>
+  <run_depend>openface_ros</run_depend>
+  <run_depend>skybiometry_ros</run_depend>
+
+  <run_depend>image_recognition_rqt</run_depend>
+  <run_depend>tensorflow_ros_rqt</run_depend>
+
+  <export>
+      <metapackage/>
+  </export>
+</package>
