@@ -4,6 +4,7 @@ project(tensorflow_ros)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   image_recognition_msgs
+  image_recognition_util
 )
 
 catkin_python_setup()

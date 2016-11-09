@@ -73,6 +73,12 @@ class ImageWidget(QWidget):
 
         painter.end()
 
+    def get_roi_image(self):
+        # Flip if we have dragged the other way
+        x, y, width, height = _get_roi_from_rect(self.clip_rect)
+
+        return self._cv_image[y:y + height, x:x + width]
+
     def set_image(self, image):
         """
         Sets an opencv image to the widget
@@ -126,10 +132,8 @@ class ImageWidget(QWidget):
         if not self.dragging:
             return
 
-        # Flip if we have dragged the other way
-        x, y, width, height = _get_roi_from_rect(self.clip_rect)
-
-        roi_image = self._cv_image[y:y+height, x:x+width]
-        self.image_roi_callback(roi_image)
+        roi_image = self.get_roi_image()
+        if roi_image is not None:
+            self.image_roi_callback(roi_image)
 
         self.dragging = False

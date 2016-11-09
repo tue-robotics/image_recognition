@@ -4,6 +4,7 @@ project(openface_ros)
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_recognition_msgs
+  image_recognition_util
   rospy
 )
 

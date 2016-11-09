@@ -19,20 +19,21 @@ import numpy as np
 # TU/e Robotics
 from image_recognition_msgs.srv import Recognize
 from image_recognition_msgs.msg import Recognition, CategoryProbability
+from image_recognition_util import image_writer
 
 
 class TensorflowObjectRecognition:
     """ Performs object recognition using Tensorflow neural networks """
-    def __init__(self, db_path, models_path, show_images):
+    def __init__(self, graph_path, labels_path, save_images_folder):
         """ Constructor
-        :param db_path: string with path + filename (incl. extension) indicating the database location
-        :param models_path: string with path + filename (incl. extension) indicating the location of the text file
+        :param graph_path: string with path + filename (incl. extension) indicating the database location
+        :param labels_path: string with path + filename (incl. extension) indicating the location of the text file
         with labels etc.
-        :param show_images: bool indicating whether to show images as a means of debugging
+        :param save_images_folder: Where to store images for debugging or data collection
         """
         # Check if the parameters are correct
-        if not (os.path.isfile(db_path) and os.path.isfile(models_path)):
-            err_msg = "DB file {} or models file {} does not exist".format(db_path, models_path)
+        if not (os.path.isfile(graph_path) and os.path.isfile(labels_path)):
+            err_msg = "DB file {} or models file {} does not exist".format(graph_path, labels_path)
             rospy.logerr(err_msg)
             sys.exit(err_msg)
 
@@ -41,14 +42,20 @@ class TensorflowObjectRecognition:
         self._do_recognition = False  # Indicates whether a new request has been received and thus recognition must
         # be performed
         self._filename = "/tmp/tf_obj_rec.jpg"  # Temporary file name
-        self._models_path = models_path
+        self._models_path = labels_path
         self._recognitions = []  # List with Recognition s
         self._size = {'width': 0, 'height': 0}
-        self._show_images = show_images
+        self._save_images_folder = save_images_folder
+        self._bgr_image = None
+
+        rospy.loginfo("TensorflowObjectRecognition initialized:")
+        rospy.loginfo(" - graph_path=%s", graph_path)
+        rospy.loginfo(" - labels_path=%s", labels_path)
+        rospy.loginfo(" - save_images_folder=%s", save_images_folder)
 
         """1. Create a graph from saved GraphDef file """
         start = rospy.Time.now()
-        with open(db_path, 'rb') as f:
+        with open(graph_path, 'rb') as f:
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(f.read())
             _ = tf.import_graph_def(graph_def, name='')
@@ -62,20 +69,20 @@ class TensorflowObjectRecognition:
         :return: image_recognition_msgs.srv.RecognizeResponse
         """
         try:
-            bgr_image = self._bridge.imgmsg_to_cv2(req.image, "bgr8")
+            self._bgr_image = self._bridge.imgmsg_to_cv2(req.image, "bgr8")
         except CvBridgeError as e:
             error_msg = "Could not convert to opencv image: %s" % e
             rospy.logerr(error_msg)
             raise Exception(error_msg)
 
-        if self._show_images:
-            cv2.imshow("image", bgr_image)
-            cv2.waitKey(1000)
+        # Write raw image
+        if self._save_images_folder:
+            image_writer.write_raw(self._save_images_folder, self._bgr_image)
 
         # Write the image to file
         # ToDo: directly in memory, saves file operations
-        cv2.imwrite(filename=self._filename, img=bgr_image)
-        size = bgr_image.shape[:2]  # For now, we assume the entire image is the ROI
+        cv2.imwrite(filename=self._filename, img=self._bgr_image)
+        size = self._bgr_image.shape[:2]  # For now, we assume the entire image is the ROI
         self._size['height'] = size[0]
         self._size['width'] = size[1]
         self._recognitions = []
@@ -138,25 +145,38 @@ class TensorflowObjectRecognition:
 
         self._recognitions.append(recognition)
 
-        rospy.loginfo("\nBest recognition result: {}\nProbability: {}".format(sorted_result[-1][0],
-                                                                              sorted_result[-1][1]))
+        best_label = sorted_result[-1][0]
+        best_prob = sorted_result[-1][1]
+
+        rospy.loginfo("Best recognition result: {} with probability: {}".format(best_label, best_prob))
+
+        # Write unverified annotated image
+        if self._save_images_folder:
+            image_writer.write_annotated(self._save_images_folder, self._bgr_image, best_label, False)
+
         self._do_recognition = False
 
 if __name__ == '__main__':
 
     # Start ROS node
-    rospy.init_node('object_recognition')
+    rospy.init_node('tensorflow_ros')
 
-    # Get parameters
-    _db_path = rospy.get_param("~database_path")
-    _models_path = rospy.get_param("~models_path")
-    _show_images = rospy.get_param("~show_image", False)
-    rospy.loginfo("\nDB: {}\nModels: {}\nShow image: {}".format(_db_path, _models_path, _show_images))
+    try:
+        _graph_path = os.path.expanduser(rospy.get_param("~graph_path"))
+        _labels_path = os.path.expanduser(rospy.get_param("~labels_path"))
+        save_images = rospy.get_param("~save_images", True)
+
+        save_images_folder = None
+        if save_images:
+            save_images_folder = os.path.expanduser(rospy.get_param("~save_images_folder", "/tmp/tensorflow_ros"))
+    except KeyError as e:
+        rospy.logerr("Parameter %s not found" % e)
+        sys.exit(1)
 
     # Create object
-    object_recognition = TensorflowObjectRecognition(db_path=os.path.expanduser(_db_path),
-                                                     models_path=os.path.expanduser(_models_path),
-                                                     show_images=_show_images)
+    object_recognition = TensorflowObjectRecognition(graph_path=_graph_path,
+                                                     labels_path=_labels_path,
+                                                     save_images_folder=save_images_folder)
 
     # Start update loop
     r = rospy.Rate(100.0)

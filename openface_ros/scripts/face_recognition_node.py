@@ -13,6 +13,7 @@ import os
 from datetime import datetime
 import sys
 
+from image_recognition_util import image_writer
 from openface_ros.face_recognizer import FaceRecognizer, RecognizedFace
 
 
@@ -31,11 +32,6 @@ class OpenfaceROS:
 
         # Openface ROS
         self._face_recognizer = FaceRecognizer(align_path, net_path)
-
-        if save_images_folder and not os.path.exists(save_images_folder):
-            save_images_folder = os.path.expanduser(save_images_folder)
-            os.makedirs(save_images_folder)
-
         self._save_images_folder = save_images_folder
 
         rospy.loginfo("OpenfaceROS initialized:")
@@ -60,9 +56,7 @@ class OpenfaceROS:
                                   annotation.roi.x_offset:annotation.roi.x_offset + annotation.roi.width]
 
             if self._save_images_folder:
-                now = datetime.now()
-                cv2.imwrite("%s/%s_annotate_%s.jpeg" % (self._save_images_folder, now.strftime("%Y-%m-%d-%H-%M-%S-%f"),
-                                                        annotation.label), roi_image)
+                image_writer.write_annotated(self._save_images_folder, roi_image, annotation.label, True)
 
             try:
                 self._face_recognizer.train(roi_image, annotation.label)
@@ -94,6 +88,10 @@ class OpenfaceROS:
         except CvBridgeError as e:
             raise Exception("Could not convert to opencv image: %s" % str(e))
 
+        # Write raw image
+        if self._save_images_folder:
+            image_writer.write_raw(self._save_images_folder, bgr_image)
+
         # Call openface
         face_recognitions = self._face_recognizer.recognize(bgr_image)
 
@@ -104,9 +102,10 @@ class OpenfaceROS:
         for face_recognition in face_recognitions:
 
             if self._save_images_folder:
-                now = datetime.now()
-                cv2.imwrite("%s/recognize_%s.jpeg" %
-                            (self._save_images_folder, now.strftime("%Y-%m-%d-%H-%M-%S-%f"), face_recognition.image))
+                label = face_recognition.l2_distances[0].label if len(face_recognition.l2_distances) > 0 else "face_unknown"
+                roi_image = bgr_image[face_recognition.roi.y_offset:face_recognition.roi.y_offset + face_recognition.roi.height,
+                                      face_recognition.roi.x_offset:face_recognition.roi.x_offset + face_recognition.roi.width]
+                image_writer.write_annotated(self._save_images_folder, roi_image, label, False)
 
             recognitions.append(Recognition(
                 categorical_distribution=CategoricalDistribution(
@@ -130,14 +129,15 @@ if __name__ == '__main__':
     rospy.init_node("face_recognition")
 
     try:
-        dlib_shape_predictor_path = rospy.get_param("~align_path",
-                                                    "~/openface/models/dlib/shape_predictor_68_face_landmarks.dat")
-        openface_neural_network_path = rospy.get_param("~net_path", "~/openface/models/openface/nn4.small2.v1.t7")
-        save_images = rospy.get_param("~save_images", False)
+        dlib_shape_predictor_path = os.path.expanduser(
+            rospy.get_param("~align_path", "~/openface/models/dlib/shape_predictor_68_face_landmarks.dat"))
+        openface_neural_network_path = os.path.expanduser(
+            rospy.get_param("~net_path", "~/openface/models/openface/nn4.small2.v1.t7"))
+        save_images = rospy.get_param("~save_images", True)
 
         save_images_folder = None
         if save_images:
-            save_images_folder = rospy.get_param("~save_images_folder", "/tmp/openface")
+            save_images_folder = os.path.expanduser(rospy.get_param("~save_images_folder", "/tmp/openface"))
     except KeyError as e:
         rospy.logerr("Parameter %s not found" % e)
         sys.exit(1)
