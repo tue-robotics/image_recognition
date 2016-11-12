@@ -8,6 +8,7 @@ from tensorflow_ros import retrain, utils
 import webbrowser
 import subprocess
 import time
+import signal
 
 
 def dialog(title, text, icon=QMessageBox.Information):
@@ -23,14 +24,6 @@ def dialog(title, text, icon=QMessageBox.Information):
     msg.setWindowTitle(title)
     msg.exec_()
 
-
-def _open_tensorboard_and_browser():
-    """
-    Runs tensorboard webserver and opens link in browser
-    """
-    subprocess.Popen(["tensorboard", "--logdir", "/tmp/retrain_logs"])
-    time.sleep(3.0) # Give tensorboard some time to start
-    webbrowser.open_new('http://127.0.1.1:6006')
 
 class TrainPlugin(Plugin):
     batch = retrain.defaults.batch
@@ -75,10 +68,8 @@ class TrainPlugin(Plugin):
         self._train_button.clicked.connect(self._train)
         layout.addWidget(self._train_button, 3, 2)
 
-        self._tensorboard_button = QPushButton("Open tensorboard of logdir (/tmp/retrain_logs)")
-        self._tensorboard_button.clicked.connect(_open_tensorboard_and_browser)
-        self._tensorboard_button.setDisabled(True)
-        layout.addWidget(self._tensorboard_button, 4, 2)
+        # Start tensorboard op startup
+        self.tensorboard_sub = subprocess.Popen(["tensorboard", "--logdir", "/tmp/retrain_logs"])
 
     def _set_images_directory(self, path):
         """
@@ -121,11 +112,15 @@ class TrainPlugin(Plugin):
         model_dir = "/tmp/inception"
         utils.maybe_download_and_extract("http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz",
                                          "/tmp/inception")
+
         try:
+            webbrowser.open_new_tab("http://127.0.1.1:6006")
+            self._train_button.setDisabled(True)
+            self._train_button.setText("Training started, please restart if you want to retrain ...")
             retrain.main(self.images_directory, model_dir, self.output_directory,
                          steps=self.steps, batch=self.batch)
             dialog("Retrain succes", "Succesfully retrained the top layers")
-            self._tensorboard_button.setDisabled(False)
+            self._train_button.setText("Please restart the GUI,\n Tensorflow holds state that needs to be resetted ..")
         except Exception as e:
             dialog("Retrain failed", "Something went wrong during retraining, '%s'" % str(e), QMessageBox.Warning)
 
@@ -149,6 +144,7 @@ class TrainPlugin(Plugin):
         """
         Shutdown callback
         """
+        self.tensorboard_sub.kill()
         pass
 
     def save_settings(self, plugin_settings, instance_settings):
