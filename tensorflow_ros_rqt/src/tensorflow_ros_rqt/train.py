@@ -71,6 +71,10 @@ class TrainPlugin(Plugin):
         # Start tensorboard op startup
         self.tensorboard_sub = subprocess.Popen(["tensorboard", "--logdir", "/tmp/retrain_logs"])
 
+        self._label = QLabel("Tensorboard live at <a href=\"http://127.0.1.1:6006/\">http://127.0.1.1:6006</a>")
+        self._label.setOpenExternalLinks(True);
+        layout.addWidget(self._label, 4, 2)
+
     def _set_images_directory(self, path):
         """
         Set the image directory
@@ -114,13 +118,11 @@ class TrainPlugin(Plugin):
                                          "/tmp/inception")
 
         try:
-            webbrowser.open_new_tab("http://127.0.1.1:6006")
-            self._train_button.setDisabled(True)
-            self._train_button.setText("Training started, please restart if you want to retrain ...")
             retrain.main(self.images_directory, model_dir, self.output_directory,
                          steps=self.steps, batch=self.batch)
-            dialog("Retrain succes", "Succesfully retrained the top layers")
-            self._train_button.setText("Please restart the GUI,\n Tensorflow holds state that needs to be resetted ..")
+            dialog("Retrain succes", "Succesfully retrained the top layers! Check Tensorboard for the results!")
+            self._train_button.setDisabled(True)
+            self._train_button.setText("Training done :)")
         except Exception as e:
             dialog("Retrain failed", "Something went wrong during retraining, '%s'" % str(e), QMessageBox.Warning)
 
