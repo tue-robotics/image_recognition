@@ -4,24 +4,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import glob
-import hashlib
-import operator
-import os.path
-import random
-import re
-import shutil
 from argparse import ArgumentParser
-from datetime import datetime
-from itertools import groupby
-from sortedcontainers import SortedSet
 
-import numpy as np
-import tensorflow as tf
-from tensorflow.python.framework import graph_util
-from tensorflow.python.util import compat
 from tensorflow_ros.retrain import defaults, main
-
 
 if __name__ == '__main__':
     parser = ArgumentParser()
