@@ -5,6 +5,9 @@ from python_qt_binding.QtGui import *
 from python_qt_binding.QtCore import *
 
 from tensorflow_ros import retrain, utils
+import webbrowser
+import subprocess
+import time
 
 
 def dialog(title, text, icon=QMessageBox.Information):
@@ -20,6 +23,14 @@ def dialog(title, text, icon=QMessageBox.Information):
     msg.setWindowTitle(title)
     msg.exec_()
 
+
+def _open_tensorboard_and_browser():
+    """
+    Runs tensorboard webserver and opens link in browser
+    """
+    subprocess.Popen(["tensorboard", "--logdir", "/tmp/retrain_logs"])
+    time.sleep(3.0) # Give tensorboard some time to start
+    webbrowser.open_new('http://127.0.1.1:6006')
 
 class TrainPlugin(Plugin):
     batch = retrain.defaults.batch
@@ -63,6 +74,11 @@ class TrainPlugin(Plugin):
         self._train_button = QPushButton("Train that!")
         self._train_button.clicked.connect(self._train)
         layout.addWidget(self._train_button, 3, 2)
+
+        self._tensorboard_button = QPushButton("Open tensorboard of logdir (/tmp/retrain_logs)")
+        self._tensorboard_button.clicked.connect(_open_tensorboard_and_browser)
+        self._tensorboard_button.setDisabled(True)
+        layout.addWidget(self._tensorboard_button, 4, 2)
 
     def _set_images_directory(self, path):
         """
@@ -109,6 +125,7 @@ class TrainPlugin(Plugin):
             retrain.main(self.images_directory, model_dir, self.output_directory,
                          steps=self.steps, batch=self.batch)
             dialog("Retrain succes", "Succesfully retrained the top layers")
+            self._tensorboard_button.setDisabled(False)
         except Exception as e:
             dialog("Retrain failed", "Something went wrong during retraining, '%s'" % str(e), QMessageBox.Warning)
 
