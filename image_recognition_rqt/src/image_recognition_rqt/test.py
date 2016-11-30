@@ -38,7 +38,7 @@ class TestPlugin(Plugin):
         layout = QVBoxLayout()  
         self._widget.setLayout(layout)
 
-        self._image_widget = ImageWidget(self._widget, self.image_roi_callback)
+        self._image_widget = ImageWidget(self._widget, self.image_roi_callback, clear_on_click=True)
         layout.addWidget(self._image_widget)
 
         # Input field
@@ -81,7 +81,7 @@ class TestPlugin(Plugin):
             if text_array:
                 option_dialog("Classification results (Unknown probability=%.2f)" %
                               r.categorical_distribution.unknown_probability,
-                              text_array) # Show all results in a dropdown
+                              text_array)  # Show all results in a dropdown
 
     def get_face_properties_srv_call(self, roi_image):
         """

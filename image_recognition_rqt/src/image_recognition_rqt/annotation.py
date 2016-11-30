@@ -53,7 +53,7 @@ class AnnotationPlugin(Plugin):
         layout = QVBoxLayout()  
         self._widget.setLayout(layout)
 
-        self._image_widget = ImageWidget(self._widget, self.image_roi_callback)
+        self._image_widget = ImageWidget(self._widget, self.image_roi_callback, clear_on_click=True)
         layout.addWidget(self._image_widget)
 
         # Input field

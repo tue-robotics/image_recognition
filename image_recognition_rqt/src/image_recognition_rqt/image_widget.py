@@ -34,7 +34,7 @@ def _get_roi_from_rect(rect):
 
 class ImageWidget(QWidget):
 
-    def __init__(self, parent, image_roi_callback):
+    def __init__(self, parent, image_roi_callback, clear_on_click=False):
         """
         Image widget that allows drawing rectangles and firing a image_roi_callback
         :param parent: The parent QT Widget
@@ -50,6 +50,7 @@ class ImageWidget(QWidget):
         self.image_roi_callback = image_roi_callback
 
         self.detections = []
+        self._clear_on_click = clear_on_click
 
     def paintEvent(self, event):
         """
@@ -79,9 +80,6 @@ class ImageWidget(QWidget):
 
         return self._cv_image[y:y + height, x:x + width]
 
-    def get_roi(self):
-        return _get_roi_from_rect(self.clip_rect)
-
     def set_image(self, image):
         """
         Sets an opencv image to the widget
@@ -103,6 +101,13 @@ class ImageWidget(QWidget):
         roi_x, roi_y, roi_width, roi_height = _get_roi_from_rect(self.clip_rect)
         self.detections.append((QRect(x+roi_x, y+roi_y, width, height), label))
 
+    def clear(self):
+        self.detections = []
+        self.clip_rect = QRect(0, 0, 0, 0)
+
+    def get_roi(self):
+        return _get_roi_from_rect(self.clip_rect)
+
     def mousePressEvent(self, event):
         """
         Mouspress callback
@@ -110,7 +115,8 @@ class ImageWidget(QWidget):
         """
         # Check if we clicked on the img
         if event.pos().x() < self._qt_image.width() and event.pos().y() < self._qt_image.height():
-            self.detections = []
+            if self._clear_on_click:
+                self.clear()
             self.clip_rect.setTopLeft(event.pos())
             self.clip_rect.setBottomRight(event.pos())
             self.dragging = True
