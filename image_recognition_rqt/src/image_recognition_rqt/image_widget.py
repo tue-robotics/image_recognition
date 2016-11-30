@@ -79,6 +79,9 @@ class ImageWidget(QWidget):
 
         return self._cv_image[y:y + height, x:x + width]
 
+    def get_roi(self):
+        return _get_roi_from_rect(self.clip_rect)
+
     def set_image(self, image):
         """
         Sets an opencv image to the widget
@@ -111,7 +114,7 @@ class ImageWidget(QWidget):
             self.clip_rect.setTopLeft(event.pos())
             self.clip_rect.setBottomRight(event.pos())
             self.dragging = True
-    
+
     def mouseMoveEvent(self, event):
         """
         Mousemove event
