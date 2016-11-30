@@ -83,6 +83,8 @@ A dialog will prompt that lets you select your object label and an image will be
 
 Happy labeling :)
 
+## Manual plugin
+Plugin for manually responding to a service call for classification
 
     
 

@@ -29,4 +29,19 @@
       <statustip>Test image recognition using an sensor_msgs/Image input feed.</statustip>
     </qtgui>
   </class>
+  <class name="Manual Plugin" type="image_recognition_rqt.manual.ManualPlugin" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A Python GUI for manual image recognition
+    </description>
+    <qtgui>
+        <group>
+            <label>Image recognition</label>
+            <icon type="theme">folder</icon>
+            <statustip>Plugins related to image recogition.</statustip>
+        </group>
+      <label>Manual image recognition</label>
+      <icon type="theme">system-help</icon>
+      <statustip>Manual image recognition service.</statustip>
+    </qtgui>
+  </class>
 </library>

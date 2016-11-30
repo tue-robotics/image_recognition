@@ -1,0 +1,3 @@
+#!/bin/bash
+
+rqt -s image_recognition_rqt.manual.ManualPlugin
