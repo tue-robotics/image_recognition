@@ -132,24 +132,6 @@ class ManualPlugin(Plugin):
 
         return self._response
 
-    def face_properties_srv_callback(self, req):
-        """
-        Method callback for the GetFaceProperties.srv service
-        :param req: The service request
-        """
-        # try:
-        #     result = self._srv(face_image_array=[self.bridge.cv2_to_imgmsg(roi_image, "bgr8")])
-        # except Exception as e:
-        #     warning_dialog("Service Exception", str(e))
-        #     return
-        #
-        # msg = ""
-        # for properties in result.properties_array:
-        #     msg += "- FaceProperties(gender=%s, age=%s)" % \
-        #            ("male" if properties.gender == FaceProperties.MALE else "female", properties.age)
-        #
-        # info_dialog("Face Properties array", msg)
-
     def image_roi_callback(self, roi_image):
         """
         Callback triggered when the user has drawn an ROI on the image
