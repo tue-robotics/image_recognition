@@ -149,14 +149,15 @@ class TensorflowObjectRecognition:
 
         self._recognitions.append(recognition)
 
-        best_label = sorted_result[-1][0]
-        best_prob = sorted_result[-1][1]
+        if sorted_result:
+            best_label = sorted_result[-1][0]
+            best_prob = sorted_result[-1][1]
 
-        rospy.loginfo("Best recognition result: {} with probability: {}".format(best_label, best_prob))
+            rospy.loginfo("Best recognition result: {} with probability: {}".format(best_label, best_prob))
 
-        # Write unverified annotated image
-        if self._save_images_folder:
-            image_writer.write_annotated(self._save_images_folder, self._bgr_image, best_label, False)
+            # Write unverified annotated image
+            if self._save_images_folder:
+                image_writer.write_annotated(self._save_images_folder, self._bgr_image, best_label, False)
 
         self._do_recognition = False
 
