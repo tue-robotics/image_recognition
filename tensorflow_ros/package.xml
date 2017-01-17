@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>tensorflow_ros</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>The tensorflow_ros package</description>
 
   <maintainer email="reinzor@gmail.com">Rein Appeldoorn</maintainer>

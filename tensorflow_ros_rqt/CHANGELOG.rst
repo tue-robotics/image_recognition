@@ -2,8 +2,8 @@
 Changelog for package tensorflow_ros_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2017-01-17)
+------------------
 * fix(): Installation targets
 * Contributors: Rein Appeldoorn
 
