@@ -2,8 +2,8 @@
 Changelog for package openface_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2017-01-17)
+------------------
 * Added image recognition util to support labeled and raw writing of image in predefined folder structure
 * Update README.md
 * added images

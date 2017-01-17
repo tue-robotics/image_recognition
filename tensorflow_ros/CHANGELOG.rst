@@ -2,8 +2,8 @@
 Changelog for package tensorflow_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2017-01-17)
+------------------
 * Add try except if path already exists
 * Update retrain to the latest version of tensorflow
 * Added image recognition util to support labeled and raw writing of image in predefined folder structure

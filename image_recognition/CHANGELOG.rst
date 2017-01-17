@@ -2,8 +2,8 @@
 Changelog for package image_recognition
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2017-01-17)
+------------------
 * Create README.md
 * Added image recognition util to support labeled and raw writing of image in predefined folder structure
 * added catkin_meta pkg

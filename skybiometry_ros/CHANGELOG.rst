@@ -2,8 +2,8 @@
 Changelog for package skybiometry_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2017-01-17)
+------------------
 * Update README.md
 * added face
 * Added test image

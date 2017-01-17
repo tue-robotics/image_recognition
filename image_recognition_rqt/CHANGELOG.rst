@@ -2,8 +2,8 @@
 Changelog for package image_recognition_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2017-01-17)
+------------------
 * Removed unused function
 * Added GUI for manually recognizing from image by user
 * Added clear_on_click parameter in the constructor

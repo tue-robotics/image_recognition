@@ -2,8 +2,8 @@
 Changelog for package tensorflow_ros_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2017-01-17)
+------------------
 * Added link in GUI to tensorboard
 * Tensorboard start while training
 * Added view tensorflow button
