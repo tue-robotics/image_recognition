@@ -5,7 +5,10 @@ RQT tools related to this package can be found in package [tensorflow_ros_rqt](h
 
 ## Installation
 
-See https://github.com/tue-robotics/image_recognition for installation instructions. Also make sure that you have a working installation on Tensorflow (https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html).
+See https://github.com/tue-robotics/image_recognition for installation instructions. Also make sure that you have a working installation on Tensorflow. If you are running Ubuntu x64, Tensorflow can be installed with use of the following commands:
+
+    sudo apt-get install python-pip python-dev
+    sudo pip install tensorflow # If you want gpu support, use pip install tensorflow-gpu
 
 ## How-to
 
