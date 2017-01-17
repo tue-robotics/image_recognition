@@ -1,6 +1,10 @@
 # TU/e Robotics image_recognition
 Packages for image recognition - Robocup TU/e Robotics
 
+## Travis CI Build Status
+
+[![Build Status](https://travis-ci.org/tue-robotics/image_recognition.svg)](https://travis-ci.org/tue-robotics/image_recognition)
+
 # How to
 
 ## Object recognition

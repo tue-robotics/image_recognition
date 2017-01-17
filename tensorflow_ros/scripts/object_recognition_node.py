@@ -118,9 +118,13 @@ class TensorflowObjectRecognition:
             """4. Open Image and perform prediction"""
             start = rospy.Time.now()
             predictions = []
-            with open(self._filename, 'rb') as f:
-                predictions = sess.run(result_tensor, {'DecodeJpeg/contents:0': f.read()})
-                predictions = np.squeeze(predictions)
+            try:
+                with open(self._filename, 'rb') as f:
+                    predictions = sess.run(result_tensor, {'DecodeJpeg/contents:0': f.read()})
+                    predictions = np.squeeze(predictions)
+            except Exception as e:
+                rospy.logerr("Failed to run tensorflow session: %s", e)
+
             rospy.logdebug("Step {} took {} seconds".format(4, (rospy.Time.now() - start).to_sec()))
 
             """5. Open output_labels and construct dict from result"""
@@ -145,14 +149,15 @@ class TensorflowObjectRecognition:
 
         self._recognitions.append(recognition)
 
-        best_label = sorted_result[-1][0]
-        best_prob = sorted_result[-1][1]
+        if sorted_result:
+            best_label = sorted_result[-1][0]
+            best_prob = sorted_result[-1][1]
 
-        rospy.loginfo("Best recognition result: {} with probability: {}".format(best_label, best_prob))
+            rospy.loginfo("Best recognition result: {} with probability: {}".format(best_label, best_prob))
 
-        # Write unverified annotated image
-        if self._save_images_folder:
-            image_writer.write_annotated(self._save_images_folder, self._bgr_image, best_label, False)
+            # Write unverified annotated image
+            if self._save_images_folder:
+                image_writer.write_annotated(self._save_images_folder, self._bgr_image, best_label, False)
 
         self._do_recognition = False
 
