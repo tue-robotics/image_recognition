@@ -1,0 +1,16 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package tensorflow_ros_rqt
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Forthcoming
+-----------
+* Added link in GUI to tensorboard
+* Tensorboard start while training
+* Added view tensorflow button
+* Documentation
+* Update README.md
+* Added imgs
+* Some minor reference and naming fixes
+* Renamed dir name and fixed plugin xml
+* Merged tensorflow_object_recognition_rqt into image_recognition repo, renamed to tensorflow_ros_rqt
+* Contributors: Rein Appeldoorn

@@ -1,0 +1,19 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package tensorflow_ros
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Forthcoming
+-----------
+* Add try except if path already exists
+* Update retrain to the latest version of tensorflow
+* Added image recognition util to support labeled and raw writing of image in predefined folder structure
+* Update README.md
+* Update README.md
+* Documentation
+* Working annotation gui and test gui for both tensorflow_ros object recognition and openface_ros face recognition
+* Working with updated interface
+* Update README.md
+* os.path.expanduser for paths
+* Some minor reference and naming fixes
+* Merged tensorflow_object_recognition into image_recognition repo, renamed to tensorflow_ros
+* Contributors: Ramon Wijnands, Rein Appeldoorn
