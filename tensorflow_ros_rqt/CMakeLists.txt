@@ -14,6 +14,8 @@ catkin_python_setup()
 
 catkin_package()
 
-install(PROGRAMS scripts/tensorflow_ros_rqt
+catkin_install_python(PROGRAMS 
+    scripts/train_gui
+
 	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

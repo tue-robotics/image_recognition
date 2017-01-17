@@ -17,7 +17,11 @@ catkin_python_setup()
 
 catkin_package()
 
-install(PROGRAMS scripts/image_recognition_rqt
-	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+catkin_install_python(PROGRAMS 
+  scripts/annotation_gui
+  scripts/manual_gui
+  scripts/test_gui
+
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
