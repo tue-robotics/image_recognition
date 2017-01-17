@@ -2,6 +2,9 @@
 Changelog for package image_recognition_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.1 (2017-01-17)
 ------------------
 * Reword the README a bit

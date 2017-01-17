@@ -2,6 +2,11 @@
 Changelog for package image_recognition_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix(): Installation targets
+* Contributors: Rein Appeldoorn
+
 0.0.1 (2017-01-17)
 ------------------
 * Removed unused function
