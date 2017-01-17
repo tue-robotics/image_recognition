@@ -1,4 +1,4 @@
-# Use ubuntu Trusty (14.04) with sudo privileges.
+# Use ubuntu Trusty (14.04) with sudo privileges. No support for Xenial yet.
 dist: trusty
 sudo: required
 language:
