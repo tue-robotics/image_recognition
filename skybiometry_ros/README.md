@@ -12,7 +12,7 @@ See https://github.com/tue-robotics/image_recognition
 
 Run the skybiometry ros node in one terminal (Please specify your own api secret and key via ROS parameters):
 
-    rosrun skybiometry_ros face_properties_node.py
+    rosrun skybiometry_ros face_properties_node
     
 Run the image_recognition_rqt test gui (https://github.com/tue-robotics/image_recognition_rqt)
 

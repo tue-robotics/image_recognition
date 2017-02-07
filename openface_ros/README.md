@@ -14,7 +14,7 @@ Make sure that openface is correctly installed. Installation instructions can be
 
 Run the openface_ros node in one terminal (Specify the dlib and openface_net path as ROS parameter):
 
-    rosrun openface_ros face_recognition_node.py    
+    rosrun openface_ros face_recognition_node    
     
 Run the rqt annotation client (https://github.com/tue-robotics/image_recognition_rqt)
 
@@ -48,11 +48,11 @@ You will see that the result of the detection will prompt in a dialog combo box.
 
 Command line interface to test the detection / recognition based on an image:
 
-    usage: get_face_recognition.py [-h] -i IMAGE [-k ALIGN_PATH] [-s NET_PATH] [-v]
+    usage: get_face_recognition [-h] -i IMAGE [-k ALIGN_PATH] [-s NET_PATH] [-v]
 
 Run the command on an example image:
 
-    rosrun openface_ros get_face_recognition.py -i `rospack find openface_ros`/doc/example.png
+    rosrun openface_ros get_face_recognition -i `rospack find openface_ros`/doc/example.png
 
 This will lookup this image in the openface_ros/doc folder and perform recognitions
 
