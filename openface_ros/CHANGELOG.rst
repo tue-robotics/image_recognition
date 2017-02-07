@@ -2,6 +2,9 @@
 Changelog for package openface_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.3 (2017-02-07)
 ------------------
 * fix(): Add targets install for scripts

@@ -2,6 +2,9 @@
 Changelog for package image_recognition
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.3 (2017-02-07)
 ------------------
 
