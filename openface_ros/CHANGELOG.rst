@@ -2,6 +2,12 @@
 Changelog for package openface_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix(): Add targets install for scripts
+* Add python-numpy run dependency
+* Contributors: Matthijs van der Burgh, Rein Appeldoorn
+
 0.0.2 (2017-01-17)
 ------------------
 
