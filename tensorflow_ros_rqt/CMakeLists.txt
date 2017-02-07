@@ -14,8 +14,11 @@ catkin_python_setup()
 
 catkin_package()
 
-catkin_install_python(PROGRAMS 
-    scripts/train_gui
+install(FILES plugin.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
-	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+install(PROGRAMS
+  scripts/train_gui
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
