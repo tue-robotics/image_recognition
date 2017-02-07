@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>image_recognition</name>
-  <version>0.0.3</version>
+  <version>0.0.4</version>
   <description>The image_recognition package</description>
 
   <maintainer email="reinzor@gmail.com">Rein Appeldoorn</maintainer>

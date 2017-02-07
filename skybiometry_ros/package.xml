@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>skybiometry_ros</name>
-  <version>0.0.3</version>
+  <version>0.0.4</version>
   <description>The skybiometry_ros package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
