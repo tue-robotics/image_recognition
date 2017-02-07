@@ -2,8 +2,8 @@
 Changelog for package image_recognition_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.3 (2017-02-07)
+------------------
 * fix(): Add targets install for scripts
 * Contributors: Rein Appeldoorn
 

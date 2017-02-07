@@ -2,8 +2,8 @@
 Changelog for package tensorflow_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.3 (2017-02-07)
+------------------
 * fix(): Add targets install for scripts
 * Add numpy run dependency for tensorflow_ros
 * Contributors: Matthijs van der Burgh, Rein Appeldoorn
