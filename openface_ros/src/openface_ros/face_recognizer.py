@@ -129,6 +129,7 @@ class FaceRecognizer:
             except Exception as e:
                 print "Could not get representation of face image but detector found one: %s" % str(e)
 
+            rospy.logdebug('recognition_representation: %s', recognition_representation)
             # If we have a representation, update with use of the l2 distance w.r.t. the face dict
             if recognition_representation is not None:
                 recognition.l2_distances = [L2Distance(_get_min_l2_distance(
