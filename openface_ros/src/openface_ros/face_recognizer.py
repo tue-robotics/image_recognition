@@ -7,6 +7,7 @@ import os
 # Openface
 import dlib
 import openface
+import rospy
 
 
 def _get_roi_image(bgr_image, detection, factor_x, factor_y):
