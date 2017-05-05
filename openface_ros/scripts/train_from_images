@@ -35,7 +35,7 @@ def main(modeldir, outfile, align_path, net_path, verbose):
                 face_recognizer.train(img, cat)
                 logger.debug('success!')
             except Exception:
-                logger.exception('face_recognizer failed')
+                logger.exception('face_recognizer failed to process %s', f)
 
     logger.info('saving database...')
     face_recognizer.save_trained_faces(outfile)
