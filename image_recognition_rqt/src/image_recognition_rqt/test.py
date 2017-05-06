@@ -11,12 +11,11 @@ from python_qt_binding.QtCore import *
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from image_recognition_msgs.msg import CategoryProbability, FaceProperties
-from openpose_ros.srv import GetPersons
 
 from image_widget import ImageWidget
 from dialogs import option_dialog, warning_dialog, info_dialog
 
-from image_recognition_msgs.srv import GetFaceProperties, Recognize
+from image_recognition_msgs.srv import GetFaceProperties, GetPersons, Recognize
 _SUPPORTED_SERVICES = ["image_recognition_msgs/Recognize",
                        "image_recognition_msgs/GetFaceProperties",
                        "image_recognition_msgs/GetPersons"]
@@ -117,7 +116,7 @@ class TestPlugin(Plugin):
 
         print result
 
-        info_dialog("Persons", result)
+        info_dialog("Persons", str(result))
 
     def image_roi_callback(self, roi_image):
         """
