@@ -11,12 +11,15 @@ from python_qt_binding.QtCore import *
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from image_recognition_msgs.msg import CategoryProbability, FaceProperties
+from openpose_ros.srv import GetPersons
 
 from image_widget import ImageWidget
 from dialogs import option_dialog, warning_dialog, info_dialog
 
 from image_recognition_msgs.srv import GetFaceProperties, Recognize
-_SUPPORTED_SERVICES = ["image_recognition_msgs/Recognize", "image_recognition_msgs/GetFaceProperties"]
+_SUPPORTED_SERVICES = ["image_recognition_msgs/Recognize",
+                       "image_recognition_msgs/GetFaceProperties",
+                       "image_recognition_msgs/GetPersons"]
 
 
 class TestPlugin(Plugin):
@@ -101,6 +104,21 @@ class TestPlugin(Plugin):
 
         info_dialog("Face Properties array", msg)
 
+    def get_persons_srv_call(self, roi_image):
+        """
+        Method that calls the GetPersons.srv
+        :param roi_image: Selected roi_image by the user
+        """
+        try:
+            result = self._srv(image=self.bridge.cv2_to_imgmsg(roi_image, "bgr8"))
+        except Exception as e:
+            warning_dialog("Service Exception", str(e))
+            return
+
+        print result
+
+        info_dialog("Persons", result)
+
     def image_roi_callback(self, roi_image):
         """
         Callback triggered when the user has drawn an ROI on the image
@@ -115,6 +133,8 @@ class TestPlugin(Plugin):
             self.recognize_srv_call(roi_image)
         elif self._srv.service_class == GetFaceProperties:
             self.get_face_properties_srv_call(roi_image)
+        elif self._srv.service_class == GetPersons:
+            self.get_persons_srv_call(roi_image)
         else:
             warning_dialog("Unknown service class", "Service class is unkown!")
 
