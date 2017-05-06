@@ -12,6 +12,7 @@ parser.add_argument('-k', '--align_path', type=str, help='DLib Align path', requ
                     default="~/openface/models/dlib/shape_predictor_68_face_landmarks.dat")
 parser.add_argument('-s', '--net_path', type=str, help='Openface neural network path', required=False,
                     default='~/openface/models/openface/nn4.small2.v1.t7')
+parser.add_argument('-d', '--db', type=argparse.FileType('r'), help='Load already trained faces db from file')
 parser.add_argument(
     '-v', '--verbose', help="Increase output verbosity", action="store_true")
 args = parser.parse_args()
@@ -21,6 +22,9 @@ img = cv2.imread(args.image)
 
 # Create openface interface
 face_recognizer = FaceRecognizer(args.align_path, args.net_path)
+
+if args.db:
+    face_recognizer.restore_trained_faces(args.db)
 
 # Pretty print the output
 try:

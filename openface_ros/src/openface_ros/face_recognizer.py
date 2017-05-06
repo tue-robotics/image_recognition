@@ -8,6 +8,7 @@ import os
 import dlib
 import openface
 import rospy
+import pickle
 
 
 def _get_roi_image(bgr_image, detection, factor_x, factor_y):
@@ -206,3 +207,10 @@ class FaceRecognizer:
         Clears all the trained faces
         """
         self._trained_faces = []
+
+    def save_trained_faces(self, file_name):
+        pickle.dump(self._trained_faces, file_name)
+
+    def restore_trained_faces(self, file_name):
+        with open(file_name) as f:
+            self._trained_faces = pickle.load(f)
