@@ -124,6 +124,9 @@ class OpenfaceROS:
         # Service response
         return {"recognitions": recognitions}
 
+    def restore_trained_faces(self, file_name):
+        self._face_recognizer.restore_trained_faces(file_name)
+
 if __name__ == '__main__':
 
     rospy.init_node("face_recognition")
@@ -135,6 +138,10 @@ if __name__ == '__main__':
             rospy.get_param("~net_path", "~/openface/models/openface/nn4.small2.v1.t7"))
         save_images = rospy.get_param("~save_images", True)
 
+        db = rospy.get_param('~db', None)
+        if db:
+            db = os.path.expanduser(db)
+
         save_images_folder = None
         if save_images:
             save_images_folder = os.path.expanduser(rospy.get_param("~save_images_folder", "/tmp/openface"))
@@ -145,4 +152,8 @@ if __name__ == '__main__':
     openface_ros = OpenfaceROS(dlib_shape_predictor_path,
                                openface_neural_network_path,
                                save_images_folder)
+    if db:
+        rospy.loginfo('loading face database from %s', db)
+        openface_ros.restore_trained_faces(db)
+
     rospy.spin()
