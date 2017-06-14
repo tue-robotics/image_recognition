@@ -1,0 +1,17 @@
+sudo: true
+
+language: cpp
+
+services:
+  - docker
+
+before_install:
+  - wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/install-package.sh
+  - wget https://raw.githubusercontent.com/tue-robotics/tue-env/master/ci/build-package.sh
+  - export PACKAGE=${TRAVIS_REPO_SLUG#*/}
+
+install:
+  - bash install-package.sh --package=$PACKAGE --branch=$TRAVIS_BRANCH --commit=$TRAVIS_COMMIT --pullrequest=$TRAVIS_PULL_REQUEST
+
+script: 
+  - bash build-package.sh --package=$PACKAGE
