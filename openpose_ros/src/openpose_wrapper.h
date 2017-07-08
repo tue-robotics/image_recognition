@@ -4,14 +4,9 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_recognition_msgs/Recognition.h>
 
-namespace openpose_ros
+namespace op
 {
-
-class op
-{
-public:
   class PoseExtractor;
-  class PoseModel;
   class PoseRenderer;
 };
 
@@ -26,13 +21,16 @@ public:
 private:
   std::shared_ptr<op::PoseExtractor> pose_renderer_;
   std::shared_ptr<op::PoseExtractor> pose_extractor_;
-  std::map<unsigned char, std::string> bodypart_map_;
+
+  std::map<unsigned int, std::string> bodypart_map_;
+
   cv::Size net_input_size_;
+  cv::Size net_output_size_;
+  cv::Size output_size_;
   size_t num_scales_;
   double scale_gap_;
+  double alpha_pose_;
 
 };
-
-}
 
 #endif // OPENPOSE_WRAPPER_H

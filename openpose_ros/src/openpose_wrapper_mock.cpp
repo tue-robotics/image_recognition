@@ -1,8 +1,5 @@
 #include "openpose_wrapper.h"
 
-namespace openpose_ros
-{
-
 image_recognition_msgs::Recognition getRecognition(size_t x, size_t y, const std::string& label)
 {
   image_recognition_msgs::Recognition r;
@@ -49,6 +46,3 @@ bool OpenposeWrapper::detectPoses(const cv::Mat& image, std::vector<image_recogn
 
   return true;
 }
-
-}
-
