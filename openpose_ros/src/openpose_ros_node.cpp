@@ -58,6 +58,15 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "openpose");
 
   ros::NodeHandle local_nh("~");
+  g_openpose_wrapper_ = std::shared_ptr<openpose_ros::OpenposeWrapper>(
+        new openpose_ros::OpenposeWrapper(cv::Size(getParam(local_nh, "net_input_width", 656), getParam(local_nh, "net_input_height", 368)),
+                                          cv::Size(getParam(local_nh, "net_output_width", 656), getParam(local_nh, "net_output_height", 368)),
+                                          cv::Size(getParam(local_nh, "output_width", 1280), getParam(local_nh, "output_height", 720)),
+                                          getParam(local_nh, "num_scales", 1),
+                                          getParam(local_nh, "scale_gap", 0.3),
+                                          getParam(local_nh, "num_gpu_start", 0),
+                                          getParam(local_nh, "model_folder", std::string("~/openpose/models/")),
+                                          getParam(local_nh, "pose_model", std::string("COCO"))));
 
   ros::NodeHandle nh;
   ros::ServiceServer service = nh.advertiseService("recognize", detectPosesCallback);

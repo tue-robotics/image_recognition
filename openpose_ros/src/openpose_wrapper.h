@@ -19,7 +19,7 @@ class OpenposeWrapper
 {
 public:
   OpenposeWrapper(const cv::Size& net_input_size, const cv::Size& net_output_size, const cv::Size &output_size,
-                  size_t num_scales, double scale_gap, size_t num_gpu_start, const std::string &model_folder, const std::string& pose_model_path);
+                  size_t num_scales, double scale_gap, size_t num_gpu_start, const std::string &model_folder, const std::string& pose_model);
 
   bool detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recognition>& recognitions);
 
