@@ -70,53 +70,53 @@ OpenposeWrapper::OpenposeWrapper(const cv::Size& net_input_size, const cv::Size 
 
 bool OpenposeWrapper::detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recognition>& recognitions, cv::Mat& overlayed_image)
 {
-  // Step 3 - Initialize all required classes
-  op::CvMatToOpInput cv_mat_to_input(op::Point<int>(net_input_size_.width, net_input_size_.height), (int) num_scales_, scale_gap_);
-  op::CvMatToOpOutput cv_mat_to_output(op::Point<int>(output_size.width, output_size.height));
-  op::OpOutputToCvMat op_output_to_cv_mat(op::Point<int>(output_size.width, output_size.height));
-
-  // Step 2 - Format input image to OpenPose input and output formats
-  //const auto net_input_array = cv_mat_to_input.format(image);
-  double scale_input_to_output;
-  op::Array<float> net_input_array;
-  std::vector<float> scale_ratios;
-  std::tie(net_input_array, scale_ratios) = cv_mat_to_input.format(image);
-  op::Array<float> output_array;
-  std::tie(scale_input_to_output, output_array) = cv_mat_to_output.format(image);
-  // Step 3 - Estimate poseKeyPoints
-  pose_extractor_->forwardPass(net_input_array, {image.cols, image.rows}, scale_ratios);
-  const auto pose_keypoints = pose_extractor_->getPoseKeypoints();
-
-  // Step 4 - Render poseKeyPoints
-  pose_renderer->renderPose(output_array, pose_keypoints);
-
-  // Step 5 - OpenPose output format to cv::Mat
-  overlayed_image = op_output_to_cv_mat.formatToCvMat(output_array);
-
-  size_t num_people = pose_keypoints.getSize(0);
-  size_t num_bodyparts = pose_keypoints.getSize(1);
-  recognitions.resize(num_people * num_bodyparts);
-
-  ROS_INFO("Detected %d persons", (size_t) num_people);
-
-  for (size_t person_idx = 0; person_idx < num_people; person_idx++)
-  {
-    for (size_t bodypart_idx = 0; bodypart_idx < num_bodyparts; bodypart_idx++)
-    {
-      size_t index = (person_idx * num_bodyparts + bodypart_idx);
-
-      recognitions[index].group_id = person_idx;
-      recognitions[index].roi.width = 1;
-      recognitions[index].roi.heigth = 1;
-      recognitions[index].categorical_distribution.probabilities.resize(1);
-      recognitions[index].categorical_distribution.probabilities.back().label = bodypart_map[bodypart_idx];
-
-      recognitions[index].roi.x_offset = pose_keypoints[3 * index];
-      recognitions[index].roi.y_offset = pose_keypoints[3 * index + 1];
-      recognitions[index].categorical_distribution.back().probability = pose_keypoints[3 * index + 2];
-    }
-  }
-
-  return true;
+//  // Step 3 - Initialize all required classes
+//  op::CvMatToOpInput cv_mat_to_input(op::Point<int>(net_input_size_.width, net_input_size_.height), (int) num_scales_, scale_gap_);
+//  op::CvMatToOpOutput cv_mat_to_output(op::Point<int>(output_size.width, output_size.height));
+//  op::OpOutputToCvMat op_output_to_cv_mat(op::Point<int>(output_size.width, output_size.height));
+//
+//  // Step 2 - Format input image to OpenPose input and output formats
+//  //const auto net_input_array = cv_mat_to_input.format(image);
+//  double scale_input_to_output;
+//  op::Array<float> net_input_array;
+//  std::vector<float> scale_ratios;
+//  std::tie(net_input_array, scale_ratios) = cv_mat_to_input.format(image);
+//  op::Array<float> output_array;
+//  std::tie(scale_input_to_output, output_array) = cv_mat_to_output.format(image);
+//  // Step 3 - Estimate poseKeyPoints
+//  pose_extractor_->forwardPass(net_input_array, {image.cols, image.rows}, scale_ratios);
+//  const auto pose_keypoints = pose_extractor_->getPoseKeypoints();
+//
+//  // Step 4 - Render poseKeyPoints
+//  pose_renderer->renderPose(output_array, pose_keypoints);
+//
+//  // Step 5 - OpenPose output format to cv::Mat
+//  overlayed_image = op_output_to_cv_mat.formatToCvMat(output_array);
+//
+//  size_t num_people = pose_keypoints.getSize(0);
+//  size_t num_bodyparts = pose_keypoints.getSize(1);
+//  recognitions.resize(num_people * num_bodyparts);
+//
+//  ROS_INFO("Detected %d persons", (size_t) num_people);
+//
+//  for (size_t person_idx = 0; person_idx < num_people; person_idx++)
+//  {
+//    for (size_t bodypart_idx = 0; bodypart_idx < num_bodyparts; bodypart_idx++)
+//    {
+//      size_t index = (person_idx * num_bodyparts + bodypart_idx);
+//
+//      recognitions[index].group_id = person_idx;
+//      recognitions[index].roi.width = 1;
+//      recognitions[index].roi.heigth = 1;
+//      recognitions[index].categorical_distribution.probabilities.resize(1);
+//      recognitions[index].categorical_distribution.probabilities.back().label = bodypart_map[bodypart_idx];
+//
+//      recognitions[index].roi.x_offset = pose_keypoints[3 * index];
+//      recognitions[index].roi.y_offset = pose_keypoints[3 * index + 1];
+//      recognitions[index].categorical_distribution.back().probability = pose_keypoints[3 * index + 2];
+//    }
+//  }
+//
+//  return true;
 }
 

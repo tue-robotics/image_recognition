@@ -20,7 +20,7 @@ public:
   bool detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recognition>& recognitions, cv::Mat& overlayed_image);
 
 private:
-  std::shared_ptr<op::PoseExtractor> pose_renderer_;
+  std::shared_ptr<op::PoseRenderer> pose_renderer_;
   std::shared_ptr<op::PoseExtractor> pose_extractor_;
 
   std::map<unsigned int, std::string> bodypart_map_;

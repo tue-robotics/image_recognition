@@ -6,6 +6,7 @@
 std::shared_ptr<OpenposeWrapper> g_openpose_wrapper;
 std::string g_save_images_folder = "";
 bool g_publish_to_topic = false;
+ros::Publisher g_pub;
 
 //!
 //! \brief getParam Get parameter from node handle
@@ -62,7 +63,7 @@ bool detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recog
   {
     std::string output_filepath = g_save_images_folder + "/" + getTimeAsString("%Y-%m-%d-%H-%M-%S") + "_openpose_ros.jpg";
     ROS_INFO("Writing output to %s", output_filepath.c_str());
-    cv::imwrite(output_filepath, overlayed_image);
+    //cv::imwrite(output_filepath, overlayed_image);
   }
 
   // Publish to topic
@@ -71,7 +72,7 @@ bool detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recog
     try
     {
       sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", overlayed_image).toImageMsg();
-      pub_.publish(msg);
+      g_pub.publish(msg);
     }
     catch (cv_bridge::Exception& e)
     {
@@ -104,7 +105,7 @@ bool detectPosesCallback(image_recognition_msgs::Recognize::Request& req, image_
     return false;
   }
 
-  return detectPoses(req.image, res.recognitions);
+  return detectPoses(image, res.recognitions);
 }
 
 int main(int argc, char** argv)
@@ -115,7 +116,7 @@ int main(int argc, char** argv)
 
   if (local_nh.hasParam("save_images_folder"))
   {
-    g_save_images_folder = getParam(local_nh, "save_images_folder", "/tmp");
+    g_save_images_folder = getParam(local_nh, "save_images_folder", std::string("/tmp"));
   }
   g_publish_to_topic = getParam(local_nh, "publish_result", true);
 
@@ -127,10 +128,15 @@ int main(int argc, char** argv)
                             getParam(local_nh, "scale_gap", 0.3),
                             getParam(local_nh, "num_gpu_start", 0),
                             getParam(local_nh, "model_folder", std::string("~/openpose/models/")),
-                            getParam(local_nh, "pose_model", std::string("COCO"))));
+                            getParam(local_nh, "pose_model", std::string("COCO")),
+                            getParam(local_nh, "overlay_alpha", 0.6)));
 
   ros::NodeHandle nh;
   ros::ServiceServer service = nh.advertiseService("recognize", detectPosesCallback);
+  if (g_publish_to_topic)
+  {
+    g_pub = nh.advertise<sensor_msgs::Image>("result_image", 1);
+  }
 
   ros::spin();
 
