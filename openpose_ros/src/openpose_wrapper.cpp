@@ -59,9 +59,9 @@ OpenposeWrapper::OpenposeWrapper(const cv::Size& net_input_size, const cv::Size&
   op::Point<int> op_net_output_size(net_output_size_.width, net_output_size_.height);
   op::Point<int> op_output_size(output_size_.width, output_size_.height);
 
-  ROS_INFO("Net input size: [%dx%d]", op_net_input_size.x, op_net_input_size.y);
-  ROS_INFO("Net output size: [%dx%d]", op_net_output_size.x, op_net_output_size.y);
-  ROS_INFO("Output size: [%dx%d]", op_output_size.x, op_output_size.y);
+  ROS_INFO("Net input size: [%d x %d]", op_net_input_size.x, op_net_input_size.y);
+  ROS_INFO("Net output size: [%d x %d]", op_net_output_size.x, op_net_output_size.y);
+  ROS_INFO("Output size: [%d x %d]", op_output_size.x, op_output_size.y);
 
   pose_extractor_ = std::shared_ptr<op::PoseExtractorCaffe>(
                     new op::PoseExtractorCaffe(op_net_input_size, op_net_output_size, op_output_size,
@@ -78,26 +78,36 @@ OpenposeWrapper::OpenposeWrapper(const cv::Size& net_input_size, const cv::Size&
 
 bool OpenposeWrapper::detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recognition>& recognitions, cv::Mat& overlayed_image)
 {
+  ROS_INFO("OpenposeWrapper::detectPoses: Detecting poses on image of size [%d x %d]", image.cols, image.rows);
+
   op::Point<int> op_net_input_size(net_input_size_.width, net_input_size_.height);
-  op::Point<int> op_output_size(output_size_.width, output_size_.height);
-
-  // Step 3 - Initialize all required classes
   op::CvMatToOpInput cv_mat_to_input(op_net_input_size, (int) num_scales_, scale_gap_);
-  op::CvMatToOpOutput cv_mat_to_output(op_output_size);
-  op::OpOutputToCvMat op_output_to_cv_mat(op_output_size);
-
-  // Step 2 - Format input image to OpenPose input and output formats
-  //const auto net_input_array = cv_mat_to_input.format(image);
-  double scale_input_to_output;
   op::Array<float> net_input_array;
   std::vector<float> scale_ratios;
   std::tie(net_input_array, scale_ratios) = cv_mat_to_input.format(image);
+
+  ROS_INFO("OpenposeWrapper::detectPoses: Net input size: [%d x %d]", op_net_input_size.x, op_net_input_size.y);
+
+  op::Point<int> op_output_size(output_size_.width, output_size_.height);
+  op::OpOutputToCvMat op_output_to_cv_mat(op_output_size);
+  op::CvMatToOpOutput cv_mat_to_output(op_output_size);
+
+  ROS_INFO("OpenposeWrapper::detectPoses: Output size: [%d x %d]", op_output_size.x, op_output_size.y);
+
   op::Array<float> output_array;
+  double scale_input_to_output;
   std::tie(scale_input_to_output, output_array) = cv_mat_to_output.format(image);
+
+  ROS_INFO("OpenposeWrapper::detectPoses: Applying forward pass on image of size: [%d x %d]", image.cols, image.rows);
 
   // Step 3 - Estimate poseKeyPoints
   pose_extractor_->forwardPass(net_input_array, {image.cols, image.rows}, scale_ratios);
   const auto pose_keypoints = pose_extractor_->getPoseKeypoints();
+
+  size_t num_people = pose_keypoints.getSize(0);
+  size_t num_bodyparts = pose_keypoints.getSize(1);
+
+  ROS_INFO("OpenposeWrapper::detectPoses: Rendering %d keypoints", (int) (num_people * num_bodyparts));
 
   // Step 4 - Render poseKeyPoints
   pose_renderer_->renderPose(output_array, pose_keypoints);
@@ -105,11 +115,9 @@ bool OpenposeWrapper::detectPoses(const cv::Mat& image, std::vector<image_recogn
   // Step 5 - OpenPose output format to cv::Mat
   overlayed_image = op_output_to_cv_mat.formatToCvMat(output_array);
 
-  size_t num_people = pose_keypoints.getSize(0);
-  size_t num_bodyparts = pose_keypoints.getSize(1);
   recognitions.resize(num_people * num_bodyparts);
 
-  ROS_INFO("Detected %d persons", (int) num_people);
+  ROS_INFO("OpenposeWrapper::detectPoses: Detected %d persons", (int) num_people);
 
   for (size_t person_idx = 0; person_idx < num_people; person_idx++)
   {
