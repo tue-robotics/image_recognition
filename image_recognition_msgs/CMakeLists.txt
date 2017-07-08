@@ -14,8 +14,6 @@ add_message_files(
   CategoricalDistribution.msg
   Recognition.msg
   Annotation.msg
-  BodypartDetection.msg
-  PersonDetection.msg
 )
 
 # Generate services in the 'srv' folder
@@ -24,7 +22,6 @@ add_service_files(
   Recognize.srv
   Annotate.srv
   GetFaceProperties.srv
-  GetPersons.srv
 )
 
 # Generate added messages and services with any dependencies listed here
