@@ -15,11 +15,12 @@ image_recognition_msgs::Recognition getRecognition(size_t x, size_t y, const std
 
 OpenposeWrapper::OpenposeWrapper(const cv::Size& net_input_size, const cv::Size &net_output_size,
                                  const cv::Size& output_size, size_t num_scales, double scale_gap,
-                                 size_t num_gpu_start, const std::string& model_folder, const std::string& pose_model)
+                                 size_t num_gpu_start, const std::string& model_folder,
+                                 const std::string& pose_model, double overlay_alpha)
 {
 }
 
-bool OpenposeWrapper::detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recognition>& recognitions)
+bool OpenposeWrapper::detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recognition>& recognitions, cv::Mat& overlayed_image)
 {
   size_t x = image.cols / 2;
   size_t y = image.rows / 2;
@@ -43,6 +44,8 @@ bool OpenposeWrapper::detectPoses(const cv::Mat& image, std::vector<image_recogn
   recognitions.push_back(getRecognition(x, y, "REar"));
   recognitions.push_back(getRecognition(x, y, "LEar"));
   recognitions.push_back(getRecognition(x, y, "Chest"));
+
+  overlayed_image = image;
 
   return true;
 }

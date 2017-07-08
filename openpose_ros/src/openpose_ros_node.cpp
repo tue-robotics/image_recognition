@@ -3,7 +3,9 @@
 #include <image_recognition_msgs/Recognize.h>
 #include <ros/node_handle.h>
 
-std::shared_ptr<OpenposeWrapper> g_openpose_wrapper_;
+std::shared_ptr<OpenposeWrapper> g_openpose_wrapper;
+std::string g_save_images_folder = "";
+bool g_publish_to_topic = false;
 
 //!
 //! \brief getParam Get parameter from node handle
@@ -28,6 +30,58 @@ T getParam(const ros::NodeHandle& nh, const std::string& param_name, T default_v
   return value;
 }
 
+std::string getTimeAsString(std::string format_string)
+{
+  time_t t = time(0);   // get time now
+  struct tm* timeinfo = localtime( & t );
+
+  format_string += '\a'; //force at least one character in the result
+  std::string buffer;
+  buffer.resize(format_string.size());
+  int len = strftime(&buffer[0], buffer.size(), format_string.c_str(), timeinfo);
+  while (len == 0) {
+    buffer.resize(buffer.size()*2);
+    len = strftime(&buffer[0], buffer.size(), format_string.c_str(), timeinfo);
+  }
+  buffer.resize(len-1); //remove that trailing '\a'
+  return buffer;
+}
+
+bool detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recognition>& recognitions)
+{
+  cv::Mat overlayed_image;
+
+  if (!g_openpose_wrapper->detectPoses(image, recognitions, overlayed_image))
+  {
+    ROS_ERROR("g_openpose_wrapper_->detectPoses failed!");
+    return false;
+  }
+
+  // Write to disk
+  if (!g_save_images_folder.empty())
+  {
+    std::string output_filepath = g_save_images_folder + "/" + getTimeAsString("%Y-%m-%d-%H-%M-%S") + "_openpose_ros.jpg";
+    ROS_INFO("Writing output to %s", output_filepath.c_str());
+    cv::imwrite(output_filepath, overlayed_image);
+  }
+
+  // Publish to topic
+  if (g_publish_to_topic)
+  {
+    try
+    {
+      sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", overlayed_image).toImageMsg();
+      pub_.publish(msg);
+    }
+    catch (cv_bridge::Exception& e)
+    {
+      ROS_ERROR("Failed to published overlayed image; cv_bridge exception: %s", e.what());
+    }
+  }
+
+  return true;
+}
+
 bool detectPosesCallback(image_recognition_msgs::Recognize::Request& req, image_recognition_msgs::Recognize::Response& res)
 {
   ROS_INFO("detectPosesCallback");
@@ -50,7 +104,7 @@ bool detectPosesCallback(image_recognition_msgs::Recognize::Request& req, image_
     return false;
   }
 
-  return g_openpose_wrapper_->detectPoses(image, res.recognitions);
+  return detectPoses(req.image, res.recognitions);
 }
 
 int main(int argc, char** argv)
@@ -58,15 +112,22 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "openpose");
 
   ros::NodeHandle local_nh("~");
-  g_openpose_wrapper_ = std::shared_ptr<OpenposeWrapper>(
+
+  if (local_nh.hasParam("save_images_folder"))
+  {
+    g_save_images_folder = getParam(local_nh, "save_images_folder", "/tmp");
+  }
+  g_publish_to_topic = getParam(local_nh, "publish_result", true);
+
+  g_openpose_wrapper = std::shared_ptr<OpenposeWrapper>(
         new OpenposeWrapper(cv::Size(getParam(local_nh, "net_input_width", 656), getParam(local_nh, "net_input_height", 368)),
-                                          cv::Size(getParam(local_nh, "net_output_width", 656), getParam(local_nh, "net_output_height", 368)),
-                                          cv::Size(getParam(local_nh, "output_width", 1280), getParam(local_nh, "output_height", 720)),
-                                          getParam(local_nh, "num_scales", 1),
-                                          getParam(local_nh, "scale_gap", 0.3),
-                                          getParam(local_nh, "num_gpu_start", 0),
-                                          getParam(local_nh, "model_folder", std::string("~/openpose/models/")),
-                                          getParam(local_nh, "pose_model", std::string("COCO"))));
+                            cv::Size(getParam(local_nh, "net_output_width", 656), getParam(local_nh, "net_output_height", 368)),
+                            cv::Size(getParam(local_nh, "output_width", 1280), getParam(local_nh, "output_height", 720)),
+                            getParam(local_nh, "num_scales", 1),
+                            getParam(local_nh, "scale_gap", 0.3),
+                            getParam(local_nh, "num_gpu_start", 0),
+                            getParam(local_nh, "model_folder", std::string("~/openpose/models/")),
+                            getParam(local_nh, "pose_model", std::string("COCO"))));
 
   ros::NodeHandle nh;
   ros::ServiceServer service = nh.advertiseService("recognize", detectPosesCallback);

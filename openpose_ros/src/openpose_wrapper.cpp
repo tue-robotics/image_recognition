@@ -46,61 +46,76 @@ std::map<unsigned int, std::string> getBodyPartMapFromPoseModel(const op::PoseMo
 
 OpenposeWrapper::OpenposeWrapper(const cv::Size& net_input_size, const cv::Size &net_output_size,
                                  const cv::Size& output_size, size_t num_scales, double scale_gap,
-                                 size_t num_gpu_start, const std::string& model_folder, const std::string& pose_model) :
+                                 size_t num_gpu_start, const std::string& model_folder,
+                                 const std::string& pose_model, double overlay_alpha) :
   net_input_size_(net_input_size),
   net_output_size_(net_output_size),
   num_scales_(num_scales),
   scale_gap_(scale_gap),
   bodypart_map_(getBodyPartMapFromPoseModel(stringToPoseModel(pose_model))),
-  pose_extractor_(std::shared_ptr<op::PoseExtractorCaffe>(new op::PoseExtractorCaffe(op::Point<int>(net_input_size_.width, net_input_size_.height), op::Point<int>(net_output_size_.width, net_output_size_.height), 
- op::Point<int>(output_size.width, output_size.height), num_scales_, stringToPoseModel(pose_model), model_folder, num_gpu_start)))
+  pose_extractor_(std::shared_ptr<op::PoseExtractorCaffe>(
+                    new op::PoseExtractorCaffe(op::Point<int>(net_input_size_.width, net_input_size_.height),
+                                               op::Point<int>(net_output_size_.width, net_output_size_.height),
+                                               op::Point<int>(output_size.width, output_size.height),
+                                               num_scales_, stringToPoseModel(pose_model), model_folder, num_gpu_start))),
+  pose_renderer_(std::shared_ptr<op::PoseRenderer>(
+                   new op::PoseRenderer(op::Point<int>(net_output_size_.width, net_output_size_.height),
+                                        op::Point<int>(output_size.width, output_size.height),
+                                        stringToPoseModel(pose_model),
+                                        nullptr,
+                                        (float) overlay_alpha)))
 {
+  pose_renderer_->initializationOnThread();
 }
 
-bool OpenposeWrapper::detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recognition>& recognitions)
+bool OpenposeWrapper::detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recognition>& recognitions, cv::Mat& overlayed_image)
 {
-//  ROS_INFO_STREAM("Perform forward pass with the following settings:");
-//  ROS_INFO_STREAM("- net_input_size: " << net_input_size_);
-//  ROS_INFO_STREAM("- num_scales: " << num_scales_);
-//  ROS_INFO_STREAM("- scale_gap: " << scale_gap_);
-//  ROS_INFO_STREAM("- image_size: " << image.size());
-//  op::CvMatToOpInput cv_mat_to_op_input(net_input_size_, num_scales_, scale_gap_);
-//
-//  pose_extractor_->forwardPass(cv_mat_to_op_input.format(image), image.size());
-//  ROS_INFO("pose_extractor->forwardPass done");
-//
-//  const auto pose_keypoints = g_pose_extractor->getPoseKeyPoints();
-//  pose_renderer.renderPose(output_array, pose_keypoints);
-//
-//  if (!pose_keypoints.empty() && pose_keypoints.getNumberDimensions() != 3)
-//  {
-//    ROS_ERROR("pose.getNumberDimensions(): %d != 3", (size_t) pose_keypoints.getNumberDimensions());
-//    return false;
-//  }
-//
-//  size_t num_people = pose_keypoints.getSize(0);
-//  size_t num_bodyparts = pose_keypoints.getSize(1);
-//  recognitions.resize(num_people * num_bodyparts);
-//
-//  ROS_INFO("Detected %d persons", (size_t) num_people);
-//
-//  for (size_t person_idx = 0; person_idx < num_people; person_idx++)
-//  {
-//    for (size_t bodypart_idx = 0; bodypart_idx < num_bodyparts; bodypart_idx++)
-//    {
-//      size_t index = (person_idx * num_bodyparts + bodypart_idx);
-//
-//      recognitions[index].group_id = person_idx;
-//      recognitions[index].roi.width = 1;
-//      recognitions[index].roi.heigth = 1;
-//      recognitions[index].categorical_distribution.resize(1);
-//      recognitions[index].categorical_distribution.back().label = bodypart_map[bodypart_idx];
-//
-//      recognitions[index].roi.x_offset = pose_keypoints[3 * index];
-//      recognitions[index].roi.y_offset = pose_keypoints[3 * index + 1];
-//      recognitions[index].categorical_distribution.back().probability = pose_keypoints[3 * index + 2];
-//    }
-//  }
+  // Step 3 - Initialize all required classes
+  op::CvMatToOpInput cv_mat_to_input(op::Point<int>(net_input_size_.width, net_input_size_.height), (int) num_scales_, scale_gap_);
+  op::CvMatToOpOutput cv_mat_to_output(op::Point<int>(output_size.width, output_size.height));
+  op::OpOutputToCvMat op_output_to_cv_mat(op::Point<int>(output_size.width, output_size.height));
+
+  // Step 2 - Format input image to OpenPose input and output formats
+  //const auto net_input_array = cv_mat_to_input.format(image);
+  double scale_input_to_output;
+  op::Array<float> net_input_array;
+  std::vector<float> scale_ratios;
+  std::tie(net_input_array, scale_ratios) = cv_mat_to_input.format(image);
+  op::Array<float> output_array;
+  std::tie(scale_input_to_output, output_array) = cv_mat_to_output.format(image);
+  // Step 3 - Estimate poseKeyPoints
+  pose_extractor_->forwardPass(net_input_array, {image.cols, image.rows}, scale_ratios);
+  const auto pose_keypoints = pose_extractor_->getPoseKeypoints();
+
+  // Step 4 - Render poseKeyPoints
+  pose_renderer->renderPose(output_array, pose_keypoints);
+
+  // Step 5 - OpenPose output format to cv::Mat
+  overlayed_image = op_output_to_cv_mat.formatToCvMat(output_array);
+
+  size_t num_people = pose_keypoints.getSize(0);
+  size_t num_bodyparts = pose_keypoints.getSize(1);
+  recognitions.resize(num_people * num_bodyparts);
+
+  ROS_INFO("Detected %d persons", (size_t) num_people);
+
+  for (size_t person_idx = 0; person_idx < num_people; person_idx++)
+  {
+    for (size_t bodypart_idx = 0; bodypart_idx < num_bodyparts; bodypart_idx++)
+    {
+      size_t index = (person_idx * num_bodyparts + bodypart_idx);
+
+      recognitions[index].group_id = person_idx;
+      recognitions[index].roi.width = 1;
+      recognitions[index].roi.heigth = 1;
+      recognitions[index].categorical_distribution.probabilities.resize(1);
+      recognitions[index].categorical_distribution.probabilities.back().label = bodypart_map[bodypart_idx];
+
+      recognitions[index].roi.x_offset = pose_keypoints[3 * index];
+      recognitions[index].roi.y_offset = pose_keypoints[3 * index + 1];
+      recognitions[index].categorical_distribution.back().probability = pose_keypoints[3 * index + 2];
+    }
+  }
 
   return true;
 }
