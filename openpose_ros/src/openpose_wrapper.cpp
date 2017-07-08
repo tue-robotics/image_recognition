@@ -50,6 +50,7 @@ OpenposeWrapper::OpenposeWrapper(const cv::Size& net_input_size, const cv::Size&
                                  const std::string& pose_model, double overlay_alpha) :
   net_input_size_(net_input_size),
   net_output_size_(net_output_size),
+  output_size_(output_size),
   num_scales_(num_scales),
   scale_gap_(scale_gap),
   bodypart_map_(getBodyPartMapFromPoseModel(stringToPoseModel(pose_model)))
@@ -77,10 +78,13 @@ OpenposeWrapper::OpenposeWrapper(const cv::Size& net_input_size, const cv::Size&
 
 bool OpenposeWrapper::detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recognition>& recognitions, cv::Mat& overlayed_image)
 {
+  op::Point<int> op_net_input_size(net_input_size_.width, net_input_size_.height);
+  op::Point<int> op_output_size(output_size_.width, output_size_.height);
+
   // Step 3 - Initialize all required classes
-  op::CvMatToOpInput cv_mat_to_input(op::Point<int>(net_input_size_.width, net_input_size_.height), (int) num_scales_, scale_gap_);
-  op::CvMatToOpOutput cv_mat_to_output(op::Point<int>(output_size_.width, output_size_.height));
-  op::OpOutputToCvMat op_output_to_cv_mat(op::Point<int>(output_size_.width, output_size_.height));
+  op::CvMatToOpInput cv_mat_to_input(op_net_input_size, (int) num_scales_, scale_gap_);
+  op::CvMatToOpOutput cv_mat_to_output(op_output_size);
+  op::OpOutputToCvMat op_output_to_cv_mat(op_output_size);
 
   // Step 2 - Format input image to OpenPose input and output formats
   //const auto net_input_array = cv_mat_to_input.format(image);
@@ -90,6 +94,7 @@ bool OpenposeWrapper::detectPoses(const cv::Mat& image, std::vector<image_recogn
   std::tie(net_input_array, scale_ratios) = cv_mat_to_input.format(image);
   op::Array<float> output_array;
   std::tie(scale_input_to_output, output_array) = cv_mat_to_output.format(image);
+
   // Step 3 - Estimate poseKeyPoints
   pose_extractor_->forwardPass(net_input_array, {image.cols, image.rows}, scale_ratios);
   const auto pose_keypoints = pose_extractor_->getPoseKeypoints();
