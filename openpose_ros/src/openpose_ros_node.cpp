@@ -120,10 +120,16 @@ int main(int argc, char** argv)
   }
   g_publish_to_topic = getParam(local_nh, "publish_result", true);
 
+  cv::Size net_input_size = cv::Size(getParam(local_nh, "net_input_width", 656), getParam(local_nh, "net_input_height", 368));
+  cv::Size net_output_size = cv::Size(getParam(local_nh, "net_output_width", 656), getParam(local_nh, "net_output_height", 368));
+  cv::Size output_size = cv::Size(getParam(local_nh, "output_width", 1280), getParam(local_nh, "output_height", 720));
+
+  ROS_INFO_STREAM("Net input size: " << net_input_size);
+  ROS_INFO_STREAM("Net output size: " << net_output_size);
+  ROS_INFO_STREAM("Output size: " << output_size);
+
   g_openpose_wrapper = std::shared_ptr<OpenposeWrapper>(
-        new OpenposeWrapper(cv::Size(getParam(local_nh, "net_input_width", 656), getParam(local_nh, "net_input_height", 368)),
-                            cv::Size(getParam(local_nh, "net_output_width", 656), getParam(local_nh, "net_output_height", 368)),
-                            cv::Size(getParam(local_nh, "output_width", 1280), getParam(local_nh, "output_height", 720)),
+        new OpenposeWrapper(net_input_size, net_output_size, output_size,
                             getParam(local_nh, "num_scales", 1),
                             getParam(local_nh, "scale_gap", 0.3),
                             getParam(local_nh, "num_gpu_start", 0),

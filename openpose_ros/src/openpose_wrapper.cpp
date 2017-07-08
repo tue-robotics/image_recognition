@@ -44,7 +44,7 @@ std::map<unsigned int, std::string> getBodyPartMapFromPoseModel(const op::PoseMo
   }
 }
 
-OpenposeWrapper::OpenposeWrapper(const cv::Size& net_input_size, const cv::Size &net_output_size,
+OpenposeWrapper::OpenposeWrapper(const cv::Size& net_input_size, const cv::Size& net_output_size,
                                  const cv::Size& output_size, size_t num_scales, double scale_gap,
                                  size_t num_gpu_start, const std::string& model_folder,
                                  const std::string& pose_model, double overlay_alpha) :
@@ -52,19 +52,26 @@ OpenposeWrapper::OpenposeWrapper(const cv::Size& net_input_size, const cv::Size 
   net_output_size_(net_output_size),
   num_scales_(num_scales),
   scale_gap_(scale_gap),
-  bodypart_map_(getBodyPartMapFromPoseModel(stringToPoseModel(pose_model))),
-  pose_extractor_(std::shared_ptr<op::PoseExtractorCaffe>(
-                    new op::PoseExtractorCaffe(op::Point<int>(net_input_size_.width, net_input_size_.height),
-                                               op::Point<int>(net_output_size_.width, net_output_size_.height),
-                                               op::Point<int>(output_size.width, output_size.height),
-                                               num_scales_, stringToPoseModel(pose_model), model_folder, num_gpu_start))),
-  pose_renderer_(std::shared_ptr<op::PoseRenderer>(
-                   new op::PoseRenderer(op::Point<int>(net_output_size_.width, net_output_size_.height),
-                                        op::Point<int>(output_size.width, output_size.height),
+  bodypart_map_(getBodyPartMapFromPoseModel(stringToPoseModel(pose_model)))
+{
+  op::Point<int> op_net_input_size(net_input_size_.width, net_input_size_.height);
+  op::Point<int> op_net_output_size(net_output_size_.width, net_output_size_.height);
+  op::Point<int> op_output_size(output_size_.width, output_size_.height);
+
+  ROS_INFO("Net input size: [%dx%d]", op_net_input_size.x, op_net_input_size.y);
+  ROS_INFO("Net output size: [%dx%d]", op_net_output_size.x, op_net_output_size.y);
+  ROS_INFO("Output size: [%dx%d]", op_output_size.x, op_output_size.y);
+
+  pose_extractor_ = std::shared_ptr<op::PoseExtractorCaffe>(
+                    new op::PoseExtractorCaffe(op_net_input_size, op_net_output_size, op_output_size,
+                                               num_scales_, stringToPoseModel(pose_model), model_folder, num_gpu_start));
+
+  pose_renderer_ = std::shared_ptr<op::PoseRenderer>(
+                   new op::PoseRenderer(op_net_output_size, op_output_size,
                                         stringToPoseModel(pose_model),
                                         nullptr,
-                                        (float) overlay_alpha)))
-{
+                                        (float) overlay_alpha));
+
   pose_renderer_->initializationOnThread();
 }
 
