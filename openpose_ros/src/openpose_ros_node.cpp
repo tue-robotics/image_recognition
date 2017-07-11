@@ -3,6 +3,8 @@
 #include <image_recognition_msgs/Recognize.h>
 #include <ros/node_handle.h>
 
+#include <opencv2/imgcodecs.hpp>
+
 std::shared_ptr<OpenposeWrapper> g_openpose_wrapper;
 std::string g_save_images_folder = "";
 bool g_publish_to_topic = false;
@@ -52,18 +54,20 @@ bool detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recog
 {
   cv::Mat overlayed_image;
 
+  ros::Time start = ros::Time::now();
   if (!g_openpose_wrapper->detectPoses(image, recognitions, overlayed_image))
   {
     ROS_ERROR("g_openpose_wrapper_->detectPoses failed!");
     return false;
   }
+  ROS_INFO("g_openpose_wrapper->detectPoses took %.3f seconds", (ros::Time::now() - start).toSec());
 
   // Write to disk
   if (!g_save_images_folder.empty())
   {
     std::string output_filepath = g_save_images_folder + "/" + getTimeAsString("%Y-%m-%d-%H-%M-%S") + "_openpose_ros.jpg";
     ROS_INFO("Writing output to %s", output_filepath.c_str());
-    //cv::imwrite(output_filepath, overlayed_image);
+    cv::imwrite(output_filepath, overlayed_image);
   }
 
   // Publish to topic

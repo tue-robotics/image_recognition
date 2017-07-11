@@ -37,6 +37,8 @@ target_link_libraries(openpose_wrapper
 )
 
 add_executable(${PROJECT_NAME}_node src/openpose_ros_node.cpp)
+add_executable(${PROJECT_NAME}_test test/test.cpp)
 
 # Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node openpose_wrapper)
+target_link_libraries(${PROJECT_NAME}_test openpose_wrapper)

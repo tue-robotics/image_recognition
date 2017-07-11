@@ -73,6 +73,7 @@ OpenposeWrapper::OpenposeWrapper(const cv::Size& net_input_size, const cv::Size&
                                         nullptr,
                                         (float) overlay_alpha));
 
+  pose_extractor_->initializationOnThread();
   pose_renderer_->initializationOnThread();
 }
 
