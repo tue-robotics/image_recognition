@@ -13,9 +13,9 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package()
 
-IF(EXISTS openpose)
-  set(OPENPOSE_DIR openpose)
-  message("Using openpose from " ${CMAKE_CURRENT_SOURCE_DIR} "/openpose ...")
+set(OPENPOSE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/openpose)
+IF(EXISTS ${OPENPOSE_DIR})
+  message("Using openpose from " ${OPENPOSE_DIR} " ...")
 
   set(CAFFE_DIR ${OPENPOSE_DIR}/3rdparty/caffe)
 
@@ -44,7 +44,7 @@ IF(EXISTS openpose)
   add_executable(${PROJECT_NAME}_test test/test.cpp)
   target_link_libraries(${PROJECT_NAME}_test openpose_wrapper)
 else()
-  message("./openpose folder not found in " ${CMAKE_CURRENT_SOURCE_DIR} " using a mock instead ...")
+  message("Openpose folder not found in " ${OPENPOSE_DIR} " using a mock instead ...")
 
   include_directories(${catkin_INCLUDE_DIRS})
   add_library(openpose_wrapper src/openpose_wrapper_mock.cpp)
