@@ -44,7 +44,7 @@ IF(EXISTS ${OPENPOSE_DIR})
   add_executable(${PROJECT_NAME}_test test/test.cpp)
   target_link_libraries(${PROJECT_NAME}_test openpose_wrapper)
 else()
-  message("Openpose folder not found in " ${OPENPOSE_DIR} " using a mock instead ...")
+  message(WARNING "Openpose folder not found in " ${OPENPOSE_DIR} " using a mock instead ...")
 
   include_directories(${catkin_INCLUDE_DIRS})
   add_library(openpose_wrapper src/openpose_wrapper_mock.cpp)
