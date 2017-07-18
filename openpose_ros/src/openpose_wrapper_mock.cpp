@@ -1,5 +1,12 @@
 #include "openpose_wrapper.h"
 
+//!
+//! \brief getRecognition Returns dummy recognition for simulation purposes
+//! \param x x_offset
+//! \param y y_offset
+//! \param label Label
+//! \return Returns a recognition
+//!
 image_recognition_msgs::Recognition getRecognition(size_t x, size_t y, const std::string& label)
 {
   image_recognition_msgs::Recognition r;
@@ -13,8 +20,8 @@ image_recognition_msgs::Recognition getRecognition(size_t x, size_t y, const std
   return r;
 }
 
-OpenposeWrapper::OpenposeWrapper(const cv::Size& net_input_size, const cv::Size &net_output_size,
-                                 const cv::Size& output_size, size_t num_scales, double scale_gap,
+OpenposeWrapper::OpenposeWrapper(const cv::Size& net_input_size, const cv::Size& net_output_size,
+                                 size_t num_scales, double scale_gap,
                                  size_t num_gpu_start, const std::string& model_folder,
                                  const std::string& pose_model, double overlay_alpha)
 {
