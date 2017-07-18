@@ -1,4 +1,5 @@
 #include "openpose_wrapper.h"
+#include <ros/console.h>
 
 //!
 //! \brief getRecognition Returns dummy recognition for simulation purposes
@@ -25,6 +26,7 @@ OpenposeWrapper::OpenposeWrapper(const cv::Size& net_input_size, const cv::Size&
                                  size_t num_gpu_start, const std::string& model_folder,
                                  const std::string& pose_model, double overlay_alpha)
 {
+  ROS_WARN("OpenposeWrapper::OpenposeWrapper -- Using Mock!");
 }
 
 bool OpenposeWrapper::detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recognition>& recognitions, cv::Mat& overlayed_image)
