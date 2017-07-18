@@ -13,11 +13,12 @@ ROS Kinetic uses OpenCV 3.2 as default. Therefore it is important to compile ope
 ```
 sudo apt remove opencv* libopencv*
 sudo apt install ros-kinetic-opencv3
-sudo ln -s /opt/ros/kinetic/lib/opencv_core3.so /usr/lib/opencv_core.so
-sudo ln -s /opt/ros/kinetic/lib/opencv_highgui3.so /usr/lib/opencv_highgui.so
-sudo ln -s /opt/ros/kinetic/lib/opencv_imgcodecs3.so /usr/lib/opencv_imgcodecs.so
-sudo ln -s /opt/ros/kinetic/lib/opencv_imgproc3.so /usr/lib/opencv_imgproc.so
-sudo ln -s /opt/ros/kinetic/lib/opencv_videoio3.so /usr/lib/opencv_videoio.so
+
+sudo ln -fs /opt/ros/kinetic/lib/libopencv_core3.so /usr/lib/libopencv_core.so
+sudo ln -fs /opt/ros/kinetic/lib/libopencv_highgui3.so /usr/lib/libopencv_highgui.so
+sudo ln -fs /opt/ros/kinetic/lib/libopencv_imgcodecs3.so /usr/lib/libopencv_imgcodecs.so
+sudo ln -fs /opt/ros/kinetic/lib/libopencv_imgproc3.so /usr/lib/libopencv_imgproc.so
+sudo ln -fs /opt/ros/kinetic/lib/libopencv_videoio3.so /usr/lib/libopencv_videoio.so
 sudo ln -fs /opt/ros/kinetic/include/opencv-3.2.0-dev/opencv2 /usr/include/opencv2
 ```
 
