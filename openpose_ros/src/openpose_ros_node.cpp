@@ -3,6 +3,8 @@
 #include <image_recognition_msgs/Recognize.h>
 #include <ros/node_handle.h>
 
+#include <opencv2/imgcodecs.hpp>
+
 std::shared_ptr<OpenposeWrapper> g_openpose_wrapper;
 std::string g_save_images_folder = "";
 bool g_publish_to_topic = false;
@@ -31,6 +33,11 @@ T getParam(const ros::NodeHandle& nh, const std::string& param_name, T default_v
   return value;
 }
 
+//!
+//! \brief getTimeAsString Returns the current time as a string using the python strftime syntax
+//! \param format_string The python strftime syntax
+//! \return Returns the date string
+//!
 std::string getTimeAsString(std::string format_string)
 {
   time_t t = time(0);   // get time now
@@ -48,22 +55,30 @@ std::string getTimeAsString(std::string format_string)
   return buffer;
 }
 
+//!
+//! \brief detectPoses Detects poses in an input image and optionally writes the detection image to topic and or disk
+//! \param image Source image
+//! \param recognitions Recognition reference
+//! \return True if success, False otherwise
+//!
 bool detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recognition>& recognitions)
 {
   cv::Mat overlayed_image;
 
+  ros::Time start = ros::Time::now();
   if (!g_openpose_wrapper->detectPoses(image, recognitions, overlayed_image))
   {
     ROS_ERROR("g_openpose_wrapper_->detectPoses failed!");
     return false;
   }
+  ROS_INFO("g_openpose_wrapper->detectPoses took %.3f seconds", (ros::Time::now() - start).toSec());
 
   // Write to disk
   if (!g_save_images_folder.empty())
   {
     std::string output_filepath = g_save_images_folder + "/" + getTimeAsString("%Y-%m-%d-%H-%M-%S") + "_openpose_ros.jpg";
     ROS_INFO("Writing output to %s", output_filepath.c_str());
-    //cv::imwrite(output_filepath, overlayed_image);
+    cv::imwrite(output_filepath, overlayed_image);
   }
 
   // Publish to topic
@@ -83,6 +98,12 @@ bool detectPoses(const cv::Mat& image, std::vector<image_recognition_msgs::Recog
   return true;
 }
 
+//!
+//! \brief detectPosesCallback ROS service call callback
+//! \param req Service request
+//! \param res Service response reference
+//! \return True if succes, False otherwise
+//!
 bool detectPosesCallback(image_recognition_msgs::Recognize::Request& req, image_recognition_msgs::Recognize::Response& res)
 {
   ROS_INFO("detectPosesCallback");
@@ -122,20 +143,17 @@ int main(int argc, char** argv)
 
   cv::Size net_input_size = cv::Size(getParam(local_nh, "net_input_width", 656), getParam(local_nh, "net_input_height", 368));
   cv::Size net_output_size = cv::Size(getParam(local_nh, "net_output_width", 656), getParam(local_nh, "net_output_height", 368));
-  cv::Size output_size = cv::Size(getParam(local_nh, "output_width", 1280), getParam(local_nh, "output_height", 720));
 
-  ROS_INFO_STREAM("Net input size: " << net_input_size);
-  ROS_INFO_STREAM("Net output size: " << net_output_size);
-  ROS_INFO_STREAM("Output size: " << output_size);
-
+  ros::Time start = ros::Time::now();
   g_openpose_wrapper = std::shared_ptr<OpenposeWrapper>(
-        new OpenposeWrapper(net_input_size, net_output_size, output_size,
+        new OpenposeWrapper(net_input_size, net_output_size,
                             getParam(local_nh, "num_scales", 1),
                             getParam(local_nh, "scale_gap", 0.3),
                             getParam(local_nh, "num_gpu_start", 0),
                             getParam(local_nh, "model_folder", std::string("~/openpose/models/")),
                             getParam(local_nh, "pose_model", std::string("COCO")),
                             getParam(local_nh, "overlay_alpha", 0.6)));
+  ROS_INFO("OpenposeWrapper initialization took %.3f seconds", (ros::Time::now() - start).toSec());
 
   ros::NodeHandle nh;
   ros::ServiceServer service = nh.advertiseService("recognize", detectPosesCallback);
