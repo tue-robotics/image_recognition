@@ -52,6 +52,9 @@ else()
   target_link_libraries(openpose_wrapper ${catkin_LIBRARIES})
 endif()
 
+# depend on generated messages
+add_dependencies(openpose_wrapper ${catkin_EXPORTED_TARGETS})
+
 add_executable(${PROJECT_NAME}_node src/openpose_ros_node.cpp)
 
 # Specify libraries to link a library or executable target against
