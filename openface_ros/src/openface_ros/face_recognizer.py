@@ -181,7 +181,7 @@ class FaceRecognizer:
         :return: the index of the face in the self._trained faces list
         """
         for i, f in enumerate(self._trained_faces):
-            if f.label is label:
+            if f.label == label:
                 return i
         return -1
 
