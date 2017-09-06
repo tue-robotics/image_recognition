@@ -181,7 +181,7 @@ class FaceRecognizer:
         :return: the index of the face in the self._trained faces list
         """
         for i, f in enumerate(self._trained_faces):
-            if f.label is label:
+            if f.label == label:
                 return i
         return -1
 
@@ -191,14 +191,15 @@ class FaceRecognizer:
         :param image: Input image
         :param name: The label of the face
         """
-        index = self._get_trained_face_index(name)
-        if index == -1:
-            self._trained_faces.append(TrainedFace(name))
 
         try:
             face_representation = self._get_representation(image)
         except Exception as e:
             raise Exception("Could not get representation of face image: %s" % str(e))
+
+        index = self._get_trained_face_index(name)
+        if index == -1:
+            self._trained_faces.append(TrainedFace(name))
 
         self._trained_faces[index].representations.append(face_representation)
 
