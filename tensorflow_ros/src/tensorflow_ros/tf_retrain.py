@@ -864,7 +864,7 @@ def main(_):
   validation_writer = tf.summary.FileWriter(FLAGS.summaries_dir + '/validation')
 
   # Set up all our weights to their initial default values.
-  init = tf.initialize_all_variables()
+  init = tf.global_variables_initializer()
   sess.run(init)
 
   # Run the training for as many cycles as requested on the command line.
