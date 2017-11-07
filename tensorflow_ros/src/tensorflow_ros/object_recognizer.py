@@ -6,6 +6,7 @@ import numpy as np
 
 import cv2
 
+
 class ObjectRecognizer(object):
     def __init__(self, graph_path, labels_path):
 
@@ -19,7 +20,8 @@ class ObjectRecognizer(object):
     def classify(self, np_image):
         """
         Classify an image into one of the labels at the label_path
-        :param np_image a numpy array representing the image to be classified. This is assumed to be segmented/cropped already!
+        :param np_image a numpy array representing the image to be classified.
+            This is assumed to be segmented/cropped already!
         :returns a dictionary mapping class to probability of the image being that class
         """
 
@@ -28,16 +30,15 @@ class ObjectRecognizer(object):
         # Open tf session
         with tf.Session() as sess:
 
-            # 3. Get result tensor
-            # result_tensor = sess.graph.get_tensor_by_name("softmax:0")
+            # Get result tensor that will eventually hold the predictions
             result_tensor = sess.graph.get_tensor_by_name("final_result:0")
 
             # Open Image and perform prediction
-            predictions = []
             try:
                 with open(filename, 'rb') as f:
-                    predictions = sess.run(result_tensor,                           # Run the inference for this tensor
-                                           {'DecodeJpeg/contents:0': f.read()})     # with some tensor substituted by our input data
+                    # Run inference of the result_tensor while substituting some tensor by our input data
+                    predictions = sess.run(result_tensor,
+                                           {'DecodeJpeg/contents:0': f.read()})
                     predictions = np.squeeze(predictions)
             except Exception as e:
                 raise Exception("Failed to run tensorflow session: %s", e)
@@ -50,7 +51,7 @@ class ObjectRecognizer(object):
     @staticmethod
     def _save_to_file(np_image):
         """
-        Save a numpy image to our tempfile
+        Save a numpy image to our temporary file
         :param np_image:
         :return:
         """
