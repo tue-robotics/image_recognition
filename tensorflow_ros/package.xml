@@ -16,11 +16,6 @@
   <run_depend>rospy</run_depend>
   <run_depend>image_recognition_msgs</run_depend>
   <run_depend>image_recognition_util</run_depend>
-  <run_depend>python-tensorflow</run_depend>
   <run_depend>python-numpy</run_depend>
-  <run_depend>python-mock</run_depend>
-  <run_depend>python-protobuf</run_depend>
-  <run_depend>python-wheel</run_depend>
-  <run_depend>python-six</run_depend>
 
 </package>
