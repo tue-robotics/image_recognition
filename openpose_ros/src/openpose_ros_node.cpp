@@ -3,7 +3,7 @@
 #include <image_recognition_msgs/Recognize.h>
 #include <ros/node_handle.h>
 
-#include <opencv2/imgcodecs.hpp>
+#include <opencv2/opencv.hpp>
 
 std::shared_ptr<OpenposeWrapper> g_openpose_wrapper;
 std::string g_save_images_folder = "";

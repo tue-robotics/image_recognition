@@ -17,7 +17,7 @@ See https://github.com/tue-robotics/image_recognition for installation instructi
 3. Start the ROS node with the net as parameter:
 
     ```
-    rosrun tensorflow_ros object_recognition_node.py _database_path:=[path_to_db]
+    rosrun tensorflow_ros object_recognition_node _graph_path:=[path_to_graph.pb] _labels_path:=[path_to_labels.txt]
     ```
 
 4. Test the classifier with use the test tool in https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_rqt
