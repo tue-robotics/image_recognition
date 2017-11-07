@@ -6,6 +6,8 @@ import numpy as np
 
 import cv2
 
+import operator
+
 class ObjectRecognizer(object):
     def __init__(self, graph_path, labels_path, save_images_folder=None):
         self.save_image_folder = save_images_folder
@@ -46,6 +48,9 @@ class ObjectRecognizer(object):
 
             return result
 
+    def classify_many(self, *np_images):
+        return map(self.classify, np_images)
+
     def _save_to_file(self, np_image):
         """
         Save a numpy image to our tempfile
@@ -64,3 +69,7 @@ class ObjectRecognizer(object):
         if not labels:
             raise ValueError("Empty labels, will not be able to map predictions to labels")
         return labels
+
+def order_dict_by_value(d):
+    sorted_result = sorted(d.items(), key=operator.itemgetter(1), reverse=True)
+    return sorted_result
