@@ -9,8 +9,7 @@ import cv2
 import operator
 
 class ObjectRecognizer(object):
-    def __init__(self, graph_path, labels_path, save_images_folder=None):
-        self.save_image_folder = save_images_folder
+    def __init__(self, graph_path, labels_path):
 
         self.labels = self._read_labels(labels_path)
 
