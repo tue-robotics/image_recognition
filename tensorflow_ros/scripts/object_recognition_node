@@ -46,7 +46,7 @@ class TensorflowObjectRecognition:
         # be performed
 
         self._recognitions = []  # List with Recognition s
-        # self._size = {'width': 0, 'height': 0}
+        self._size = {'width': 0, 'height': 0}
         self._save_images_folder = save_images_folder
         self._bgr_image = None
 
@@ -106,7 +106,7 @@ class TensorflowObjectRecognition:
         if not self._do_recognition:
             return
 
-        class_scores = self._recognizer.recognize(self._bgr_image)
+        class_scores = self._recognizer.classify(self._bgr_image)
         sorted_result = order_dict_by_value(class_scores)
 
         # self._recognition.label = sorted_result[-1][0].split('\t')[1]
