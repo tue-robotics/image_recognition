@@ -16,6 +16,11 @@ import cv2
 
 
 def find_files(directory, patterns):
+    """
+    Find files that match one of the patterns in a directory. We return an iterator that provides a file path string
+    :param directory: Directory to index
+    :param patterns: Patterns list, e.g. ['*.jpg', '*.png']
+    """
     for pattern in patterns:
         for root, dirs, files in os.walk(directory):
             for basename in files:
@@ -25,10 +30,11 @@ def find_files(directory, patterns):
 
 
 class FolderImagePublisherPlugin(Plugin):
-
+    """
+    FolderImagePublisherPlugin class that publishes images from a folder
+    """
     def __init__(self, context):
         """
-        FolderImagePublisherPlugin class that publishes images from a folder
         :param context: QT context, aka parent
         """
         super(FolderImagePublisherPlugin, self).__init__(context)
@@ -72,6 +78,7 @@ class FolderImagePublisherPlugin(Plugin):
     def _index_image_files(self, directory):
         """
         Index all images in the specified directory
+        :param directory: Directory to index
         """
         self._files = collections.deque([f for f in find_files(directory, ['*.jpeg', '*.jpg', '*.png'])])
         self._publish_image()
@@ -85,27 +92,9 @@ class FolderImagePublisherPlugin(Plugin):
             self._pub.publish(self._bridge.cv2_to_imgmsg(cv2.imread(self._files[0]), encoding="bgr8"))
 
     def _rotate_and_publish(self, rotate_arg):
+        """
+        Rotate the files deque and publish an image over the topic
+        :param rotate_arg: Rotate steps and direction
+        """
         self._files.rotate(rotate_arg)
         self._publish_image()
-
-    def shutdown_plugin(self):
-        """
-        Callback function when shutdown is requested
-        """
-        pass
-
-    def save_settings(self, plugin_settings, instance_settings):
-        """
-        Callback function on shutdown to store the local plugin variables
-        :param plugin_settings: Plugin settings
-        :param instance_settings: Settings of this instance
-        """
-        pass
-
-    def restore_settings(self, plugin_settings, instance_settings):
-        """
-        Callback function fired on load of the plugin that allows to restore saved variables
-        :param plugin_settings: Plugin settings
-        :param instance_settings: Settings of this instance
-        """
-        pass
