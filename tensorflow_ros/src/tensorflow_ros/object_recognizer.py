@@ -47,9 +47,6 @@ class ObjectRecognizer(object):
 
             return result
 
-    def classify_many(self, *np_images):
-        return map(self.classify, np_images)
-
     def _save_to_file(self, np_image):
         """
         Save a numpy image to our tempfile

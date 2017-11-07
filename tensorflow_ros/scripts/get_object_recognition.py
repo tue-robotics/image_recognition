@@ -47,7 +47,7 @@ elif os.path.isdir(args.image):
 
     images = map(cv2.imread, image_paths)
 
-    predictions_per_image = object_recognizer.classify_many(*images)
+    predictions_per_image = map(object_recognizer.classify, images)
     sorted_predictions_per_image = map(order_dict_by_value, predictions_per_image)
 
     # Compose a dict mapping each filename to the predictions for each class
