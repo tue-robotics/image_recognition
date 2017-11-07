@@ -106,8 +106,7 @@ class TensorflowObjectRecognition:
         if not self._do_recognition:
             return
 
-        class_scores = self._recognizer.classify(self._bgr_image)
-        sorted_result = order_dict_by_value(class_scores)
+        sorted_result = self._recognizer.classify(self._bgr_image)
 
         # self._recognition.label = sorted_result[-1][0].split('\t')[1]
         recognition = Recognition()
