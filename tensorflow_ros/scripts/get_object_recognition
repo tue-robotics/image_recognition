@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import argparse
-from tensorflow_ros.object_recognizer import ObjectRecognizer, order_dict_by_value
+from tensorflow_ros.object_recognizer import ObjectRecognizer
 import cv2
 
 import os
@@ -32,8 +32,7 @@ if os.path.isfile(args.image):
     try:
         # Read the image
         img = cv2.imread(args.image)
-        raw_result = object_recognizer.classify(img)
-        ordered_result = order_dict_by_value(raw_result)
+        ordered_result = object_recognizer.classify(img)
 
         pprint.pprint(ordered_result[:args.top_n])
 
@@ -47,8 +46,7 @@ elif os.path.isdir(args.image):
 
     images = map(cv2.imread, image_paths)
 
-    predictions_per_image = map(object_recognizer.classify, images)
-    sorted_predictions_per_image = map(order_dict_by_value, predictions_per_image)
+    sorted_predictions_per_image = map(object_recognizer.classify, images)
 
     # Compose a dict mapping each filename to the predictions for each class
     results = dict(zip(image_paths, [prediction[:args.top_n] for prediction in sorted_predictions_per_image]))

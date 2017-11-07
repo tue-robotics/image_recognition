@@ -21,7 +21,7 @@ from image_recognition_msgs.srv import Recognize
 from image_recognition_msgs.msg import Recognition, CategoryProbability
 from image_recognition_util import image_writer
 
-from tensorflow_ros.object_recognizer import ObjectRecognizer, order_dict_by_value
+from tensorflow_ros.object_recognizer import ObjectRecognizer
 
 class TensorflowObjectRecognition:
     """ Performs object recognition using Tensorflow neural networks """

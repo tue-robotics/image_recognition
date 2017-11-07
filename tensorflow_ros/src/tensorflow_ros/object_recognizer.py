@@ -6,8 +6,6 @@ import numpy as np
 
 import cv2
 
-import operator
-
 class ObjectRecognizer(object):
     def __init__(self, graph_path, labels_path):
 
@@ -16,12 +14,14 @@ class ObjectRecognizer(object):
         with open(graph_path, 'rb') as f:
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(f.read())
-            _ = tf.import_graph_def(graph_def, name='')  # This magically stays in memory as the network tensorflow should work with
+            _ = tf.import_graph_def(graph_def, name='')
 
     def classify(self, np_image):
-        """Classify an image into one of the labels at the label_path
+        """
+        Classify an image into one of the labels at the label_path
         :param np_image a numpy array representing the image to be classified. This is assumed to be segmented/cropped already!
-        :returns a dictionary mapping class to probability of the image being that class"""
+        :returns a dictionary mapping class to probability of the image being that class
+        """
 
         filename = self._save_to_file(np_image)
 
@@ -43,11 +43,12 @@ class ObjectRecognizer(object):
                 raise Exception("Failed to run tensorflow session: %s", e)
 
             # Open output_labels and construct dict from result
-            result = dict(zip(self.labels, predictions))
+            result = sorted(zip(self.labels, predictions), key=lambda pair: pair[1])
 
             return result
 
-    def _save_to_file(self, np_image):
+    @staticmethod
+    def _save_to_file(np_image):
         """
         Save a numpy image to our tempfile
         :param np_image:
@@ -59,13 +60,10 @@ class ObjectRecognizer(object):
 
         return filename
 
-    def _read_labels(self, labels_path):
+    @staticmethod
+    def _read_labels(labels_path):
         with open(labels_path, 'rb') as f:
             labels = f.read().split("\n")
         if not labels:
             raise ValueError("Empty labels, will not be able to map predictions to labels")
         return labels
-
-def order_dict_by_value(d):
-    sorted_result = sorted(d.items(), key=operator.itemgetter(1), reverse=True)
-    return sorted_result
