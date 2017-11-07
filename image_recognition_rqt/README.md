@@ -66,6 +66,8 @@ Select a rostopic of type `sensor_msgs/Image` with use of the configuration butt
 If you do not have any available topic, try to use your webcam with use of the usb_cam node (http://wiki.ros.org/usb_cam), you can start this node with:
 
     rosrun usb_cam usb_cam_node # This step is optional ofcourse
+
+You could also use the Folder image publisher plugin to publish images directly from a folder.
     
 Once you have an image stream in your GUI, you can set the labels of your different objects with use of the 'Edit labels' button in the bottom-left corner:
 
@@ -85,6 +87,10 @@ Happy labeling :)
 
 ## Manual plugin
 Plugin for manually responding to a service call for classification
+
+## Folder image publisher
+
+Plugin for publishing image from a folder via a topic. This tool can be used in combination with the annotation plugin.
 
     
 

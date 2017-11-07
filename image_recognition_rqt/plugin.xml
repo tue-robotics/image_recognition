@@ -44,4 +44,21 @@
       <statustip>Manual image recognition service.</statustip>
     </qtgui>
   </class>
+  <class name="Folder Image Publisher Plugin"
+         type="image_recognition_rqt.folder_image_publisher.FolderImagePublisherPlugin"
+         base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A Python GUI for publishing images from folder
+    </description>
+    <qtgui>
+        <group>
+            <label>Image recognition</label>
+            <icon type="theme">folder</icon>
+            <statustip>Plugins related to image recogition.</statustip>
+        </group>
+      <label>Folder image publisher</label>
+      <icon type="theme">system-help</icon>
+      <statustip>Publish image from a folder.</statustip>
+    </qtgui>
+  </class>
 </library>
