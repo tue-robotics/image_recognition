@@ -44,7 +44,7 @@ class ObjectRecognizer(object):
                 raise Exception("Failed to run tensorflow session: %s", e)
 
             # Open output_labels and construct dict from result
-            result = sorted(zip(self.labels, predictions), key=lambda pair: pair[1])
+            result = sorted(zip(self.labels, predictions), key=lambda pair: pair[1], reverse=True)
 
             return result
 
