@@ -22,14 +22,16 @@ parser.add_argument('-l', '--labels_path', type=str, help='Path to a file with t
 parser.add_argument('-n', '--top_n', type=int, help='Top N results to display',
                     required=False,
                     default=1)
-parser.add_argument('-a', '--annotated-dir', type=str, help='Use a the given directory (which must have subdirs for each class)'
-                                                            ' and use the annotations to get some metrics about the classifier',
+parser.add_argument('--input-tensor', type=str, help='What tensor to input the image into',
                     required=False,
-                    default=".")
-# parser.add_argument('-v', '--verbose', help="Increase output verbosity", action="store_true")
+                    default=None)
+parser.add_argument('--output-tensor', type=str, help='What tensor read the classifications from',
+                    required=False,
+                    default=None)
+
 args = parser.parse_args()
 
-object_recognizer = ObjectRecognizer(args.graph_path, args.labels_path)
+object_recognizer = ObjectRecognizer(args.graph_path, args.labels_path, input_tensor=args.input_tensor, output_tensor=args.output_tensor)
 
 if os.path.isfile(args.image):
     # Pretty print the output

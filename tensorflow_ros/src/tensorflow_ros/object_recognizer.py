@@ -16,10 +16,29 @@ from tensorflow.python.ops import array_ops
 # In the function called in the background: use ```with self.session.as_default() as sess:```
 # See https://stackoverflow.com/questions/45093688/how-to-understand-sess-as-default-and-sess-graph-as-default
 
-class ObjectRecognizer(object):
-    def __init__(self, graph_path, labels_path):
 
+class InceptionV3:
+    """Configuration for an Inception_v3 network"""
+    input_tensor = "Cast:0"
+    output_tensor = "final_result:0"
+
+
+class ObjectRecognizer(object):
+    def __init__(self, graph_path, labels_path,
+                 input_tensor=None,
+                 output_tensor=None):
+        """
+        Recognize objects via a given TensorFlow pre-trained neural net.
+        The configuration oof the in/output tensor names are preset to those of a (retrained) Inception_v3 network
+
+        :param graph_path: path to a pre-trained TensorFlow graph.pb file, e.g. output_graph.pb
+        :param labels_path: path to a file containing labels. One label per line, order should match that of the graph
+        :param input_tensor: Which tensor to feed the numpy-formatted image in?
+        :param output_tensor: Which tensor to extract the result from?
+        """
         self.labels = self._read_labels(labels_path)
+        self.input_tensor = input_tensor if input_tensor else InceptionV3.input_tensor
+        self.output_tensor = output_tensor if output_tensor else  InceptionV3.output_tensor
 
         with open(graph_path, 'rb') as f:
             graph_def = tf.GraphDef()
@@ -41,12 +60,12 @@ class ObjectRecognizer(object):
         with self.session.as_default() as sess:  # Be able to call this function from any thread
 
             # Get result tensor that will eventually hold the predictions
-            result_tensor = sess.graph.get_tensor_by_name("final_result:0")
+            result_tensor = sess.graph.get_tensor_by_name(self.output_tensor)
 
             # Open Image and perform prediction
             try:
                 predictions = sess.run(result_tensor,
-                                       feed_dict={"Cast:0": np_image})
+                                       feed_dict={self.input_tensor: np_image})
                 predictions = np.squeeze(predictions)
             except Exception as e:
                 raise Exception("Failed to run tensorflow session: %s", e)
