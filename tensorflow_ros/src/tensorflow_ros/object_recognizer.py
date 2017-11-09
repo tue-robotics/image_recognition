@@ -6,6 +6,10 @@ import numpy as np
 
 import cv2
 
+
+from tensorflow.python.framework import dtypes
+from tensorflow.python.ops import array_ops
+
 # Threading in TensorFlow is interesting...
 # First: ```finalize()``` the graph
 # Then: Create the ```self.session``` in the main thread
@@ -33,8 +37,6 @@ class ObjectRecognizer(object):
         :returns a dictionary mapping class to probability of the image being that class
         """
 
-        filename = self._save_to_file(np_image)
-
         # Open tf session
         with self.session.as_default() as sess:  # Be able to call this function from any thread
 
@@ -43,11 +45,9 @@ class ObjectRecognizer(object):
 
             # Open Image and perform prediction
             try:
-                with open(filename, 'rb') as f:
-                    # Run inference of the result_tensor while substituting some tensor by our input data
-                    predictions = sess.run(result_tensor,
-                                           {'DecodeJpeg/contents:0': f.read()})
-                    predictions = np.squeeze(predictions)
+                predictions = sess.run(result_tensor,
+                                       feed_dict={"Cast:0": np_image})
+                predictions = np.squeeze(predictions)
             except Exception as e:
                 raise Exception("Failed to run tensorflow session: %s", e)
 
@@ -55,19 +55,6 @@ class ObjectRecognizer(object):
             result = sorted(zip(self.labels, predictions), key=lambda pair: pair[1], reverse=True)
 
             return result
-
-    @staticmethod
-    def _save_to_file(np_image):
-        """
-        Save a numpy image to our temporary file
-        :param np_image:
-        :return:
-        """
-
-        filename = "/tmp/{id}.jpg".format(id=id(np_image))
-        cv2.imwrite(filename=filename, img=np_image)
-
-        return filename
 
     @staticmethod
     def _read_labels(labels_path):
