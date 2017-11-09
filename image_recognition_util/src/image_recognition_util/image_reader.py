@@ -16,4 +16,18 @@ def read_annotated(dir_path, patterns=["*.jpg", "*.png", "*.jpeg"]):
             for basename in files:
                 for pattern in patterns:
                     if fnmatch.fnmatch(basename, pattern):
-                        yield label, cv2.imread(os.path.join(root, basename))
+                        fullpath = os.path.join(root, basename)
+                        yield label, cv2.imread(fullpath)#, fullpath
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description='Get image classifications via some TensorFlow network')
+
+    parser.add_argument('-a', '--annotated-dir', type=str, help='List the images in th given directory',
+                    required=False,
+                    default=".")
+
+    args = parser.parse_args()
+
+    for label, image, path in read_annotated(args.annotated_dir):
+        print(label, path)
