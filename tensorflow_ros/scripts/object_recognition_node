@@ -90,14 +90,17 @@ class TensorflowObjectRecognition:
         self._recognitions = []
         self._do_recognition = True
 
-        # Wait until the request has been processed and return the result
-        r = rospy.Rate(1000.0)  # Not a problem to spin quickly
-        while not rospy.is_shutdown():
-            if not self._do_recognition:
-                return {"recognitions": self._recognitions}
+        self.update()
+        return {"recognitions": self._recognitions}
 
-        # Return an empty result if rospy has been shutdown
-        return {"recognitions": []}
+        # # Wait until the request has been processed and return the result
+        # r = rospy.Rate(1000.0)  # Not a problem to spin quickly
+        # while not rospy.is_shutdown():
+        #     if not self._do_recognition:
+        #         return {"recognitions": self._recognitions}
+        #
+        # # Return an empty result if rospy has been shutdown
+        # return {"recognitions": []}
 
     def update(self):
         """ Do the actual work: if _do_recognition is True, it retrieves the saved image and tries to classify it.
@@ -153,8 +156,10 @@ if __name__ == '__main__':
                                                      labels_path=_labels_path,
                                                      save_images_folder=save_images_folder)
 
-    # Start update loop
-    r = rospy.Rate(100.0)
-    while not rospy.is_shutdown():
-        object_recognition.update()
-        r.sleep()
+    # # Start update loop
+    # r = rospy.Rate(100.0)
+    # while not rospy.is_shutdown():
+    #     object_recognition.update()
+    #     r.sleep()
+
+    rospy.spin()

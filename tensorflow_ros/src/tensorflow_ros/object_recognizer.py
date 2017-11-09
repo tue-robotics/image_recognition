@@ -16,6 +16,9 @@ class ObjectRecognizer(object):
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(f.read())
             _ = tf.import_graph_def(graph_def, name='')
+            tf.get_default_graph().finalize()  # Be able to call this function from any thread
+
+        self.sess = tf.Session(graph=tf.get_default_graph())
 
     def classify(self, np_image):
         """
@@ -28,7 +31,7 @@ class ObjectRecognizer(object):
         filename = self._save_to_file(np_image)
 
         # Open tf session
-        with tf.Session() as sess:
+        with self.sess.as_default() as sess:  # Be able to call this function from any thread
 
             # Get result tensor that will eventually hold the predictions
             result_tensor = sess.graph.get_tensor_by_name("final_result:0")
