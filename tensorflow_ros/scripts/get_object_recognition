@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser(description='Get image classifications via some
 
 # Add arguments
 parser.add_argument('-i', '--image', type=str, help='Image',
-                    required=True)
+                    required=False)
 parser.add_argument('-g', '--graph_path', type=str, help='Path to a trained TensorFlow output_graph.pb network',
                     required=False,
                     default="output_graph.pb")
@@ -21,28 +21,61 @@ parser.add_argument('-l', '--labels_path', type=str, help='Path to a file with t
 parser.add_argument('-n', '--top_n', type=int, help='Top N results to display',
                     required=False,
                     default=1)
+parser.add_argument('-a', '--annotated-dir', type=str, help='Use a the given directory (which must have subdirs for each class)'
+                                                            ' and use the annotations to get some metrics about the classifier',
+                    required=False,
+                    default=".")
 # parser.add_argument('-v', '--verbose', help="Increase output verbosity", action="store_true")
 args = parser.parse_args()
 
-
 object_recognizer = ObjectRecognizer(args.graph_path, args.labels_path)
 
-if os.path.isfile(args.image):
-    # Pretty print the output
-    try:
-        # Read the image
-        img = cv2.imread(args.image)
-        ordered_result = object_recognizer.classify(img)
+if not args.annotated_dir:
+    if os.path.isfile(args.image):
+        # Pretty print the output
+        try:
+            # Read the image
+            img = cv2.imread(args.image)
+            ordered_result = object_recognizer.classify(img)
 
-        pprint.pprint(ordered_result[:args.top_n])
+            pprint.pprint(ordered_result[:args.top_n])
 
-    except Exception as e:
-        print "An error occurred: %s" % e
-elif os.path.isdir(args.image):
-    dirname = args.image
+        except Exception as e:
+            print "An error occurred: %s" % e
+    elif os.path.isdir(args.image):
+        dirname = args.image
 
-    filenames = os.listdir(dirname)
-    image_paths = [os.path.join(dirname, f) for f in filenames]
+        filenames = os.listdir(dirname)
+        image_paths = [os.path.join(dirname, f) for f in filenames]
+
+        for image_path in image_paths:
+            image = cv2.imread(image_path)
+            prediction = object_recognizer.classify(image)
+            pprint.pprint({image_path: prediction[:args.top_n]})
+else:
+    from image_recognition_util.image_reader import read_annotated
+
+    labels_per_image = []
+    predictions_per_image = []
+    matches = []
+
+    for label, image in read_annotated(args.annotated_dir):
+        image_predictions = object_recognizer.classify(image)
+
+        labels_per_image += [label]
+        predictions_per_image += [image_predictions]
+
+        match = label == image_predictions[0][0]
+        matches += [match]
+        pprint.pprint("Image is a {} and classified as a {} ({:.3f}) --> {}".format(label, image_predictions[0][0], image_predictions[0][1], match))
+        print "Matches: {} / {}".format(matches.count(True), len(matches))
+
+        # TODO: Make a np.array of the scores for each label, in a predefined order, the same for all images
+
+    pprint.pprint(matches)
+    print "Matches: {} / {}".format(matches.count(True), len(matches))
+
+
 
     for image_path in image_paths:
         image = cv2.imread(image_path)
