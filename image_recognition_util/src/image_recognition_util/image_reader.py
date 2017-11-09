@@ -12,7 +12,7 @@ def read_annotated(dir_path, patterns=["*.jpg", "*.png", "*.jpeg"]):
     :param patterns: Patterns of the images the reader should match
     """
     for label in os.listdir(dir_path):
-        for root, dirs, files in os.walk(dir_path):
+        for root, dirs, files in os.walk(os.path.join(dir_path, label)):
             for basename in files:
                 for pattern in patterns:
                     if fnmatch.fnmatch(basename, pattern):
