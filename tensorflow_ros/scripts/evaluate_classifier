@@ -5,6 +5,7 @@ The script will show some metric about precision/recall, average precision etc. 
 
 import argparse
 import pprint
+import random
 
 from tensorflow_ros.object_recognizer import ObjectRecognizer
 from image_recognition_util.image_reader import read_annotated
@@ -28,6 +29,9 @@ parser.add_argument('-a', '--annotated-dir', type=str, help='Use a the given dir
                                                             ' and use the annotations to get some metrics about the classifier',
                     required=True,
                     default=".")
+parser.add_argument('-p', '--percentage', type=float, help='Which percentage of images in the dir to actually classify',
+                    required=False,
+                    default="100")
 
 args = parser.parse_args()
 
@@ -40,7 +44,12 @@ labels_per_image = []
 predictions_per_image = []
 matches = []
 
+ratio = args.percentage / 100.0
+
 for label, image in read_annotated(args.annotated_dir):
+    if random.random() > ratio:
+        continue
+
     image_predictions = object_recognizer.classify(image)
 
     labels_per_image += [label]
