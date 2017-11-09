@@ -1,0 +1,146 @@
+#!/usr/bin/env python
+
+"""Evaluate a given classifier against a directory of annotated images.
+The script will show some metric about precision/recall, average precision etc. """
+
+import argparse
+import pprint
+
+from tensorflow_ros.object_recognizer import ObjectRecognizer
+from image_recognition_util.image_reader import read_annotated
+
+import numpy as np
+
+# Assign description to the help doc
+parser = argparse.ArgumentParser(description='Get image classifications via some TensorFlow network')
+
+# Add arguments
+parser.add_argument('-g', '--graph_path', type=str, help='Path to a trained TensorFlow output_graph.pb network',
+                    required=False,
+                    default="output_graph.pb")
+parser.add_argument('-l', '--labels_path', type=str, help='Path to a file with the labels into which the network classifies, eg. output_labels.txt',
+                    required=False,
+                    default="output_labels.pb")
+parser.add_argument('-n', '--top_n', type=int, help='Top N results to display',
+                    required=False,
+                    default=1)
+parser.add_argument('-a', '--annotated-dir', type=str, help='Use a the given directory (which must have subdirs for each class)'
+                                                            ' and use the annotations to get some metrics about the classifier',
+                    required=True,
+                    default=".")
+
+args = parser.parse_args()
+
+object_recognizer = ObjectRecognizer(args.graph_path, args.labels_path)
+
+sorted_labels = sorted(object_recognizer.labels)
+n_classes = len(sorted_labels)
+
+labels_per_image = []
+predictions_per_image = []
+matches = []
+
+for label, image in read_annotated(args.annotated_dir):
+    image_predictions = object_recognizer.classify(image)
+
+    labels_per_image += [label]
+    predictions_per_image += [image_predictions]
+
+    match = label == image_predictions[0][0]
+    matches += [match]
+    pprint.pprint("Image is a {} and classified as a {} ({:.3f}) --> {}".format(label, image_predictions[0][0],
+                                                                                image_predictions[0][1], match))
+    print "Matches: {} / {}".format(matches.count(True), len(matches))
+
+    # TODO: Make a np.array of the scores for each label, in a predefined order, the same for all images
+
+n_images = len(labels_per_image)
+
+pprint.pprint(matches)
+print "Matches: {} / {}".format(matches.count(True), len(matches))
+
+y_score = np.zeros(shape=(n_images, n_classes))
+for image_index, (ground_truth_label, prediction_per_image) in enumerate(zip(labels_per_image, predictions_per_image)):
+    prediction_dict = dict(prediction_per_image)
+    for label_index, label in enumerate(sorted_labels):
+        y_score[image_index][label_index] = prediction_dict[label]
+
+Y_test = np.zeros(shape=(n_images, n_classes))
+for image_index, ground_truth_label in enumerate(labels_per_image):
+    Y_test[image_index][sorted_labels.index(ground_truth_label)] = 1
+
+from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import average_precision_score
+
+# For each class
+precision = dict()
+recall = dict()
+average_precision = dict()
+for i in range(n_classes):
+    precision[i], recall[i], _ = precision_recall_curve(Y_test[:, i],
+                                                        y_score[:, i])
+    average_precision[i] = average_precision_score(Y_test[:, i], y_score[:, i])
+
+# A "micro-average": quantifying score on all classes jointly
+precision["micro"], recall["micro"], _ = precision_recall_curve(Y_test.ravel(),
+                                                                y_score.ravel())
+average_precision["micro"] = average_precision_score(Y_test, y_score,
+                                                     average="micro")
+print('Average precision score, micro-averaged over all classes: {0:0.2f}'
+      .format(average_precision["micro"]))
+
+from sklearn.metrics import precision_recall_curve
+import matplotlib.pyplot as plt
+
+plt.figure()
+plt.step(recall['micro'], precision['micro'], color='b', alpha=0.2,
+         where='post')
+plt.fill_between(recall["micro"], precision["micro"], step='post', alpha=0.2,
+                 color='b')
+
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.ylim([0.0, 1.05])
+plt.xlim([0.0, 1.0])
+plt.title(
+    'Average precision score, micro-averaged over all classes: AP={0:0.2f}'
+        .format(average_precision["micro"]))
+
+from itertools import cycle
+
+# setup plot details
+colors = cycle(['navy', 'turquoise', 'darkorange', 'cornflowerblue', 'teal'])
+
+plt.figure(figsize=(7, 8))
+f_scores = np.linspace(0.2, 0.8, num=4)
+lines = []
+labels = []
+for f_score in f_scores:
+    x = np.linspace(0.01, 1)
+    y = f_score * x / (2 * x - f_score)
+    l, = plt.plot(x[y >= 0], y[y >= 0], color='gray', alpha=0.2)
+    plt.annotate('f1={0:0.1f}'.format(f_score), xy=(0.9, y[45] + 0.02))
+
+lines.append(l)
+labels.append('iso-f1 curves')
+l, = plt.plot(recall["micro"], precision["micro"], color='gold', lw=2)
+lines.append(l)
+labels.append('micro-average Precision-recall (area = {0:0.2f})'
+              ''.format(average_precision["micro"]))
+
+for i, color in zip(range(n_classes), colors):
+    l, = plt.plot(recall[i], precision[i], color=color, lw=2)
+    lines.append(l)
+    labels.append('Precision-recall for class "{0}" (area = {1:0.2f})'
+                  ''.format(sorted_labels[i], average_precision[i]))
+
+fig = plt.gcf()
+fig.subplots_adjust(bottom=0.25)
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Extension of Precision-Recall curve to multi-class')
+plt.legend(lines, labels, loc=(0, -.38), prop=dict(size=14))
+
+plt.show()
