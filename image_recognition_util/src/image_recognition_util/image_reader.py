@@ -3,7 +3,7 @@ import os
 import fnmatch
 
 
-def read_annotated(dir_path, patterns=["*.jpg", "*.png", "*.jpeg"], include_path=False):
+def read_annotated(dir_path, patterns=["*.jpg", "*.png", "*.jpeg"]):
     """
     Read annotated images from a directory. This reader assumes that the images in this directory are separated in
     different directories with the label name as directory name. The method returns a generator of the label (string)
@@ -16,11 +16,7 @@ def read_annotated(dir_path, patterns=["*.jpg", "*.png", "*.jpeg"], include_path
             for basename in files:
                 for pattern in patterns:
                     if fnmatch.fnmatch(basename, pattern):
-                        fullpath = os.path.join(root, basename)
-                        if not include_path:
-                            yield label, cv2.imread(fullpath)
-                        else:
-                            yield label, cv2.imread(fullpath), fullpath
+                        yield label, cv2.imread(os.path.join(root, basename))
 
 if __name__ == "__main__":
     import argparse
@@ -32,5 +28,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    for label, image, path in read_annotated(args.annotated_dir, include_path=True):
-        print(label, path)
+    for label, image in read_annotated(args.annotated_dir):
+        print(label)
