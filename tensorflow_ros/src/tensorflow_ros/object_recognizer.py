@@ -6,6 +6,11 @@ import numpy as np
 
 import cv2
 
+# Threading in TensorFlow is interesting...
+# First: ```finalize()``` the graph
+# Then: Create the ```self.session``` in the main thread
+# In the function called in the background: use ```with self.session.as_default() as sess:```
+# See https://stackoverflow.com/questions/45093688/how-to-understand-sess-as-default-and-sess-graph-as-default
 
 class ObjectRecognizer(object):
     def __init__(self, graph_path, labels_path):
@@ -16,9 +21,9 @@ class ObjectRecognizer(object):
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(f.read())
             _ = tf.import_graph_def(graph_def, name='')
-            tf.get_default_graph().finalize()  # Be able to call this function from any thread
+            tf.get_default_graph().finalize()  # Make the graph read-only, safe to use from any thread
 
-        self.sess = tf.Session(graph=tf.get_default_graph())
+        self.session = tf.Session(graph=tf.get_default_graph())
 
     def classify(self, np_image):
         """
@@ -31,7 +36,7 @@ class ObjectRecognizer(object):
         filename = self._save_to_file(np_image)
 
         # Open tf session
-        with self.sess.as_default() as sess:  # Be able to call this function from any thread
+        with self.session.as_default() as sess:  # Be able to call this function from any thread
 
             # Get result tensor that will eventually hold the predictions
             result_tensor = sess.graph.get_tensor_by_name("final_result:0")
