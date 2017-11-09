@@ -12,6 +12,12 @@ from image_recognition_util.image_reader import read_annotated
 
 import numpy as np
 
+
+import matplotlib.pyplot as plt
+from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import average_precision_score
+from itertools import cycle
+
 # Assign description to the help doc
 parser = argparse.ArgumentParser(description='Get image classifications via some TensorFlow network')
 
@@ -36,9 +42,6 @@ parser.add_argument('-p', '--percentage', type=float, help='Which percentage of 
 args = parser.parse_args()
 
 object_recognizer = ObjectRecognizer(args.graph_path, args.labels_path)
-
-sorted_labels = sorted(object_recognizer.labels)
-n_classes = len(sorted_labels)
 
 labels_per_image = []
 predictions_per_image = []
@@ -110,16 +113,15 @@ def y_test_from_ground_truth(ordered_classes, ground_truth_per_image):
 
 
 ordered_classes = sorted(object_recognizer.labels)
+n_classes = len(ordered_classes)
 y_score = y_score_from_predictions(ordered_classes, predictions_per_image)
 Y_test = y_test_from_ground_truth(ordered_classes, labels_per_image)
-
-from sklearn.metrics import precision_recall_curve
-from sklearn.metrics import average_precision_score
 
 # For each class
 precision = dict()
 recall = dict()
 average_precision = dict()
+
 for i in range(n_classes):
     precision[i], recall[i], _ = precision_recall_curve(Y_test[:, i],
                                                         y_score[:, i])
@@ -132,9 +134,6 @@ average_precision["micro"] = average_precision_score(Y_test, y_score,
                                                      average="micro")
 print('Average precision score, micro-averaged over all classes: {0:0.2f}'
       .format(average_precision["micro"]))
-
-from sklearn.metrics import precision_recall_curve
-import matplotlib.pyplot as plt
 
 plt.figure()
 plt.step(recall['micro'], precision['micro'], color='b', alpha=0.2,
@@ -149,8 +148,6 @@ plt.xlim([0.0, 1.0])
 plt.title(
     'Average precision score, micro-averaged over all classes: AP={0:0.2f}'
         .format(average_precision["micro"]))
-
-from itertools import cycle
 
 # setup plot details
 colors = cycle(['navy', 'turquoise', 'darkorange', 'cornflowerblue', 'teal'])
@@ -173,10 +170,10 @@ labels.append('micro-average Precision-recall (area = {0:0.2f})'
               ''.format(average_precision["micro"]))
 
 for i, color in zip(range(n_classes), colors):
-    l, = plt.plot(recall[i], precision[i], color=color, lw=2)
+    l, = plt.plot(recall[i], precision[i], lw=2) # , color=color
     lines.append(l)
     labels.append('Precision-recall for class "{0}" (area = {1:0.2f})'
-                  ''.format(sorted_labels[i], average_precision[i]))
+                  ''.format(ordered_classes[i], average_precision[i]))
 
 fig = plt.gcf()
 fig.subplots_adjust(bottom=0.25)
