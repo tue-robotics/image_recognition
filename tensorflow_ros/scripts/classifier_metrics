@@ -12,6 +12,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import average_precision_score
+from sklearn.metrics import roc_auc_score, roc_curve, auc
+from scipy import interp
 from itertools import cycle
 
 def y_score_from_predictions(ordered_classes, predictions_per_image):
@@ -34,7 +36,7 @@ def y_score_from_predictions(ordered_classes, predictions_per_image):
             y_score[image_index][label_index] = prediction_dict[label]
     return y_score
 
-def y_test_from_ground_truth(ordered_classes, ground_truth_per_imsage):
+def y_test_from_ground_truth(ordered_classes, ground_truth_per_image):
     """
     Create a sparse array of the one-hot ground truth classification per image
 
@@ -81,11 +83,10 @@ if args.input:
 n_images = len(labels_per_image)
 print "Read {} prediction scores".format(n_images)
 
-import ipdb; ipdb.set_trace()
 
 n_classes = len(ordered_classes)
 y_score = y_score_from_predictions(ordered_classes, predictions_per_image)
-Y_test = y_test_from_ground_truth(ordered_classes, labels_per_image)
+y_test = y_test_from_ground_truth(ordered_classes, labels_per_image)
 
 # For each class
 precision = dict()
@@ -93,14 +94,14 @@ recall = dict()
 average_precision = dict()
 
 for i in range(n_classes):
-    precision[i], recall[i], _ = precision_recall_curve(Y_test[:, i],
+    precision[i], recall[i], _ = precision_recall_curve(y_test[:, i],
                                                         y_score[:, i])
-    average_precision[i] = average_precision_score(Y_test[:, i], y_score[:, i])
+    average_precision[i] = average_precision_score(y_test[:, i], y_score[:, i])
 
 # A "micro-average": quantifying score on all classes jointly
-precision["micro"], recall["micro"], _ = precision_recall_curve(Y_test.ravel(),
+precision["micro"], recall["micro"], _ = precision_recall_curve(y_test.ravel(),
                                                                 y_score.ravel())
-average_precision["micro"] = average_precision_score(Y_test, y_score,
+average_precision["micro"] = average_precision_score(y_test, y_score,
                                                      average="micro")
 print('Average precision score, micro-averaged over all classes: {0:0.2f}'
       .format(average_precision["micro"]))
@@ -153,6 +154,75 @@ plt.xlabel('Recall')
 plt.ylabel('Precision')
 plt.title('Extension of Precision-Recall curve to multi-class')
 plt.legend(lines, labels, loc=(0, -.38), prop=dict(size=14))
+
+
+# plt.figure(figsize=(7, 8))
+# Compute ROC curve and ROC area for each class
+fpr = dict()
+tpr = dict()
+roc_auc = dict()
+for i in range(n_classes):
+    fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
+    roc_auc[i] = auc(fpr[i], tpr[i])
+#
+# Compute micro-average ROC curve and ROC area
+fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
+roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+
+lw = 2
+# plt.plot(fpr[2], tpr[2], color='darkorange',
+#          lw=lw, label='ROC curve (area = %0.2f)' % roc_auc[2])
+# plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+# plt.xlim([0.0, 1.0])
+# plt.ylim([0.0, 1.05])
+# plt.xlabel('False Positive Rate')
+# plt.ylabel('True Positive Rate')
+# plt.title('Receiver operating characteristic example')
+# plt.legend(loc="lower right")
+
+
+# Compute macro-average ROC curve and ROC area
+
+# First aggregate all false positive rates
+all_fpr = np.unique(np.concatenate([fpr[i] for i in range(n_classes)]))
+
+# Then interpolate all ROC curves at this points
+mean_tpr = np.zeros_like(all_fpr)
+for i in range(n_classes):
+    mean_tpr += interp(all_fpr, fpr[i], tpr[i])
+
+# Finally average it and compute AUC
+mean_tpr /= n_classes
+
+fpr["macro"] = all_fpr
+tpr["macro"] = mean_tpr
+roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
+
+# Plot all ROC curves
+plt.figure(figsize=(7, 8))
+plt.plot(fpr["micro"], tpr["micro"],
+         label='micro-average ROC curve (area = {0:0.2f})'
+               ''.format(roc_auc["micro"]),
+         color='deeppink', linestyle=':', linewidth=4)
+
+plt.plot(fpr["macro"], tpr["macro"],
+         label='macro-average ROC curve (area = {0:0.2f})'
+               ''.format(roc_auc["macro"]),
+         color='navy', linestyle=':', linewidth=4)
+
+for i, color in zip(range(n_classes), colors):
+    plt.plot(fpr[i], tpr[i], lw=lw,
+             label='ROC curve of class {0} (area = {1:0.2f})'
+             ''.format(ordered_classes[i], roc_auc[i]))
+
+plt.plot([0, 1], [0, 1], 'k--', lw=lw)
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Some extension of Receiver operating characteristic to multi-class')
+plt.legend(loc="lower right")
+
 
 plt.show()
 
