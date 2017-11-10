@@ -6,6 +6,7 @@ The script will show some metric about precision/recall, average precision etc. 
 import argparse
 import pprint
 import random
+import csv
 
 from tensorflow_ros.object_recognizer import ObjectRecognizer
 from image_recognition_util.image_reader import read_annotated
@@ -38,6 +39,9 @@ parser.add_argument('-a', '--annotated-dir', type=str, help='Use a the given dir
 parser.add_argument('-p', '--percentage', type=float, help='Which percentage of images in the dir to actually classify',
                     required=False,
                     default="100")
+parser.add_argument('-o', '--output', type=str, help='Output csv file of the classifiers result. First column is ground truth label, other columns are the per-class scores',
+                    required=False,
+                    default="result.csv")
 
 args = parser.parse_args()
 
@@ -48,6 +52,7 @@ predictions_per_image = []
 matches = []
 
 ratio = args.percentage / 100.0
+print("Will take only a {}% fraction of the data".format(ratio*100))
 
 for label, image in read_annotated(args.annotated_dir):
     if random.random() > ratio:
@@ -68,7 +73,6 @@ for label, image in read_annotated(args.annotated_dir):
 
 n_images = len(labels_per_image)
 
-pprint.pprint(matches)
 print "Matches: {} / {}".format(matches.count(True), len(matches))
 
 def y_score_from_predictions(ordered_classes, predictions_per_image):
@@ -116,6 +120,16 @@ ordered_classes = sorted(object_recognizer.labels)
 n_classes = len(ordered_classes)
 y_score = y_score_from_predictions(ordered_classes, predictions_per_image)
 Y_test = y_test_from_ground_truth(ordered_classes, labels_per_image)
+
+if args.output:
+    with open(args.output, 'w+') as f:
+        writer = csv.writer(f)
+        writer.writerow(["ground_truth"]+ordered_classes)
+
+        for index, ground_truth_label in enumerate(labels_per_image):
+            row = [ground_truth_label] + list(y_score[index])
+            writer.writerow(row)
+
 
 # For each class
 precision = dict()
