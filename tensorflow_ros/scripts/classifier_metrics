@@ -6,13 +6,14 @@ The script will show some metric about precision/recall, average precision etc. 
 import argparse
 import pprint
 import csv
+import itertools
 
 import numpy as np
 
 import matplotlib.pyplot as plt
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import average_precision_score
-from sklearn.metrics import roc_auc_score, roc_curve, auc
+from sklearn.metrics import roc_auc_score, roc_curve, auc, confusion_matrix
 from scipy import interp
 from itertools import cycle
 
@@ -30,11 +31,13 @@ def y_score_from_predictions(ordered_classes, predictions_per_image):
     n_classes = len(ordered_classes)
 
     y_score = np.zeros(shape=(n_images, n_classes))
+
     for image_index, prediction_per_image in enumerate(predictions_per_image):
         prediction_dict = dict(zip(ordered_classes, prediction_per_image))
         for label_index, label in enumerate(ordered_classes):
             y_score[image_index][label_index] = prediction_dict[label]
     return y_score
+
 
 def y_test_from_ground_truth(ordered_classes, ground_truth_per_image):
     """
@@ -55,6 +58,40 @@ def y_test_from_ground_truth(ordered_classes, ground_truth_per_image):
         y_test[image_index][ordered_classes.index(ground_truth_class)] = 1  # Others are left at zero
 
     return y_test
+
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    #     print("Normalized confusion matrix")
+    # else:
+    #     print('Confusion matrix, without normalization')
+    #
+    # print(cm)
+
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=80)
+    plt.yticks(tick_marks, classes)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
 
 parser = argparse.ArgumentParser(description='Calculate various metrics of a classifier that assigns a score per class')
 
@@ -87,6 +124,9 @@ print "Read {} prediction scores".format(n_images)
 n_classes = len(ordered_classes)
 y_score = y_score_from_predictions(ordered_classes, predictions_per_image)
 y_test = y_test_from_ground_truth(ordered_classes, labels_per_image)
+
+y_class_indices = y_score.argmax(axis=1)  # Find the index for each row that has the maximum value
+y_classes = [ordered_classes[class_index] for class_index in y_class_indices]
 
 # For each class
 precision = dict()
@@ -223,6 +263,19 @@ plt.ylabel('True Positive Rate')
 plt.title('Some extension of Receiver operating characteristic to multi-class')
 plt.legend(loc="lower right")
 
+# Compute confusion matrix
+cnf_matrix = confusion_matrix(labels_per_image, y_classes)
+# np.set_printoptions(precision=2)
+
+# # Plot non-normalized confusion matrix
+# plt.figure()
+# plot_confusion_matrix(cnf_matrix, classes=ordered_classes,
+#                       title='Confusion matrix, without normalization')
+
+# Plot normalized confusion matrix
+plt.figure()
+plot_confusion_matrix(cnf_matrix, classes=ordered_classes, normalize=True,
+                      title='Normalized confusion matrix')
 
 plt.show()
 
