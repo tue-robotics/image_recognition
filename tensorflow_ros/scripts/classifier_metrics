@@ -200,9 +200,10 @@ plt.legend(lines, labels, loc=(0, -.38), prop=dict(size=14))
 # Compute ROC curve and ROC area for each class
 fpr = dict()
 tpr = dict()
+thresholds = dict()
 roc_auc = dict()
 for i in range(n_classes):
-    fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
+    fpr[i], tpr[i], thresholds[i] = roc_curve(y_test[:, i], y_score[:, i])
     roc_auc[i] = auc(fpr[i], tpr[i])
 #
 # Compute micro-average ROC curve and ROC area
@@ -261,6 +262,29 @@ plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('Some extension of Receiver operating characteristic to multi-class')
+plt.legend(loc="lower right")
+
+# Plot threshold vs true and false positive rate
+plt.figure()
+
+for i, color in zip(range(n_classes), colors):
+    # print "Thresholds for class {}:".format(i),
+    # print thresholds[i]
+    plt.plot(thresholds[i],
+             tpr[i],
+             color=color,
+             lw=lw,
+             label='Tpr {}'.format(ordered_classes[i]))
+
+    plt.plot(thresholds[i],
+             fpr[i],
+             color=color,
+             lw=lw,
+             linestyle='dashed',
+             label='Fpr {}'.format(ordered_classes[i]))
+plt.ylabel('True & False Positive Rate')
+plt.xlabel('Threshold')
+plt.title('Threshold vs True & False positive rate')
 plt.legend(loc="lower right")
 
 # Compute confusion matrix
