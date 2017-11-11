@@ -80,7 +80,8 @@ ordered_classes = sorted(object_recognizer.labels)
 if args.output:
     with open(args.output, 'w+') as f:
         writer = csv.DictWriter(f, fieldnames=["ground_truth"]+ordered_classes)
+        writer.writeheader()
 
         for ground_truth_label, image_predictions in zip(labels_per_image, predictions_per_image):
-            row = dict({'ground_truth': ground_truth_label}, **image_predictions)
+            row = dict({'ground_truth': ground_truth_label}, **dict(image_predictions))
             writer.writerow(row)
