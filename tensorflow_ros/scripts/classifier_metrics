@@ -132,8 +132,10 @@ y_classes = [ordered_classes[class_index] for class_index in y_class_indices]
 # colors = cycle(['navy', 'turquoise', 'darkorange', 'cornflowerblue', 'teal'])
 cmap = plt.get_cmap('gist_rainbow')
 colors = [cmap(i) for i in np.linspace(0, 1, n_classes)]
+markers = cycle([' ', 'o', 'x'])
 
 class_colors = dict(zip(ordered_classes, colors))
+class_markers = dict(zip(ordered_classes, markers))
 
 # For each class
 precision = dict()
@@ -187,7 +189,7 @@ labels.append('micro-average Precision-recall (area = {0:0.2f})'
 
 for i in range(n_classes):
     cls = ordered_classes[i]
-    l, = plt.plot(recall[i], precision[i], lw=2, color=class_colors[cls])
+    l, = plt.plot(recall[i], precision[i], lw=2, color=class_colors[cls], marker=class_markers[cls])
     lines.append(l)
     labels.append('Precision-recall for class "{0}" (area = {1:0.2f})'
                   ''.format(cls, average_precision[i]))
@@ -259,7 +261,7 @@ plt.plot(fpr["macro"], tpr["macro"],
 
 for i in range(n_classes):
     cls = ordered_classes[i]
-    plt.plot(fpr[i], tpr[i], lw=lw, color=class_colors[cls],
+    plt.plot(fpr[i], tpr[i], lw=lw, color=class_colors[cls], marker=class_markers[cls],
              label='ROC curve of class {0} (area = {1:0.2f})'
              ''.format(cls, roc_auc[i]))
 
@@ -278,13 +280,13 @@ for i in range(n_classes):
     cls = ordered_classes[i]
     plt.plot(thresholds[i],
              tpr[i],
-             color=class_colors[cls],
+             color=class_colors[cls], marker=class_markers[cls],
              lw=lw,
              label='Tpr {}'.format(ordered_classes[i]))
 
     plt.plot(thresholds[i],
              fpr[i],
-             color=class_colors[cls],
+             color=class_colors[cls], marker=class_markers[cls],
              lw=lw,
              linestyle='dashed',
              label='Fpr {}'.format(ordered_classes[i]))
