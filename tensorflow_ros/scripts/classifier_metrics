@@ -55,7 +55,9 @@ def y_test_from_ground_truth(ordered_classes, ground_truth_per_image):
 
     y_test = np.zeros(shape=(n_images, n_classes))
     for image_index, ground_truth_class in enumerate(ground_truth_per_image):
-        y_test[image_index][ordered_classes.index(ground_truth_class)] = 1  # Others are left at zero
+        if ground_truth_class in ordered_classes:
+            y_test[image_index][ordered_classes.index(ground_truth_class)] = 1  # Others are left at zero
+        # else: pass, leave zero. We've already warned for this situation when loading the data.
 
     return y_test
 
@@ -106,6 +108,8 @@ ordered_classes = []
 labels_per_image = []
 predictions_per_image = []
 
+missing_classes = set()
+
 if args.input:
     with open(args.input, 'r') as f:
         reader = csv.reader(f)
@@ -113,9 +117,17 @@ if args.input:
         header_row = reader.next()
         ordered_classes = header_row[1:]  # First column is the ground truth
 
+        print "Classes used by the classifier: {}".format(ordered_classes)
+
         for row in reader:
-            labels_per_image += [row[0]]
+            ground_truth_label = row[0]
+            labels_per_image += [ground_truth_label]
             predictions_per_image += [row[1:]]
+
+            if ground_truth_label not in ordered_classes:
+                if ground_truth_label not in missing_classes: # if not YET in, otherwise we get *lots* of the same error message
+                    print "'{}' not a label used by the classifier, but used as ground truth. Known classes are listed above".format(ground_truth_label)
+                missing_classes.add(ground_truth_label)
 
 n_images = len(labels_per_image)
 print "Read {} prediction scores".format(n_images)
