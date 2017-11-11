@@ -118,8 +118,8 @@ if __name__ == '__main__':
 
         rospy.loginfo(" - graph_path=%s", _graph_path)
         rospy.loginfo(" - labels_path=%s", _labels_path)
-        rospy.loginfo(" - input_tensor=%s", recognizer.input_tensor)
-        rospy.loginfo(" - output_tensor=%s", recognizer.output_tensor)
+        rospy.loginfo(" - input_tensor=%s", recognizer.input_tensor_name)
+        rospy.loginfo(" - output_tensor=%s", recognizer.output_tensor_name)
 
         rospy.loginfo(" - save_images_folder=%s", save_images_folder)
     except Exception as e:

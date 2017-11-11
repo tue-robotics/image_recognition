@@ -37,8 +37,8 @@ class ObjectRecognizer(object):
         :param output_tensor: Which tensor to extract the result from?
         """
         self.labels = self._read_labels(labels_path)
-        self.input_tensor = input_tensor if input_tensor else InceptionV3.input_tensor
-        self.output_tensor = output_tensor if output_tensor else  InceptionV3.output_tensor
+        self.input_tensor_name = input_tensor if input_tensor else InceptionV3.input_tensor
+        self.output_tensor_name = output_tensor if output_tensor else  InceptionV3.output_tensor
 
         with open(graph_path, 'rb') as f:
             graph_def = tf.GraphDef()
@@ -47,6 +47,12 @@ class ObjectRecognizer(object):
             tf.get_default_graph().finalize()  # Make the graph read-only, safe to use from any thread
 
         self.session = tf.Session(graph=tf.get_default_graph())
+
+        # This is only done to 'statically' check that the given tensor actually exists.
+        # Not really statically but directly at startup, not when you need a first recognition
+        # The Checking the tensor shapes is really a runtime thing for now
+        self._input_tensor = self.session.graph.get_tensor_by_name(self.input_tensor_name)
+        self._output_tensor = self.session.graph.get_tensor_by_name(self.output_tensor_name)
 
     def classify(self, np_image):
         """
@@ -58,14 +64,10 @@ class ObjectRecognizer(object):
 
         # Open tf session
         with self.session.as_default() as sess:  # Be able to call this function from any thread
-
-            # Get result tensor that will eventually hold the predictions
-            result_tensor = sess.graph.get_tensor_by_name(self.output_tensor)
-
             # Open Image and perform prediction
             try:
-                predictions = sess.run(result_tensor,
-                                       feed_dict={self.input_tensor: np_image})
+                predictions = sess.run(self._output_tensor,
+                                       feed_dict={self.input_tensor_name: np_image})
                 predictions = np.squeeze(predictions)
             except Exception as e:
                 raise Exception("Failed to run tensorflow session: %s", e)
