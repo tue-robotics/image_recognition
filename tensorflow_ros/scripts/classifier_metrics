@@ -133,6 +133,7 @@ y_classes = [ordered_classes[class_index] for class_index in y_class_indices]
 cmap = plt.get_cmap('gist_rainbow')
 colors = [cmap(i) for i in np.linspace(0, 1, n_classes)]
 
+class_colors = dict(zip(ordered_classes, colors))
 
 # For each class
 precision = dict()
@@ -184,11 +185,12 @@ lines.append(l)
 labels.append('micro-average Precision-recall (area = {0:0.2f})'
               ''.format(average_precision["micro"]))
 
-for i, color in zip(range(n_classes), colors):
-    l, = plt.plot(recall[i], precision[i], lw=2) # , color=color
+for i in range(n_classes):
+    cls = ordered_classes[i]
+    l, = plt.plot(recall[i], precision[i], lw=2, color=class_colors[cls])
     lines.append(l)
     labels.append('Precision-recall for class "{0}" (area = {1:0.2f})'
-                  ''.format(ordered_classes[i], average_precision[i]))
+                  ''.format(cls, average_precision[i]))
 
 fig = plt.gcf()
 fig.subplots_adjust(bottom=0.25)
@@ -255,10 +257,11 @@ plt.plot(fpr["macro"], tpr["macro"],
                ''.format(roc_auc["macro"]),
          color='navy', linestyle=':', linewidth=4)
 
-for i, color in zip(range(n_classes), colors):
-    plt.plot(fpr[i], tpr[i], lw=lw,
+for i in range(n_classes):
+    cls = ordered_classes[i]
+    plt.plot(fpr[i], tpr[i], lw=lw, color=class_colors[cls],
              label='ROC curve of class {0} (area = {1:0.2f})'
-             ''.format(ordered_classes[i], roc_auc[i]))
+             ''.format(cls, roc_auc[i]))
 
 plt.plot([0, 1], [0, 1], 'k--', lw=lw)
 plt.xlim([0.0, 1.0])
@@ -271,18 +274,17 @@ plt.legend(loc="lower right")
 # Plot threshold vs true and false positive rate
 plt.figure()
 
-for i, color in zip(range(n_classes), colors):
-    # print "Thresholds for class {}:".format(i),
-    # print thresholds[i]
+for i in range(n_classes):
+    cls = ordered_classes[i]
     plt.plot(thresholds[i],
              tpr[i],
-             color=color,
+             color=class_colors[cls],
              lw=lw,
              label='Tpr {}'.format(ordered_classes[i]))
 
     plt.plot(thresholds[i],
              fpr[i],
-             color=color,
+             color=class_colors[cls],
              lw=lw,
              linestyle='dashed',
              label='Fpr {}'.format(ordered_classes[i]))
