@@ -128,6 +128,12 @@ y_test = y_test_from_ground_truth(ordered_classes, labels_per_image)
 y_class_indices = y_score.argmax(axis=1)  # Find the index for each row that has the maximum value
 y_classes = [ordered_classes[class_index] for class_index in y_class_indices]
 
+# setup consistent colors for each class
+# colors = cycle(['navy', 'turquoise', 'darkorange', 'cornflowerblue', 'teal'])
+cmap = plt.get_cmap('gist_rainbow')
+colors = [cmap(i) for i in np.linspace(0, 1, n_classes)]
+
+
 # For each class
 precision = dict()
 recall = dict()
@@ -160,8 +166,6 @@ plt.title(
     'Average precision score, micro-averaged over all classes: AP={0:0.2f}'
         .format(average_precision["micro"]))
 
-# setup plot details
-colors = cycle(['navy', 'turquoise', 'darkorange', 'cornflowerblue', 'teal'])
 
 plt.figure(figsize=(7, 8))
 f_scores = np.linspace(0.2, 0.8, num=4)
