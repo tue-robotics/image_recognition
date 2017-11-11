@@ -25,30 +25,20 @@ from tensorflow_ros.object_recognizer import ObjectRecognizer
 
 class TensorflowObjectRecognition:
     """ Performs object recognition using Tensorflow neural networks """
-    def __init__(self, graph_path, labels_path, save_images_folder):
+    def __init__(self, recognizer, save_images_folder):
         """ Constructor
-        :param graph_path: string with path + filename (incl. extension) indicating the database location
-        :param labels_path: string with path + filename (incl. extension) indicating the location of the text file
-        with labels etc.
+        :param recognizer: an object recognition object with a .classify-method, taking a numpy image and returning a list of (class, prob) tuples
         :param save_images_folder: Where to store images for debugging or data collection
         """
 
-        try:
-            self._recognizer = ObjectRecognizer(graph_path, labels_path)
-        except Exception as e:
-            err_msg = "Could not instantiate ObjectRecognizer(graph_path='{}', labels_path='{}': {})".format(graph_path, labels_path, e)
-            rospy.logerr(err_msg)
-            sys.exit(err_msg)
+        self._recognizer = recognizer
 
         self._bridge = CvBridge()
         self._save_images_folder = save_images_folder
 
         self._recognize_srv = rospy.Service('recognize', Recognize, self._recognize_srv_callback)
 
-        rospy.loginfo("TensorflowObjectRecognition initialized:")
-        rospy.loginfo(" - graph_path=%s", graph_path)
-        rospy.loginfo(" - labels_path=%s", labels_path)
-        rospy.loginfo(" - save_images_folder=%s", save_images_folder)
+        rospy.loginfo("TensorflowObjectRecognition initialized")
 
         rospy.loginfo(" - Labels: {}".format(self._recognizer.labels))
 
@@ -106,6 +96,8 @@ if __name__ == '__main__':
     try:
         _graph_path = os.path.expanduser(rospy.get_param("~graph_path"))
         _labels_path = os.path.expanduser(rospy.get_param("~labels_path"))
+        _input_tensor = os.path.expanduser(rospy.get_param("~input_tensor", ""))
+        _output_tensor = os.path.expanduser(rospy.get_param("~output_tensor", ""))
         save_images = rospy.get_param("~save_images", True)
 
         save_images_folder = None
@@ -115,9 +107,25 @@ if __name__ == '__main__':
         rospy.logerr("Parameter %s not found" % e)
         sys.exit(1)
 
-    # Create object
-    object_recognition = TensorflowObjectRecognition(graph_path=_graph_path,
-                                                     labels_path=_labels_path,
-                                                     save_images_folder=save_images_folder)
+    try:
+        recognizer = ObjectRecognizer(_graph_path,
+                                      _labels_path,
+                                      input_tensor=_input_tensor,
+                                      output_tensor=_output_tensor)
+
+        # Create object
+        object_recognition = TensorflowObjectRecognition(recognizer, save_images_folder=save_images_folder)
+
+        rospy.loginfo(" - graph_path=%s", _graph_path)
+        rospy.loginfo(" - labels_path=%s", _labels_path)
+        rospy.loginfo(" - input_tensor=%s", recognizer.input_tensor)
+        rospy.loginfo(" - output_tensor=%s", recognizer.output_tensor)
+
+        rospy.loginfo(" - save_images_folder=%s", save_images_folder)
+    except Exception as e:
+        err_msg = "Could not instantiate ObjectRecognizer(graph_path='{}', labels_path='{}': {})".format(_graph_path,
+                                                                                                         _labels_path, e)
+        rospy.logerr(err_msg)
+        sys.exit(err_msg)
 
     rospy.spin()
