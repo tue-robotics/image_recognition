@@ -167,21 +167,6 @@ average_precision["micro"] = average_precision_score(y_test, y_score,
 print('Average precision score, micro-averaged over all classes: {0:0.2f}'
       .format(average_precision["micro"]))
 
-plt.figure()
-plt.step(recall['micro'], precision['micro'], color='b', alpha=0.2,
-         where='post')
-plt.fill_between(recall["micro"], precision["micro"], step='post', alpha=0.2,
-                 color='b')
-
-plt.xlabel('Recall')
-plt.ylabel('Precision')
-plt.ylim([0.0, 1.05])
-plt.xlim([0.0, 1.0])
-plt.title(
-    'Average precision score, micro-averaged over all classes: AP={0:0.2f}'
-        .format(average_precision["micro"]))
-
-
 plt.figure(figsize=(7, 8))
 f_scores = np.linspace(0.2, 0.8, num=4)
 lines = []
@@ -193,9 +178,15 @@ for f_score in f_scores:
     plt.annotate('f1={0:0.1f}'.format(f_score), xy=(0.9, y[45] + 0.02))
 
 lines.append(l)
+
 labels.append('iso-f1 curves')
-l, = plt.plot(recall["micro"], precision["micro"], color='gold', lw=2)
+l, = plt.plot(recall["micro"], precision["micro"], color='black', lw=2)
 lines.append(l)
+
+plt.step(recall['micro'], precision['micro'], color='b', alpha=0.2,
+         where='post')
+plt.fill_between(recall["micro"], precision["micro"], step='post', alpha=0.2,
+                 color='b')
 labels.append('micro-average Precision-recall (area = {0:0.2f})'
               ''.format(average_precision["micro"]))
 
