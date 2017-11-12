@@ -106,7 +106,7 @@ args = parser.parse_args()
 
 ordered_classes = []
 
-labels_per_image = []
+y_true_labels = []
 predictions_per_image = []
 
 missing_classes = set()
@@ -122,7 +122,7 @@ if args.input:
 
         for row in reader:
             ground_truth_label = row[0]
-            labels_per_image += [ground_truth_label]
+            y_true_labels += [ground_truth_label]
             predictions_per_image += [row[1:]]
 
             if ground_truth_label not in ordered_classes:
@@ -130,19 +130,18 @@ if args.input:
                     print "'{}' not a label used by the classifier, but used as ground truth. Known classes are listed above".format(ground_truth_label)
                 missing_classes.add(ground_truth_label)
 
-n_images = len(labels_per_image)
+n_images = len(y_true_labels)
 print "Read {} prediction scores".format(n_images)
 
 
 n_classes = len(ordered_classes)
-y_score = y_score_from_predictions(ordered_classes, predictions_per_image)
-y_test = y_test_from_ground_truth(ordered_classes, labels_per_image)
+y_predicted_score = y_score_from_predictions(ordered_classes, predictions_per_image)
+y_true_sparse = y_test_from_ground_truth(ordered_classes, y_true_labels)
 
-y_class_indices = y_score.argmax(axis=1)  # Find the index for each row that has the maximum value
-y_classes = [ordered_classes[class_index] for class_index in y_class_indices]
+y_predicted_class_indices = y_predicted_score.argmax(axis=1)  # Find the index for each row that has the maximum value
+y_predicted_classes = [ordered_classes[class_index] for class_index in y_predicted_class_indices]
 
-# setup consistent colors for each class
-# colors = cycle(['navy', 'turquoise', 'darkorange', 'cornflowerblue', 'teal'])
+# setup consistent colors+markers for each class
 cmap = plt.get_cmap('gist_rainbow')
 colors = [cmap(i) for i in np.linspace(0, 1, n_classes)]
 markers = cycle([' ', 'o', 'x'])
@@ -150,7 +149,7 @@ markers = cycle([' ', 'o', 'x'])
 class_colors = dict(zip(ordered_classes, colors))
 class_markers = dict(zip(ordered_classes, markers))
 
-accuracy = accuracy_score(labels_per_image, y_classes)
+accuracy = accuracy_score(y_true_labels, y_predicted_classes)
 print "Accuracy: {acc:.3f}".format(acc=accuracy)
 
 # For each class
@@ -159,14 +158,14 @@ recall = dict()
 average_precision = dict()
 
 for i in range(n_classes):
-    precision[i], recall[i], _ = precision_recall_curve(y_test[:, i],
-                                                        y_score[:, i])
-    average_precision[i] = average_precision_score(y_test[:, i], y_score[:, i])
+    precision[i], recall[i], _ = precision_recall_curve(y_true_sparse[:, i],
+                                                        y_predicted_score[:, i])
+    average_precision[i] = average_precision_score(y_true_sparse[:, i], y_predicted_score[:, i])
 
 # A "micro-average": quantifying score on all classes jointly
-precision["micro"], recall["micro"], _ = precision_recall_curve(y_test.ravel(),
-                                                                y_score.ravel())
-average_precision["micro"] = average_precision_score(y_test, y_score,
+precision["micro"], recall["micro"], _ = precision_recall_curve(y_true_sparse.ravel(),
+                                                                y_predicted_score.ravel())
+average_precision["micro"] = average_precision_score(y_true_sparse, y_predicted_score,
                                                      average="micro")
 print('Average precision score, micro-averaged over all classes: {0:0.3f}'
       .format(average_precision["micro"]))
@@ -219,11 +218,11 @@ tpr = dict()
 thresholds = dict()
 roc_auc = dict()
 for i in range(n_classes):
-    fpr[i], tpr[i], thresholds[i] = roc_curve(y_test[:, i], y_score[:, i])
+    fpr[i], tpr[i], thresholds[i] = roc_curve(y_true_sparse[:, i], y_predicted_score[:, i])
     roc_auc[i] = auc(fpr[i], tpr[i])
 #
 # Compute micro-average ROC curve and ROC area
-fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
+fpr["micro"], tpr["micro"], _ = roc_curve(y_true_sparse.ravel(), y_predicted_score.ravel())
 roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
 
 lw = 2
@@ -297,7 +296,7 @@ plt.title('Threshold vs. True & False positive rate')
 # plt.legend(loc="lower right")
 
 # Compute confusion matrix
-cnf_matrix = confusion_matrix(labels_per_image, y_classes)
+cnf_matrix = confusion_matrix(y_true_labels, y_predicted_classes)
 # np.set_printoptions(precision=2)
 
 # Plot normalized confusion matrix
