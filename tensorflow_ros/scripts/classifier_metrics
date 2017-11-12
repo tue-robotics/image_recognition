@@ -152,6 +152,10 @@ class_markers = dict(zip(ordered_classes, markers))
 accuracy = accuracy_score(y_true_labels, y_predicted_classes)
 print "Accuracy: {acc:.3f}".format(acc=accuracy)
 
+print 'Precision is the ability of the classifier not to label as positive a sample that is negative.'
+print 'Recall is the ability of the classifier to find all the positive samples.'
+print 'Accuracy is the fraction of correct predictions.'
+
 # For each class
 precision = dict()
 recall = dict()
