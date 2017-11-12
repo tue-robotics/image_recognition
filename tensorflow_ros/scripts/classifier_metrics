@@ -189,14 +189,14 @@ plt.step(recall['micro'], precision['micro'], color='b', alpha=0.2,
          where='post')
 plt.fill_between(recall["micro"], precision["micro"], step='post', alpha=0.2,
                  color='b')
-labels.append('micro-average Precision-recall (area = {0:0.2f})'
+labels.append('micro-average (area = {0:0.2f})'
               ''.format(average_precision["micro"]))
 
 for i in range(n_classes):
     cls = ordered_classes[i]
     l, = plt.plot(recall[i], precision[i], lw=2, color=class_colors[cls], marker=class_markers[cls])
     lines.append(l)
-    labels.append('Precision-recall for class "{0}" (area = {1:0.2f})'
+    labels.append('"{0}" (area = {1:0.2f})'
                   ''.format(cls, average_precision[i]))
 
 fig = plt.gcf()
@@ -244,19 +244,19 @@ roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
 plt.subplot(2, 2, 2)
 
 plt.plot(fpr["micro"], tpr["micro"],
-         label='micro-average ROC curve (area = {0:0.2f})'
+         label='micro-average (area = {0:0.2f})'
                ''.format(roc_auc["micro"]),
          color='deeppink', linestyle=':', linewidth=4)
 
 plt.plot(fpr["macro"], tpr["macro"],
-         label='macro-average ROC curve (area = {0:0.2f})'
+         label='macro-average (area = {0:0.2f})'
                ''.format(roc_auc["macro"]),
          color='navy', linestyle=':', linewidth=4)
 
 for i in range(n_classes):
     cls = ordered_classes[i]
     plt.plot(fpr[i], tpr[i], lw=lw, color=class_colors[cls], marker=class_markers[cls],
-             label='ROC curve of class {0} (area = {1:0.2f})'
+             label='{0} (area = {1:0.2f})'
              ''.format(cls, roc_auc[i]))
 
 plt.plot([0, 1], [0, 1], 'k--', lw=lw)
@@ -264,7 +264,7 @@ plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('Some extension of Receiver operating characteristic to multi-class')
+plt.title('Multi-class Receiver Operating Characteristic')
 plt.legend(loc="lower right")
 
 # Plot threshold vs true and false positive rate
@@ -286,8 +286,8 @@ for i in range(n_classes):
              label='Fpr {}'.format(ordered_classes[i]))
 plt.ylabel('True & False Positive Rate')
 plt.xlabel('Threshold')
-plt.title('Threshold vs True & False positive rate')
-plt.legend(loc="lower right")
+plt.title('Threshold vs. True & False positive rate')
+# plt.legend(loc="lower right")
 
 # Compute confusion matrix
 cnf_matrix = confusion_matrix(labels_per_image, y_classes)
