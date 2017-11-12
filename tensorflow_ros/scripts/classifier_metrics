@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import average_precision_score
+from sklearn.metrics import accuracy_score
 from sklearn.metrics import roc_auc_score, roc_curve, auc, confusion_matrix
 from scipy import interp
 from itertools import cycle
@@ -149,6 +150,9 @@ markers = cycle([' ', 'o', 'x'])
 class_colors = dict(zip(ordered_classes, colors))
 class_markers = dict(zip(ordered_classes, markers))
 
+accuracy = accuracy_score(labels_per_image, y_classes)
+print "Accuracy: {acc:.3f}".format(acc=accuracy)
+
 # For each class
 precision = dict()
 recall = dict()
@@ -164,7 +168,7 @@ precision["micro"], recall["micro"], _ = precision_recall_curve(y_test.ravel(),
                                                                 y_score.ravel())
 average_precision["micro"] = average_precision_score(y_test, y_score,
                                                      average="micro")
-print('Average precision score, micro-averaged over all classes: {0:0.2f}'
+print('Average precision score, micro-averaged over all classes: {0:0.3f}'
       .format(average_precision["micro"]))
 
 plt.figure(figsize=(25, 20))
