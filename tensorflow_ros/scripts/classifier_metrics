@@ -92,9 +92,9 @@ def plot_confusion_matrix(cm, classes,
                  horizontalalignment="center",
                  color="white" if cm[i, j] > thresh else "black")
 
-    plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
+    plt.grid()
 
 parser = argparse.ArgumentParser(description='Calculate various metrics of a classifier that assigns a score per class')
 
@@ -152,6 +152,8 @@ class_markers = dict(zip(ordered_classes, markers))
 accuracy = accuracy_score(y_true_labels, y_predicted_classes)
 print "Accuracy: {acc:.3f}".format(acc=accuracy)
 
+# From - http://scikit-learn.org/stable/modules/model_evaluation.html#precision-recall-f-measure-metrics
+#      - http://scikit-learn.org/stable/modules/model_evaluation.html#accuracy-score
 print 'Precision is the ability of the classifier not to label as positive a sample that is negative.'
 print 'Recall is the ability of the classifier to find all the positive samples.'
 print 'Accuracy is the fraction of correct predictions.'
@@ -175,6 +177,9 @@ print('Average precision score, micro-averaged over all classes: {0:0.3f}'
       .format(average_precision["micro"]))
 
 plt.figure(figsize=(25, 20))
+plt.suptitle("""Classifier tested on {ni} images, {nc} classes.
+avg. Precision: {prec:.3f}, Accuracy {acc:.3f}""".format(ni=n_images, nc=n_classes, prec=average_precision["micro"], acc=accuracy),
+             fontsize=16)
 plt.subplot(2, 2, 1)
 
 f_scores = np.linspace(0.2, 0.8, num=4)
@@ -207,14 +212,12 @@ for i in range(n_classes):
                   ''.format(cls, average_precision[i]))
 
 fig = plt.gcf()
-fig.subplots_adjust(bottom=0.25)
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('Recall')
 plt.ylabel('Precision')
 plt.title('Multi-class Precision-Recall curves')
-plt.legend(lines, labels, loc=(0, 0), prop=dict(size=14), ncol=3)
-
+plt.legend(lines, labels, loc=(0, 0), prop=dict(size=10), ncol=3)
 
 # Compute ROC curve and ROC area for each class
 fpr = dict()
@@ -272,7 +275,7 @@ plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('Multi-class Receiver Operating Characteristic')
-plt.legend(loc="lower right")
+plt.legend(loc="lower right", prop={'size': 10})
 
 # Plot threshold vs true and false positive rate
 plt.subplot(2, 2, 3)
