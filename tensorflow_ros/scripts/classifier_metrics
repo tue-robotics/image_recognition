@@ -167,7 +167,9 @@ average_precision["micro"] = average_precision_score(y_test, y_score,
 print('Average precision score, micro-averaged over all classes: {0:0.2f}'
       .format(average_precision["micro"]))
 
-plt.figure(figsize=(7, 8))
+plt.figure(figsize=(15, 20))
+plt.subplot(2, 2, 1)
+
 f_scores = np.linspace(0.2, 0.8, num=4)
 lines = []
 labels = []
@@ -207,7 +209,6 @@ plt.title('Extension of Precision-Recall curve to multi-class')
 plt.legend(lines, labels, loc=(0, -.38), prop=dict(size=14))
 
 
-# plt.figure(figsize=(7, 8))
 # Compute ROC curve and ROC area for each class
 fpr = dict()
 tpr = dict()
@@ -222,17 +223,6 @@ fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
 roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
 
 lw = 2
-# plt.plot(fpr[2], tpr[2], color='darkorange',
-#          lw=lw, label='ROC curve (area = %0.2f)' % roc_auc[2])
-# plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-# plt.xlim([0.0, 1.0])
-# plt.ylim([0.0, 1.05])
-# plt.xlabel('False Positive Rate')
-# plt.ylabel('True Positive Rate')
-# plt.title('Receiver operating characteristic example')
-# plt.legend(loc="lower right")
-
-
 # Compute macro-average ROC curve and ROC area
 
 # First aggregate all false positive rates
@@ -251,7 +241,8 @@ tpr["macro"] = mean_tpr
 roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
 
 # Plot all ROC curves
-plt.figure(figsize=(7, 8))
+plt.subplot(2, 2, 2)
+
 plt.plot(fpr["micro"], tpr["micro"],
          label='micro-average ROC curve (area = {0:0.2f})'
                ''.format(roc_auc["micro"]),
@@ -277,7 +268,7 @@ plt.title('Some extension of Receiver operating characteristic to multi-class')
 plt.legend(loc="lower right")
 
 # Plot threshold vs true and false positive rate
-plt.figure()
+plt.subplot(2, 2, 3)
 
 for i in range(n_classes):
     cls = ordered_classes[i]
@@ -302,13 +293,8 @@ plt.legend(loc="lower right")
 cnf_matrix = confusion_matrix(labels_per_image, y_classes)
 # np.set_printoptions(precision=2)
 
-# # Plot non-normalized confusion matrix
-# plt.figure()
-# plot_confusion_matrix(cnf_matrix, classes=ordered_classes,
-#                       title='Confusion matrix, without normalization')
-
 # Plot normalized confusion matrix
-plt.figure()
+plt.subplot(2, 2, 4)
 plot_confusion_matrix(cnf_matrix, classes=ordered_classes, normalize=True,
                       title='Normalized confusion matrix')
 
