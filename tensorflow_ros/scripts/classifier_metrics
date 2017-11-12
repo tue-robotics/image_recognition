@@ -167,7 +167,7 @@ average_precision["micro"] = average_precision_score(y_test, y_score,
 print('Average precision score, micro-averaged over all classes: {0:0.2f}'
       .format(average_precision["micro"]))
 
-plt.figure(figsize=(15, 20))
+plt.figure(figsize=(25, 20))
 plt.subplot(2, 2, 1)
 
 f_scores = np.linspace(0.2, 0.8, num=4)
@@ -205,8 +205,8 @@ plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('Recall')
 plt.ylabel('Precision')
-plt.title('Extension of Precision-Recall curve to multi-class')
-plt.legend(lines, labels, loc=(0, -.38), prop=dict(size=14))
+plt.title('Multi-class Precision-Recall curves')
+plt.legend(lines, labels, loc=(0, 0), prop=dict(size=14), ncol=3)
 
 
 # Compute ROC curve and ROC area for each class
@@ -284,6 +284,9 @@ for i in range(n_classes):
              lw=lw,
              linestyle='dashed',
              label='Fpr {}'.format(ordered_classes[i]))
+
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
 plt.ylabel('True & False Positive Rate')
 plt.xlabel('Threshold')
 plt.title('Threshold vs. True & False positive rate')
