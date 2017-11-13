@@ -161,10 +161,11 @@ print 'Accuracy is the fraction of correct predictions.'
 # For each class
 precision = dict()
 recall = dict()
+p_r_thresholds = dict()
 average_precision = dict()
 
 for i in range(n_classes):
-    precision[i], recall[i], _ = precision_recall_curve(y_true_sparse[:, i],
+    precision[i], recall[i], p_r_thresholds[i] = precision_recall_curve(y_true_sparse[:, i],
                                                         y_predicted_score[:, i])
     average_precision[i] = average_precision_score(y_true_sparse[:, i], y_predicted_score[:, i])
 
@@ -222,10 +223,10 @@ plt.legend(lines, labels, loc=(0, 0), prop=dict(size=10), ncol=3)
 # Compute ROC curve and ROC area for each class
 fpr = dict()
 tpr = dict()
-thresholds = dict()
+roc_thresholds = dict()
 roc_auc = dict()
 for i in range(n_classes):
-    fpr[i], tpr[i], thresholds[i] = roc_curve(y_true_sparse[:, i], y_predicted_score[:, i])
+    fpr[i], tpr[i], roc_thresholds[i] = roc_curve(y_true_sparse[:, i], y_predicted_score[:, i])
     roc_auc[i] = auc(fpr[i], tpr[i])
 #
 # Compute micro-average ROC curve and ROC area
@@ -282,13 +283,13 @@ plt.subplot(2, 2, 3)
 
 for i in range(n_classes):
     cls = ordered_classes[i]
-    plt.plot(thresholds[i],
+    plt.plot(roc_thresholds[i],
              tpr[i],
              color=class_colors[cls], marker=class_markers[cls],
              lw=lw,
              label='Tpr {}'.format(ordered_classes[i]))
 
-    plt.plot(thresholds[i],
+    plt.plot(roc_thresholds[i],
              fpr[i],
              color=class_colors[cls], marker=class_markers[cls],
              lw=lw,
@@ -311,5 +312,26 @@ plt.subplot(2, 2, 4)
 plot_confusion_matrix(cnf_matrix, classes=ordered_classes, normalize=True,
                       title='Normalized confusion matrix')
 
+plt.figure()
+for i in range(n_classes):
+    cls = ordered_classes[i]
+    lowest_prob = np.min(y_predicted_score[:, 0])
+    inclusive_thresh = np.insert(p_r_thresholds[i], 0, lowest_prob)  # Make the p_r_threshold the same shape as precision by including the lowest prob
+
+    plt.plot(inclusive_thresh,
+             precision[i],
+             color=class_colors[cls], marker=class_markers[cls],
+             lw=lw,
+             label='Precision {}'.format(ordered_classes[i]))
+
+    plt.plot(inclusive_thresh,
+             recall[i],
+             color=class_colors[cls], marker=class_markers[cls],
+             lw=lw,
+             linestyle='dashed',
+             label='Recall {}'.format(ordered_classes[i]))
+plt.xlabel("Threshold")
+plt.ylabel("Precision & Recall")
+plt.legend(loc="best")
 plt.show()
 
