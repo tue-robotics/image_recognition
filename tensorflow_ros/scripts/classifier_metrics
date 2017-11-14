@@ -181,7 +181,33 @@ plt.figure(figsize=(25, 20))
 plt.suptitle("""Classifier tested on {ni} images, {nc} classes.
 avg. Precision: {prec:.3f}, Accuracy {acc:.3f}""".format(ni=n_images, nc=n_classes, prec=average_precision["micro"], acc=accuracy),
              fontsize=16)
+
+lw = 2
+
+# Plot all Theshold vs precision and recall curves
 plt.subplot(2, 2, 1)
+for i in range(n_classes):
+    cls = ordered_classes[i]
+    lowest_prob = np.min(y_predicted_score[:, 0])
+    inclusive_thresh = np.insert(p_r_thresholds[i], 0, lowest_prob)  # Make the p_r_threshold the same shape as precision by including the lowest prob
+
+    plt.plot(inclusive_thresh,
+             precision[i],
+             color=class_colors[cls], marker=class_markers[cls],
+             lw=lw,
+             label='Precision {}'.format(ordered_classes[i]))
+
+    plt.plot(inclusive_thresh,
+             recall[i],
+             color=class_colors[cls], marker=class_markers[cls],
+             lw=lw,
+             linestyle='dashed',
+             label='Recall {}'.format(ordered_classes[i]))
+plt.xlabel("Threshold")
+plt.ylabel("Precision & Recall")
+plt.legend(loc="best", prop={'size': 10}, ncol=3)
+
+plt.subplot(2, 2, 2)
 
 f_scores = np.linspace(0.2, 0.8, num=4)
 lines = []
@@ -232,8 +258,6 @@ for i in range(n_classes):
 # Compute micro-average ROC curve and ROC area
 fpr["micro"], tpr["micro"], _ = roc_curve(y_true_sparse.ravel(), y_predicted_score.ravel())
 roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
-
-lw = 2
 # Compute macro-average ROC curve and ROC area
 
 # First aggregate all false positive rates
@@ -250,33 +274,6 @@ mean_tpr /= n_classes
 fpr["macro"] = all_fpr
 tpr["macro"] = mean_tpr
 roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
-
-# Plot all ROC curves
-plt.subplot(2, 2, 2)
-
-plt.plot(fpr["micro"], tpr["micro"],
-         label='micro-average (area = {0:0.2f})'
-               ''.format(roc_auc["micro"]),
-         color='deeppink', linestyle=':', linewidth=4)
-
-plt.plot(fpr["macro"], tpr["macro"],
-         label='macro-average (area = {0:0.2f})'
-               ''.format(roc_auc["macro"]),
-         color='navy', linestyle=':', linewidth=4)
-
-for i in range(n_classes):
-    cls = ordered_classes[i]
-    plt.plot(fpr[i], tpr[i], lw=lw, color=class_colors[cls], marker=class_markers[cls],
-             label='{0} (area = {1:0.2f})'
-             ''.format(cls, roc_auc[i]))
-
-plt.plot([0, 1], [0, 1], 'k--', lw=lw)
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 1.05])
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('Multi-class Receiver Operating Characteristic')
-plt.legend(loc="lower right", prop={'size': 10})
 
 # Plot threshold vs true and false positive rate
 plt.subplot(2, 2, 3)
@@ -312,26 +309,5 @@ plt.subplot(2, 2, 4)
 plot_confusion_matrix(cnf_matrix, classes=ordered_classes, normalize=True,
                       title='Normalized confusion matrix')
 
-plt.figure()
-for i in range(n_classes):
-    cls = ordered_classes[i]
-    lowest_prob = np.min(y_predicted_score[:, 0])
-    inclusive_thresh = np.insert(p_r_thresholds[i], 0, lowest_prob)  # Make the p_r_threshold the same shape as precision by including the lowest prob
-
-    plt.plot(inclusive_thresh,
-             precision[i],
-             color=class_colors[cls], marker=class_markers[cls],
-             lw=lw,
-             label='Precision {}'.format(ordered_classes[i]))
-
-    plt.plot(inclusive_thresh,
-             recall[i],
-             color=class_colors[cls], marker=class_markers[cls],
-             lw=lw,
-             linestyle='dashed',
-             label='Recall {}'.format(ordered_classes[i]))
-plt.xlabel("Threshold")
-plt.ylabel("Precision & Recall")
-plt.legend(loc="best")
 plt.show()
 
