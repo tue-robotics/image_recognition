@@ -17,5 +17,7 @@
   <run_depend>image_recognition_msgs</run_depend>
   <run_depend>image_recognition_util</run_depend>
   <run_depend>python-numpy</run_depend>
+  <run_depend>python-six</run_depend>
+  <run_depend>python-tensorflow-pip</run_depend>
 
 </package>
