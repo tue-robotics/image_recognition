@@ -130,6 +130,7 @@ class TestPlugin(Plugin):
             cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         except CvBridgeError as e:
             rospy.logerr(e)
+            return
 
         self._image_widget.set_image(cv_image)
 
