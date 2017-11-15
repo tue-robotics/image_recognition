@@ -69,8 +69,6 @@ for label, image in read_annotated(args.annotated_dir):
                                                                                 image_predictions[0][1], match))
     print "Matches: {} / {}".format(matches.count(True), len(matches))
 
-    # TODO: Make a np.array of the scores for each label, in a predefined order, the same for all images
-
 n_images = len(labels_per_image)
 
 print "Matches: {} / {}".format(matches.count(True), len(matches))
