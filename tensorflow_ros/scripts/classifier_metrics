@@ -181,6 +181,7 @@ plt.figure(figsize=(25, 20))
 plt.suptitle("""Classifier tested on {ni} images, {nc} classes.
 avg. Precision: {prec:.3f}, Accuracy {acc:.3f}""".format(ni=n_images, nc=n_classes, prec=average_precision["micro"], acc=accuracy),
              fontsize=16)
+plt.rc("axes", labelsize=15)
 
 lw = 2
 
@@ -203,8 +204,8 @@ for i in range(n_classes):
              lw=lw,
              linestyle='dashed',
              label='Recall {}'.format(ordered_classes[i]))
-plt.xlabel("Threshold")
-plt.ylabel("Precision & Recall")
+plt.xlabel("Threshold ($t$)")
+plt.ylabel(r'Precision $\frac{T_p(t)}{T_p(t) + F_p(t)}$ & Recall ($\frac{T_p(t)}{T_p(t) + F_n(t)})$')
 plt.legend(loc="best", prop={'size': 10}, ncol=3)
 
 plt.subplot(2, 2, 2)
@@ -241,8 +242,8 @@ for i in range(n_classes):
 fig = plt.gcf()
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
-plt.xlabel('Recall')
-plt.ylabel('Precision')
+plt.xlabel(r'Recall ($\frac{T_p(t)}{T_p(t) + F_n(t)})$')
+plt.ylabel(r'Precision $\frac{T_p(t)}{T_p(t) + F_p(t)}$')
 plt.title('Multi-class Precision-Recall curves')
 plt.legend(lines, labels, loc=(0, 0), prop=dict(size=10), ncol=3)
 
@@ -295,8 +296,8 @@ for i in range(n_classes):
 
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
-plt.ylabel('True & False Positive Rate')
-plt.xlabel('Threshold')
+plt.ylabel(r'True  $\frac{T_p(t)}{T_p(t) + F_p(t)}$ & False $\frac{F_p(t)}{F_p(t) + T_n(t)}$ Positive Rate: ')
+plt.xlabel('Threshold ($t$)')
 plt.title('Threshold vs. True & False positive rate')
 # plt.legend(loc="lower right")
 
