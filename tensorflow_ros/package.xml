@@ -19,5 +19,7 @@
   <run_depend>python-numpy</run_depend>
   <run_depend>python-six</run_depend>
   <run_depend>python-tensorflow-pip</run_depend>
+  <run_depend>python-matplotlib</run_depend>
+  <run_depend>python-sklearn</run_depend>
 
 </package>
