@@ -11,16 +11,9 @@
   <url type="website">https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_tools</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>python-matplotlib</run_depend>
+  <run_depend>python-scipy</run_depend>
+  <run_depend>python-sklearn</run_depend>
   
-  <build_depend>python-matplotlib</build_depend>
-  <build_depend>python-scipy</build_depend>
-  <build_depend>python-sklearn</build_depend>
-
-  <build_export_depend>python-matplotlib</build_export_depend>
-  <build_export_depend>python-scipy</build_export_depend>
-  <build_export_depend>python-sklearn</build_export_depend>
-
-  <exec_depend>python-matplotlib</exec_depend>
-  <exec_depend>python-scipy</exec_depend>
-  <exec_depend>python-sklearn</exec_depend>
 </package>
