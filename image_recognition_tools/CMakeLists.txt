@@ -7,11 +7,7 @@ project(image_recognition_tools)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  python-matplotlib
-  python-scipy
-  python-sklearn
-)
+find_package(catkin REQUIRED COMPONENTS)
 
 catkin_python_setup()
 
