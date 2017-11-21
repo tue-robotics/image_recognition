@@ -2,7 +2,6 @@
 
 # System
 import os
-import operator
 import sys
 
 # ROS
@@ -10,11 +9,6 @@ import rospy
 
 # OpenCV
 from cv_bridge import CvBridge, CvBridgeError
-import cv2
-
-# Tensorflow
-import tensorflow as tf
-import numpy as np
 
 # TU/e Robotics
 from image_recognition_msgs.srv import Recognize
@@ -22,6 +16,7 @@ from image_recognition_msgs.msg import Recognition, CategoryProbability
 from image_recognition_util import image_writer
 
 from tensorflow_ros.object_recognizer import ObjectRecognizer
+
 
 class TensorflowObjectRecognition:
     """ Performs object recognition using Tensorflow neural networks """
@@ -96,8 +91,8 @@ if __name__ == '__main__':
     try:
         _graph_path = os.path.expanduser(rospy.get_param("~graph_path"))
         _labels_path = os.path.expanduser(rospy.get_param("~labels_path"))
-        _input_tensor = os.path.expanduser(rospy.get_param("~input_tensor", ""))
-        _output_tensor = os.path.expanduser(rospy.get_param("~output_tensor", ""))
+        _input_tensor = os.path.expanduser(rospy.get_param("~input_tensor", "Cast:0"))
+        _output_tensor = os.path.expanduser(rospy.get_param("~output_tensor", "final_result:0"))
         save_images = rospy.get_param("~save_images", True)
 
         save_images_folder = None
@@ -108,10 +103,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     try:
-        recognizer = ObjectRecognizer(_graph_path,
-                                      _labels_path,
-                                      input_tensor=_input_tensor,
-                                      output_tensor=_output_tensor)
+        recognizer = ObjectRecognizer(_graph_path, _labels_path, _input_tensor, _output_tensor)
 
         # Create object
         object_recognition = TensorflowObjectRecognition(recognizer, save_images_folder=save_images_folder)
