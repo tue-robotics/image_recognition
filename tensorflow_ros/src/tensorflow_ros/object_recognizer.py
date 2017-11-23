@@ -48,6 +48,14 @@ class ObjectRecognizer(object):
         :returns a dictionary mapping class to probability of the image being that class
         """
 
+        if not isinstance(np_image, np.ndarray):
+            raise ValueError("np_image is not a numpy.ndarray but {t}".format(t=type(np_image)))
+
+        if np_image.ndim != 3:  # x, y, channel
+            raise ValueError("Shape of image is {sp}. Cannot classify this, shape must be (?, ?, 3). "
+                             "First 2 dimensions can are not constrained, "
+                             "but image must have 3 channels (R,G,B)".format(sp=np_image.shape))
+
         # Open tf session
         with self.session.as_default() as sess:  # Be able to call this function from any thread
             # Open Image and perform prediction
