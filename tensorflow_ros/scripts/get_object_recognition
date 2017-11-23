@@ -11,56 +11,25 @@ import argparse
 from tensorflow_ros.object_recognizer import ObjectRecognizer
 import cv2
 
-import os
 import pprint
 
 # Assign description to the help doc. Use Raw formatter to handle newlines
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
 
 # Add arguments
-parser.add_argument('-i', '--image', type=str, help='Image',
-                    required=False)
-parser.add_argument('-g', '--graph_path', type=str, help='Path to a trained TensorFlow output_graph.pb network',
-                    required=False,
-                    default="output_graph.pb")
-parser.add_argument('-l', '--labels_path', type=str, help='Path to a file with the labels into '
-                                                          'which the network classifies, eg. output_labels.txt',
-                    required=False,
-                    default="output_labels.pb")
-parser.add_argument('-n', '--top_n', type=int, help='Top N results to display',
-                    required=False,
-                    default=1)
-parser.add_argument('--input-tensor', type=str, help='What tensor to input the image into',
-                    required=False,
-                    default=None)
-parser.add_argument('--output-tensor', type=str, help='What tensor read the classifications from',
-                    required=False,
-                    default=None)
+parser.add_argument('graph_path', type=str, help='Path to a trained TensorFlow output_graph.pb network')
+parser.add_argument('labels_path', type=str, help='Path to a file with the output labels, eg. output_labels.txt')
+parser.add_argument('image', type=str, help='Image')
+parser.add_argument('-n', '--top_n', type=int, help='Top N results to display', default=1)
+parser.add_argument('--input-tensor', type=str, help='Tensor name of input image',  default="Cast:0")
+parser.add_argument('--output-tensor', type=str, help='Tensor name of classifications label', default="final_result:0")
 
 args = parser.parse_args()
 
-object_recognizer = ObjectRecognizer(args.graph_path, args.labels_path,
-                                     input_tensor=args.input_tensor,
-                                     output_tensor=args.output_tensor)
+object_recognizer = ObjectRecognizer(args.graph_path, args.labels_path, args.input_tensor, args.output_tensor)
 
-if os.path.isfile(args.image):
-    # Pretty print the output
-    try:
-        # Read the image
-        img = cv2.imread(args.image)
-        ordered_result = object_recognizer.classify(img)
+# Read the image
+img = cv2.imread(args.image)
+ordered_result = object_recognizer.classify(img)
 
-        pprint.pprint(ordered_result[:args.top_n])
-
-    except Exception as e:
-        print "An error occurred: %s" % e
-elif os.path.isdir(args.image):
-    dirname = args.image
-
-    filenames = os.listdir(dirname)
-    image_paths = [os.path.join(dirname, f) for f in filenames]
-
-    for image_path in image_paths:
-        image = cv2.imread(image_path)
-        prediction = object_recognizer.classify(image)
-        pprint.pprint({image_path: prediction[:args.top_n]})
+pprint.pprint(ordered_result[:args.top_n])

@@ -4,12 +4,6 @@
 import tensorflow as tf
 import numpy as np
 
-import cv2
-
-
-from tensorflow.python.framework import dtypes
-from tensorflow.python.ops import array_ops
-
 # Threading in TensorFlow is interesting...
 # First: ```finalize()``` the graph
 # Then: Create the ```self.session``` in the main thread
@@ -17,16 +11,8 @@ from tensorflow.python.ops import array_ops
 # See https://stackoverflow.com/questions/45093688/how-to-understand-sess-as-default-and-sess-graph-as-default
 
 
-class InceptionV3:
-    """Configuration for an Inception_v3 network"""
-    input_tensor = "Cast:0"
-    output_tensor = "final_result:0"
-
-
 class ObjectRecognizer(object):
-    def __init__(self, graph_path, labels_path,
-                 input_tensor=None,
-                 output_tensor=None):
+    def __init__(self, graph_path, labels_path, input_tensor, output_tensor):
         """
         Recognize objects via a given TensorFlow pre-trained neural net.
         The configuration oof the in/output tensor names are preset to those of a (retrained) Inception_v3 network
@@ -37,8 +23,8 @@ class ObjectRecognizer(object):
         :param output_tensor: Which tensor to extract the result from?
         """
         self.labels = self._read_labels(labels_path)
-        self.input_tensor_name = input_tensor if input_tensor else InceptionV3.input_tensor
-        self.output_tensor_name = output_tensor if output_tensor else  InceptionV3.output_tensor
+        self.input_tensor_name = input_tensor
+        self.output_tensor_name = output_tensor
 
         with open(graph_path, 'rb') as f:
             graph_def = tf.GraphDef()
@@ -61,6 +47,14 @@ class ObjectRecognizer(object):
             This is assumed to be segmented/cropped already!
         :returns a dictionary mapping class to probability of the image being that class
         """
+
+        if not isinstance(np_image, np.ndarray):
+            raise ValueError("np_image is not a numpy.ndarray but {t}".format(t=type(np_image)))
+
+        if np_image.ndim != 3:  # x, y, channel
+            raise ValueError("Shape of image is {sp}. Cannot classify this, shape must be (?, ?, 3). "
+                             "First 2 dimensions can are not constrained, "
+                             "but image must have 3 channels (R,G,B)".format(sp=np_image.shape))
 
         # Open tf session
         with self.session.as_default() as sess:  # Be able to call this function from any thread

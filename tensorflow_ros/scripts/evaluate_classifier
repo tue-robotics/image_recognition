@@ -1,63 +1,37 @@
 #!/usr/bin/env python
 
 """Evaluate a given classifier against a directory of annotated images.
-The script will show some metric about precision/recall, average precision etc. """
+The script will output a .csv that can be evaluated. """
 
 import argparse
-import pprint
-import random
 import csv
 
 from tensorflow_ros.object_recognizer import ObjectRecognizer
 from image_recognition_util.image_reader import read_annotated
 
-import numpy as np
-
-
-import matplotlib.pyplot as plt
-from sklearn.metrics import precision_recall_curve
-from sklearn.metrics import average_precision_score
-from itertools import cycle
-
 # Assign description to the help doc
 parser = argparse.ArgumentParser(description='Evaluate the classification performance of a TensorFlow network')
 
 # Add arguments
-parser.add_argument('-g', '--graph_path', type=str, help='Path to a trained TensorFlow output_graph.pb network',
-                    required=False,
-                    default="output_graph.pb")
-parser.add_argument('-l', '--labels_path', type=str, help='Path to a file with the labels into which the network classifies, eg. output_labels.txt',
-                    required=False,
-                    default="output_labels.pb")
-parser.add_argument('-n', '--top_n', type=int, help='Top N results to display',
-                    required=False,
-                    default=1)
-parser.add_argument('-a', '--annotated-dir', type=str, help='Use a the given directory (which must have subdirs for each class)'
-                                                            ' and use the annotations to get some metrics about the classifier',
-                    required=True,
-                    default=".")
-parser.add_argument('-p', '--percentage', type=float, help='Which percentage of images in the dir to actually classify',
-                    required=False,
-                    default="100")
-parser.add_argument('-o', '--output', type=str, help='Output csv file of the classifiers result. First column is ground truth label, other columns are the per-class scores',
-                    required=False,
-                    default="result.csv")
+parser.add_argument('graph_path', type=str, help='Path to a trained TensorFlow output_graph.pb network')
+parser.add_argument('labels_path', type=str, help='Path to a file with the output labels, eg. output_labels.txt')
+parser.add_argument('annotated_dir', type=str, help='Use a the given directory (which must have subdirs for each class)'
+                                                    ' and use the annotations to get some metrics about the classifier')
+parser.add_argument('-n', '--top_n', type=int, help='Top N results to display', default=1)
+parser.add_argument('--input-tensor', type=str, help='Tensor name of input image',  default="Cast:0")
+parser.add_argument('--output-tensor', type=str, help='Tensor name of classifications label', default="final_result:0")
+parser.add_argument('-o', '--output', type=str, help='Classification result output csv. First column is ground truth '
+                                                     'label, other columns are the class scores', default="result.csv")
 
 args = parser.parse_args()
 
-object_recognizer = ObjectRecognizer(args.graph_path, args.labels_path)
+object_recognizer = ObjectRecognizer(args.graph_path, args.labels_path, args.input_tensor, args.output_tensor)
 
 labels_per_image = []
 predictions_per_image = []
 matches = []
 
-ratio = args.percentage / 100.0
-print("Will take only a {}% fraction of the data".format(ratio*100))
-
-for label, image in read_annotated(args.annotated_dir):
-    if random.random() > ratio:
-        continue
-
+for label, image, filename in read_annotated(args.annotated_dir):
     image_predictions = object_recognizer.classify(image)
 
     labels_per_image += [label]
@@ -65,19 +39,20 @@ for label, image in read_annotated(args.annotated_dir):
 
     match = label == image_predictions[0][0]
     matches += [match]
-    pprint.pprint("Image is a {} and classified as a {} ({:.3f}) --> {}".format(label, image_predictions[0][0],
-                                                                                image_predictions[0][1], match))
-    print "Matches: {} / {}".format(matches.count(True), len(matches))
+
+    print "{}({}/{})\t{}\t{} classified as {} ({:.3f})\033[0m".format("\033[92m" if match else "\033[91m",
+                                                                      matches.count(True), len(matches),
+                                                                      filename, label, image_predictions[0][0],
+                                                                      image_predictions[0][1])
 
 n_images = len(labels_per_image)
-
-print "Matches: {} / {}".format(matches.count(True), len(matches))
 
 ordered_classes = sorted(object_recognizer.labels)
 
 if args.output:
+    print "\nWriting output csv to {}".format(args.output)
     with open(args.output, 'w+') as f:
-        writer = csv.DictWriter(f, fieldnames=["ground_truth"]+ordered_classes)
+        writer = csv.DictWriter(f, fieldnames=["ground_truth"] + ordered_classes)
         writer.writeheader()
 
         for ground_truth_label, image_predictions in zip(labels_per_image, predictions_per_image):
