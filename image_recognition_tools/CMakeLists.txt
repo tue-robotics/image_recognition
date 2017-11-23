@@ -14,6 +14,6 @@ catkin_python_setup()
 catkin_package()
 
 install(PROGRAMS
-  scripts/classifier_metric
+  scripts/classifier_metrics
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
