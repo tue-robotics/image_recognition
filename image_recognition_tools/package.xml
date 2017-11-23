@@ -11,6 +11,7 @@
   <url type="website">https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_tools</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
 
   <run_depend>python-matplotlib</run_depend>
   <run_depend>python-scipy</run_depend>
