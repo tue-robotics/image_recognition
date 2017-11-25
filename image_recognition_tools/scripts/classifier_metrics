@@ -98,9 +98,11 @@ def plot_confusion_matrix(cm, classes,
 
 parser = argparse.ArgumentParser(description='Calculate various metrics of a classifier that assigns a score per class')
 
-parser.add_argument('-i', '--input', type=str, help='Input csv file. First column is ground truth label, other columns are the per-class scores, as output by `evaluate_classifier`',
-                    required=True,
+parser.add_argument("input", type=str, help='Input csv file. First column is ground truth label, other columns are the per-class scores, as output by `evaluate_classifier`',
                     default="result.csv")
+
+parser.add_argument('-o', '--output', type=str, help='Output image file',
+                    required=False)
 
 args = parser.parse_args()
 
@@ -310,5 +312,7 @@ plt.subplot(2, 2, 4)
 plot_confusion_matrix(cnf_matrix, classes=ordered_classes, normalize=True,
                       title='Normalized confusion matrix')
 
-plt.show()
-
+if args.output:
+  plt.savefig(args.output)
+else:
+  plt.show()
