@@ -104,6 +104,10 @@ parser.add_argument("input", type=str, help='Input csv file. First column is gro
 parser.add_argument('-o', '--output', type=str, help='Output image file',
                     required=False)
 
+parser.add_argument('-t', '--title', type=str, help='Title for the graph',
+                    default="",
+                    required=False)
+
 args = parser.parse_args()
 
 ordered_classes = []
@@ -180,9 +184,10 @@ print('Average precision score, micro-averaged over all classes: {0:0.3f}'
       .format(average_precision["micro"]))
 
 plt.figure(figsize=(25, 20))
-plt.suptitle("""Classifier tested on {ni} images, {nc} classes.
-avg. Precision: {prec:.3f}, Accuracy {acc:.3f}""".format(ni=n_images, nc=n_classes, prec=average_precision["micro"], acc=accuracy),
-             fontsize=16)
+title = args.title + """\n""" if args.title else ""
+title += """Classifier tested on {ni} images, {nc} classes.
+avg. Precision: {prec:.3f}, Accuracy {acc:.3f}""".format(ni=n_images, nc=n_classes, prec=average_precision["micro"], acc=accuracy)
+plt.suptitle(title, fontsize=16)
 plt.rc("axes", labelsize=15)
 
 lw = 2
