@@ -2,7 +2,6 @@
 
 # System
 import os
-import operator
 import sys
 
 # ROS
@@ -10,56 +9,33 @@ import rospy
 
 # OpenCV
 from cv_bridge import CvBridge, CvBridgeError
-import cv2
-
-# Tensorflow
-import tensorflow as tf
-import numpy as np
 
 # TU/e Robotics
 from image_recognition_msgs.srv import Recognize
 from image_recognition_msgs.msg import Recognition, CategoryProbability
 from image_recognition_util import image_writer
 
+from tensorflow_ros.object_recognizer import ObjectRecognizer
+
 
 class TensorflowObjectRecognition:
     """ Performs object recognition using Tensorflow neural networks """
-    def __init__(self, graph_path, labels_path, save_images_folder):
+    def __init__(self, recognizer, save_images_folder):
         """ Constructor
-        :param graph_path: string with path + filename (incl. extension) indicating the database location
-        :param labels_path: string with path + filename (incl. extension) indicating the location of the text file
-        with labels etc.
+        :param recognizer: an object recognition object with a .classify-method, taking a numpy image and returning a list of (class, prob) tuples
         :param save_images_folder: Where to store images for debugging or data collection
         """
-        # Check if the parameters are correct
-        if not (os.path.isfile(graph_path) and os.path.isfile(labels_path)):
-            err_msg = "DB file {} or models file {} does not exist".format(graph_path, labels_path)
-            rospy.logerr(err_msg)
-            sys.exit(err_msg)
+
+        self._recognizer = recognizer
 
         self._bridge = CvBridge()
-        self._recognize_srv = rospy.Service('recognize', Recognize, self._recognize_srv_callback)
-        self._do_recognition = False  # Indicates whether a new request has been received and thus recognition must
-        # be performed
-        self._filename = "/tmp/tf_obj_rec.jpg"  # Temporary file name
-        self._models_path = labels_path
-        self._recognitions = []  # List with Recognition s
-        self._size = {'width': 0, 'height': 0}
         self._save_images_folder = save_images_folder
-        self._bgr_image = None
 
-        rospy.loginfo("TensorflowObjectRecognition initialized:")
-        rospy.loginfo(" - graph_path=%s", graph_path)
-        rospy.loginfo(" - labels_path=%s", labels_path)
-        rospy.loginfo(" - save_images_folder=%s", save_images_folder)
+        self._recognize_srv = rospy.Service('recognize', Recognize, self._recognize_srv_callback)
 
-        """1. Create a graph from saved GraphDef file """
-        start = rospy.Time.now()
-        with open(graph_path, 'rb') as f:
-            graph_def = tf.GraphDef()
-            graph_def.ParseFromString(f.read())
-            _ = tf.import_graph_def(graph_def, name='')
-        rospy.logdebug("Step {} took {} seconds".format(1, (rospy.Time.now() - start).to_sec()))
+        rospy.loginfo("TensorflowObjectRecognition initialized")
+
+        rospy.loginfo(" - Labels: {}".format(self._recognizer.labels))
 
     def _recognize_srv_callback(self, req):
         """ Callback function for the recognize. It saves the image on a temporary location and sets _do_recognition
@@ -68,6 +44,8 @@ class TensorflowObjectRecognition:
         :param req: image_recognition_msgs.srv.RecognizeRequest
         :return: image_recognition_msgs.srv.RecognizeResponse
         """
+
+        # Convert to cv2/numpy image
         try:
             self._bgr_image = self._bridge.imgmsg_to_cv2(req.image, "bgr8")
         except CvBridgeError as e:
@@ -79,79 +57,22 @@ class TensorflowObjectRecognition:
         if self._save_images_folder:
             image_writer.write_raw(self._save_images_folder, self._bgr_image)
 
-        # Write the image to file
-        # ToDo: directly in memory, saves file operations
-        cv2.imwrite(filename=self._filename, img=self._bgr_image)
-        size = self._bgr_image.shape[:2]  # For now, we assume the entire image is the ROI
-        self._size['height'] = size[0]
-        self._size['width'] = size[1]
-        self._recognitions = []
-        self._do_recognition = True
+        # Beef: perform the actual classification
+        sorted_result = self._recognizer.classify(self._bgr_image)
 
-        # Wait until the request has been processed and return the result
-        r = rospy.Rate(1000.0)  # Not a problem to spin quickly
-        while not rospy.is_shutdown():
-            if not self._do_recognition:
-                return {"recognitions": self._recognitions}
-
-        # Return an empty result if rospy has been shutdown
-        return {"recognitions": []}
-
-    def update(self):
-        """ Do the actual work: if _do_recognition is True, it retrieves the saved image and tries to classify it.
-        The result is stored in the _recognition member and afterwards _do_recognition is set to False. This function
-        is called at a fixed frequency in the mean thread, hence NOT from the service callback. """
-        if not self._do_recognition:
-            return
-
-        """2. Open tf session"""
-        start = rospy.Time.now()
-        with tf.Session() as sess:
-            rospy.logdebug("Step {} took {} seconds".format(2, (rospy.Time.now() - start).to_sec()))
-
-            """3. Get result tensor"""
-            start = rospy.Time.now()
-            # result_tensor = sess.graph.get_tensor_by_name("softmax:0")
-            result_tensor = sess.graph.get_tensor_by_name("final_result:0")
-            rospy.logdebug("Step {} took {} seconds".format(3, (rospy.Time.now() - start).to_sec()))
-
-            """4. Open Image and perform prediction"""
-            start = rospy.Time.now()
-            predictions = []
-            try:
-                with open(self._filename, 'rb') as f:
-                    predictions = sess.run(result_tensor, {'DecodeJpeg/contents:0': f.read()})
-                    predictions = np.squeeze(predictions)
-            except Exception as e:
-                rospy.logerr("Failed to run tensorflow session: %s", e)
-
-            rospy.logdebug("Step {} took {} seconds".format(4, (rospy.Time.now() - start).to_sec()))
-
-            """5. Open output_labels and construct dict from result"""
-            start = rospy.Time.now()
-            result = {}
-            with open(self._models_path, 'rb') as f:
-                labels = f.read().split("\n")
-                result = dict(zip(labels, predictions))
-            rospy.logdebug("Step {} took {} seconds".format(5, (rospy.Time.now() - start).to_sec()))
-
-        # Sort the results
-        sorted_result = sorted(result.items(), key=operator.itemgetter(1))
-
-        # self._recognition.label = sorted_result[-1][0].split('\t')[1]
+        # Put the result in a ROS service reply
         recognition = Recognition()
-        recognition.roi.height = self._size['height']
-        recognition.roi.width = self._size['width']
+        recognition.roi.height = self._bgr_image.shape[:2][0]
+        recognition.roi.width = self._bgr_image.shape[:2][1]
         recognition.categorical_distribution.unknown_probability = 0.1  # TODO: How do we know this?
-        for res in reversed(sorted_result):
+        for res in sorted_result:
             category_probabilty = CategoryProbability(label=res[0], probability=res[1])
             recognition.categorical_distribution.probabilities.append(category_probabilty)
 
-        self._recognitions.append(recognition)
-
+        # Do some logging
         if sorted_result:
-            best_label = sorted_result[-1][0]
-            best_prob = sorted_result[-1][1]
+            best_label = sorted_result[0][0]
+            best_prob = sorted_result[0][1]
 
             rospy.loginfo("Best recognition result: {} with probability: {}".format(best_label, best_prob))
 
@@ -159,7 +80,8 @@ class TensorflowObjectRecognition:
             if self._save_images_folder:
                 image_writer.write_annotated(self._save_images_folder, self._bgr_image, best_label, False)
 
-        self._do_recognition = False
+        return {"recognitions": [recognition]}
+
 
 if __name__ == '__main__':
 
@@ -169,6 +91,8 @@ if __name__ == '__main__':
     try:
         _graph_path = os.path.expanduser(rospy.get_param("~graph_path"))
         _labels_path = os.path.expanduser(rospy.get_param("~labels_path"))
+        _input_tensor = os.path.expanduser(rospy.get_param("~input_tensor", "Cast:0"))
+        _output_tensor = os.path.expanduser(rospy.get_param("~output_tensor", "final_result:0"))
         save_images = rospy.get_param("~save_images", True)
 
         save_images_folder = None
@@ -178,13 +102,22 @@ if __name__ == '__main__':
         rospy.logerr("Parameter %s not found" % e)
         sys.exit(1)
 
-    # Create object
-    object_recognition = TensorflowObjectRecognition(graph_path=_graph_path,
-                                                     labels_path=_labels_path,
-                                                     save_images_folder=save_images_folder)
+    try:
+        recognizer = ObjectRecognizer(_graph_path, _labels_path, _input_tensor, _output_tensor)
 
-    # Start update loop
-    r = rospy.Rate(100.0)
-    while not rospy.is_shutdown():
-        object_recognition.update()
-        r.sleep()
+        # Create object
+        object_recognition = TensorflowObjectRecognition(recognizer, save_images_folder=save_images_folder)
+
+        rospy.loginfo(" - graph_path=%s", _graph_path)
+        rospy.loginfo(" - labels_path=%s", _labels_path)
+        rospy.loginfo(" - input_tensor=%s", recognizer.input_tensor_name)
+        rospy.loginfo(" - output_tensor=%s", recognizer.output_tensor_name)
+
+        rospy.loginfo(" - save_images_folder=%s", save_images_folder)
+    except Exception as e:
+        err_msg = "Could not instantiate ObjectRecognizer(graph_path='{}', labels_path='{}': {})".format(_graph_path,
+                                                                                                         _labels_path, e)
+        rospy.logerr(err_msg)
+        sys.exit(err_msg)
+
+    rospy.spin()
