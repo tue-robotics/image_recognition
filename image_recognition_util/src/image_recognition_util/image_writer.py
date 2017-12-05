@@ -6,6 +6,12 @@ import datetime
 
 
 def color_map(N=256, normalized=False):
+    """
+    Generate an RGB color map of N different colors
+    :param N : int amount of colors to generate
+    :param normalized: bool indicating range of each channel: float32 in [0, 1] or int in [0, 255]
+    :return a numpy.array of shape (N, 3) with a row for each color and each row is [R,G,B]
+    """
     def bitget(byteval, idx):
         return ((byteval & (1 << idx)) != 0)
 
@@ -93,7 +99,7 @@ def get_annotated_cv_image(cv_image, recognitions):
     Gets an annotated CV image based on recognitions, drawin using cv.rectangle
     :param cv_image: Original cv image
     :param recognitions: List of recognitions
-    :return: Annotaed image
+    :return: Annotated image
     """
     annotated_cv_image = cv_image.copy()
 
