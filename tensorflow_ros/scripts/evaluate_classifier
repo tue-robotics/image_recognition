@@ -32,6 +32,9 @@ predictions_per_image = []
 matches = []
 
 for label, image, filename in read_annotated(args.annotated_dir):
+    if image is None:
+        print "Ignore empty image {f}".format(f=filename)
+        continue
     image_predictions = object_recognizer.classify(image)
 
     labels_per_image += [label]
