@@ -16,6 +16,7 @@
   <run_depend>skybiometry_ros</run_depend>
   <run_depend>openpose_ros</run_depend>
   <run_depend>image_recognition_util</run_depend>
+  <run_depend>image_recognition_analysis</run_depend>
 
   <run_depend>image_recognition_rqt</run_depend>
   <run_depend>tensorflow_ros_rqt</run_depend>

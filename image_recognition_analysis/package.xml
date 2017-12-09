@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>image_recognition_analysis</name>
+  <version>0.0.1</version>
+  <description>The image_recognition_analysis package</description>
+
+  <maintainer email="loy.vanbeek@gmail.com">Loy van Beek</maintainer>
+
+  <license>TODO</license>
+
+  <url type="website">https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_analysis</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <exec_depend>image_recognition_util</exec_depend>
+  <exec_depend>python-matplotlib</exec_depend>
+  <exec_depend>python-numpy</exec_depend>
+  <exec_depend>python-scipy</exec_depend>
+  <exec_depend>python-sklearn</exec_depend>
+
+</package>

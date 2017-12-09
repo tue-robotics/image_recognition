@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+"""Evaluate a given classifier against a directory of annotated images.
+The script will show some metric about precision/recall, average precision etc. """
+
+import argparse
+
+import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score
+
+from image_recognition_util.classification_score_matrix import ClassificationScoreMatrix
+from image_recognition_analysis.plots import plot_confusion_matrix, plot_false_positive_true_positive_rates
+
+
+parser = argparse.ArgumentParser(description='Calculate various metrics of a classifier that assigns a score per class')
+parser.add_argument("input", type=str, help='Input csv file. First column is ground truth label, other columns are the '
+                                            'per-class scores, as output by `evaluate_classifier`',
+                    default="result.csv")
+args = parser.parse_args()
+
+# Construct the classification score matrix from the input csv in order to perform all calculations
+csm = ClassificationScoreMatrix.from_file(args.input)
+
+accuracy = accuracy_score(csm.classifications_ground_truth, csm.classifications_predicted_label)
+
+print ">> # Classifications: {}".format(len(csm.classifications_ground_truth))
+print ">> Labels: {}".format(csm.labels)
+print ">> Accuracy: {acc:.3f}".format(acc=accuracy)
+
+plot_false_positive_true_positive_rates(csm.labels,
+                                        csm.classifications_ground_truth_as_score_matrix,
+                                        csm.classifications_scores)
+
+plot_confusion_matrix(csm.labels,
+                      csm.classifications_ground_truth,
+                      csm.classifications_predicted_label)
+
+plt.show()
