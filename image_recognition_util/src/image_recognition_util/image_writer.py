@@ -1,6 +1,35 @@
+import numpy as np
+
 import cv2
 import os
 import datetime
+
+
+def color_map(N=256, normalized=False):
+    """
+    Generate an RGB color map of N different colors
+    :param N : int amount of colors to generate
+    :param normalized: bool indicating range of each channel: float32 in [0, 1] or int in [0, 255]
+    :return a numpy.array of shape (N, 3) with a row for each color and each row is [R,G,B]
+    """
+    def bitget(byteval, idx):
+        return ((byteval & (1 << idx)) != 0)
+
+    dtype = 'float32' if normalized else 'uint8'
+    cmap = np.zeros((N, 3), dtype=dtype)
+    for i in range(N):
+        r = g = b = 0
+        c = i + 1  # skip the first color (black)
+        for j in range(8):
+            r |= bitget(c, 0) << 7 - j
+            g |= bitget(c, 1) << 7 - j
+            b |= bitget(c, 2) << 7 - j
+            c >>= 3
+
+        cmap[i] = np.array([r, g, b])
+
+    cmap = cmap / 255 if normalized else cmap
+    return cmap
 
 
 def write_annotated(dir_path, image, label, verified=False):
@@ -63,3 +92,22 @@ def write_raw(dir_path, image):
     cv2.imwrite(filename, image)
 
     return True
+
+
+def get_annotated_cv_image(cv_image, recognitions):
+    """
+    Gets an annotated CV image based on recognitions, drawin using cv.rectangle
+    :param cv_image: Original cv image
+    :param recognitions: List of recognitions
+    :return: Annotated image
+    """
+    annotated_cv_image = cv_image.copy()
+
+    c_map = color_map(N=len(recognitions), normalized=True)
+    for i, recognition in enumerate(recognitions):
+        x_min, y_min = recognition.roi.x_offset, recognition.roi.y_offset
+        x_max, y_max = x_min + recognition.roi.width, y_min + recognition.roi.height
+
+        cv2.rectangle(annotated_cv_image, (x_min, y_min), (x_max, y_max),
+                      (c_map[i, 2] * 255, c_map[i, 1] * 255, c_map[i, 0] * 255), 10)
+    return annotated_cv_image

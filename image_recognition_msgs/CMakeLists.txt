@@ -13,6 +13,7 @@ add_message_files(
   CategoryProbability.msg
   CategoricalDistribution.msg
   Recognition.msg
+  Recognitions.msg
   Annotation.msg
 )
 
