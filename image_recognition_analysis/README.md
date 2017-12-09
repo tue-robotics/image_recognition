@@ -8,7 +8,7 @@ Classifier_metrics
 
 Usage: 
 ```bash
-rosrun image_recognition_tools classifier_metrics -i results.csv
+rosrun image_recognition_tools classifier_metrics results.csv
 ```
 
 The classifier_metrics script produces a plot that gives a good view of the performance of a given classifier. As input, it takes a .csv file of the following format:
