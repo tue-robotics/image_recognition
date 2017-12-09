@@ -1,4 +1,4 @@
-image_recognition_tools
+image_recognition_analysis
 =======================
 
 Tool(s) for image recognition

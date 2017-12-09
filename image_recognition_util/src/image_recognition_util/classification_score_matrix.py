@@ -11,7 +11,6 @@ class ClassificationScoreMatrix(object):
         """
         self._labels = labels  # list of all the class names
         self._classifications = []  # list of Tuples containing the ground truth and the score per label
-        print "Classes used by the classifier: {}".format(self._labels)
 
     @property
     def labels(self):
@@ -23,6 +22,27 @@ class ClassificationScoreMatrix(object):
         List of ground truths per detection
         """
         return [classification[0] for classification in self._classifications]
+
+    @property
+    def classifications_predicted_label(self):
+        """
+        Return the predicted label per classification
+        """
+        return [self._labels[class_index] for class_index in self.classifications_scores.argmax(axis=1)]
+
+    @property
+    def classifications_ground_truth_as_score_matrix(self):
+        """
+        Create a matrix of the one-hot ground truths for each classification
+        :return: numpy.ndarray of shape (number of classifications, number of labels)
+        Axis 0 indexes over classifications, axis 1 is the score for the class at that position
+        (i.e. 1 because this takes the ground truth as input)
+        result[x][y] is 1 when the ground truth class for classification x is labels[y]. The other values are 0
+        """
+        result = np.zeros(shape=(len(self._classifications), len(self._labels)))
+        for i, (ground_truth, _) in enumerate(self._classifications):
+            result[i][self._labels.index(ground_truth)] = 1  # Others are left at zero
+        return result
 
     @property
     def classifications_scores(self):
@@ -42,10 +62,10 @@ class ClassificationScoreMatrix(object):
             reader = csv.reader(f)
 
             header_row = reader.next()
-            classification_score_matrix = ClassificationScoreMatrix(header_row[1:]) # First column is the ground truth
+            classification_score_matrix = ClassificationScoreMatrix(header_row[1:])  # First column is the ground truth
 
             for row in reader:
-                classification_score_matrix.add_classification(row[0], row[1:])
+                classification_score_matrix.add_classification(row[0], [float(x) for x in row[1:]])
 
         return classification_score_matrix
 
@@ -80,3 +100,7 @@ class ClassificationScoreMatrix(object):
             for ground_truth, scores in self._classifications:
                 row = dict({'ground_truth': ground_truth}, **dict(scores))
                 writer.writerow(row)
+
+    def __repr__(self):
+        return "ClassificationScoreMatrix(#classifications={}, labels={})".format(
+            len(self._classifications), self._labels)

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(image_recognition_tools)
+project(image_recognition_analysis)
 
 find_package(catkin REQUIRED COMPONENTS)
 

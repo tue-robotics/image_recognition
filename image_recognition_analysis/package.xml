@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>image_recognition_tools</name>
+  <name>image_recognition_analysis</name>
   <version>0.0.1</version>
-  <description>The image_recognition_tools package</description>
+  <description>The image_recognition_analysis package</description>
 
   <maintainer email="loy.vanbeek@gmail.com">Loy van Beek</maintainer>
 
   <license>TODO</license>
 
-  <url type="website">https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_tools</url>
+  <url type="website">https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_analysis</url>
 
   <buildtool_depend>catkin</buildtool_depend>
 
