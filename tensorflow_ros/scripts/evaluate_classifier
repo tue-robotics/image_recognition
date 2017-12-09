@@ -4,10 +4,10 @@
 The script will output a .csv that can be evaluated. """
 
 import argparse
-import csv
 
 from tensorflow_ros.object_recognizer import ObjectRecognizer
 from image_recognition_util.image_reader import read_annotated
+from image_recognition_util.classification_score_matrix import ClassificationScoreMatrix
 
 # Assign description to the help doc
 parser = argparse.ArgumentParser(description='Evaluate the classification performance of a TensorFlow network')
@@ -27,37 +27,16 @@ args = parser.parse_args()
 
 object_recognizer = ObjectRecognizer(args.graph_path, args.labels_path, args.input_tensor, args.output_tensor)
 
-labels_per_image = []
-predictions_per_image = []
+classification_score_matrix = ClassificationScoreMatrix(object_recognizer.labels)
+
 matches = []
-
 for label, image, filename in read_annotated(args.annotated_dir):
-    if image is None:
-        print "Ignore empty image {f}".format(f=filename)
-        continue
-    image_predictions = object_recognizer.classify(image)
+    scores = object_recognizer.classify(image)
+    match, best_label, best_score = classification_score_matrix.add_classification(label, scores)
 
-    labels_per_image += [label]
-    predictions_per_image += [image_predictions]
-
-    match = label == image_predictions[0][0]
-    matches += [match]
-
+    matches.append(match)
     print "{}({}/{})\t{}\t{} classified as {} ({:.3f})\033[0m".format("\033[92m" if match else "\033[91m",
                                                                       matches.count(True), len(matches),
-                                                                      filename, label, image_predictions[0][0],
-                                                                      image_predictions[0][1])
+                                                                      filename, label, best_label, best_score)
 
-n_images = len(labels_per_image)
-
-ordered_classes = sorted(object_recognizer.labels)
-
-if args.output:
-    print "\nWriting output csv to {}".format(args.output)
-    with open(args.output, 'w+') as f:
-        writer = csv.DictWriter(f, fieldnames=["ground_truth"] + ordered_classes)
-        writer.writeheader()
-
-        for ground_truth_label, image_predictions in zip(labels_per_image, predictions_per_image):
-            row = dict({'ground_truth': ground_truth_label}, **dict(image_predictions))
-            writer.writerow(row)
+classification_score_matrix.write_to_file(args.output)

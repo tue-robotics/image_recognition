@@ -45,7 +45,7 @@ class ObjectRecognizer(object):
         Classify an image into one of the labels at the label_path
         :param np_image a numpy array representing the image to be classified.
             This is assumed to be segmented/cropped already!
-        :returns a dictionary mapping class to probability of the image being that class
+        :returns prediction scores for each label (ordered)
         """
 
         if not isinstance(np_image, np.ndarray):
@@ -66,10 +66,7 @@ class ObjectRecognizer(object):
             except Exception as e:
                 raise Exception("Failed to run tensorflow session: %s", e)
 
-            # Open output_labels and construct dict from result
-            result = sorted(zip(self.labels, predictions), key=lambda pair: pair[1], reverse=True)
-
-            return result
+            return predictions
 
     @staticmethod
     def _read_labels(labels_path):

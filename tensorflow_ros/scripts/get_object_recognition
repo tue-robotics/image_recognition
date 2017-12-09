@@ -30,10 +30,6 @@ object_recognizer = ObjectRecognizer(args.graph_path, args.labels_path, args.inp
 
 # Read the image
 img = cv2.imread(args.image)
-if img is None:
-    print "Image file {f} resulted in None image".format(f=args.image)
-    exit(-1)
+scores = object_recognizer.classify(img)
 
-ordered_result = object_recognizer.classify(img)
-
-pprint.pprint(ordered_result[:args.top_n])
+pprint.pprint(sorted(zip(object_recognizer.labels, scores), key=lambda x: x[1], reverse=True))
