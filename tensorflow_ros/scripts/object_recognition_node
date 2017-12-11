@@ -10,6 +10,9 @@ import rospy
 # OpenCV
 from cv_bridge import CvBridge, CvBridgeError
 
+#Numpy
+import numpy as np
+
 # TU/e Robotics
 from image_recognition_msgs.srv import Recognize
 from image_recognition_msgs.msg import Recognition, CategoryProbability
@@ -70,7 +73,7 @@ class TensorflowObjectRecognition:
             recognition.categorical_distribution.probabilities.append(category_probability)
 
         # Do some logging
-        if predictions:
+        if np.any(predictions):
             sorted_predictions = sorted(zip(self._recognizer.labels, predictions), key=lambda x: x[1], reverse=True)
             best_label = sorted_predictions[0][0]
             best_prob = sorted_predictions[0][1]
