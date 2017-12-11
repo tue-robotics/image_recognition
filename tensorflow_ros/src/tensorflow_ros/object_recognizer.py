@@ -66,7 +66,7 @@ class ObjectRecognizer(object):
             except Exception as e:
                 raise Exception("Failed to run tensorflow session: %s", e)
 
-            return predictions
+            return list(predictions)
 
     @staticmethod
     def _read_labels(labels_path):
