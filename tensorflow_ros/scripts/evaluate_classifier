@@ -29,8 +29,14 @@ object_recognizer = ObjectRecognizer(args.graph_path, args.labels_path, args.inp
 
 classification_score_matrix = ClassificationScoreMatrix(object_recognizer.labels)
 
+print ">> Evaluating classified with labels: {}".format(object_recognizer.labels)
+
 matches = []
 for label, image, filename in read_annotated(args.annotated_dir):
+    if label not in object_recognizer.labels:
+        print ">> Skipping image with label '{}', label not present in classifier".format(label)
+        continue
+
     scores = object_recognizer.classify(image)
     match, best_label, best_score = classification_score_matrix.add_classification(label, scores)
 
@@ -40,3 +46,5 @@ for label, image, filename in read_annotated(args.annotated_dir):
                                                                       filename, label, best_label, best_score)
 
 classification_score_matrix.write_to_file(args.output)
+
+print ">> Final accuracy: {}".format(float(matches.count(True)) / len(matches))
