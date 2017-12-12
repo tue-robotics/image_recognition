@@ -73,7 +73,7 @@ class ClassificationScoreMatrix(object):
         """
         Add a classification to the matrix (together with the ground truth)
         :param ground_truth: Ground truth label, should exist in the labels
-        :param scores: Score per label for this classification, lenght should be the same as the number of labels
+        :param scores: Score per label for this classification, length should be the same as the number of labels
         :return: match (correct classification), best_label, best_score
         """
         if ground_truth not in self._labels:
@@ -96,9 +96,9 @@ class ClassificationScoreMatrix(object):
         with open(csv_filename, 'w+') as f:
             writer = csv.DictWriter(f, fieldnames=["ground_truth"] + self._labels)
             writer.writeheader()
-
             for ground_truth, scores in self._classifications:
-                row = dict({'ground_truth': ground_truth}, **dict(scores))
+                score_dict = dict(zip(self._labels, scores))
+                row = dict({'ground_truth': ground_truth}, **score_dict)
                 writer.writerow(row)
 
     def __repr__(self):
