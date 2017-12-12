@@ -199,7 +199,6 @@ if __name__ == '__main__':
             rospy.get_param("~align_path", "~/openface/models/dlib/shape_predictor_68_face_landmarks.dat"))
         openface_neural_network_path = os.path.expanduser(
             rospy.get_param("~net_path", "~/openface/models/openface/nn4.small2.v1.t7"))
-        save_images = rospy.get_param("~save_images", True)
         topic_save_images = rospy.get_param("~topic_save_images", False)
         service_save_images = rospy.get_param("~service_save_images", True)
         topic_publish_result_image = rospy.get_param("~topic_publish_result_image", True)
@@ -210,7 +209,7 @@ if __name__ == '__main__':
             db = os.path.expanduser(db)
 
         save_images_folder = None
-        if save_images:
+        if topic_save_images or service_save_images:
             save_images_folder = os.path.expanduser(rospy.get_param("~save_images_folder", "/tmp/openface"))
     except KeyError as e:
         rospy.logerr("Parameter %s not found" % e)
