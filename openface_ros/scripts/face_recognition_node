@@ -47,7 +47,7 @@ class OpenfaceROS:
 
         if not self._save_images_folder and (self._topic_save_images or self._service_save_images):
             rospy.logerr("~save_images_folder is not defined but we would like to save images ...")
-            rospy.signal_shutdown()
+            rospy.signal_shutdown("")
 
         if self._topic_publish_result_image or self._service_publish_result_image:
             self._result_image_publisher = rospy.Publisher("result_image", Image, queue_size=10)
