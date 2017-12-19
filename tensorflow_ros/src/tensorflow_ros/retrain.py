@@ -24,7 +24,7 @@ def mkdir_p(path):
             raise
 
 
-def main(image_dir, model_dir, output_dir, steps, batch):
+def main(image_dir, model_dir, output_dir, steps, batch, flip_left_right=False, random_crop=0, random_scale=0, random_brightness=0):
     tf.app.flags.FLAGS.image_dir = image_dir
     tf.app.flags.FLAGS.model_dir = model_dir
 
@@ -37,5 +37,10 @@ def main(image_dir, model_dir, output_dir, steps, batch):
     tf.app.flags.FLAGS.test_batch_size = batch
     tf.app.flags.FLAGS.train_batch_size = batch
     tf.app.flags.FLAGS.validation_batch_size = batch
+
+    tf.app.flags.FLAGS.flip_left_right = flip_left_right
+    tf.app.flags.FLAGS.random_crop = random_crop
+    tf.app.flags.FLAGS.random_scale = random_scale
+    tf.app.flags.FLAGS.random_brightness = random_brightness
 
     tf_main('')
