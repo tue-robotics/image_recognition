@@ -18,6 +18,8 @@ if __name__ == '__main__':
     parser.add_argument('--steps', type=int, default=defaults.steps)
     parser.add_argument('--batch', type=int, default=defaults.batch, help='How many images to train on at a time')
 
+    parser.add_argument('--architecture', type=str, default="inception_v3", help="Name of architecture")
+
     # Controls the distortions used during training.
     parser.add_argument('--flip_left_right', type=bool, default=False,
                         help="""Whether to randomly flip half of the training images horizontally.""")
