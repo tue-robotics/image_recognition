@@ -10,6 +10,7 @@
 #include <cv_bridge/cv_bridge.h>
 
 #include <image_recognition_msgs/Recognitions.h>
+#include <image_recognition_msgs/Recognize.h>
 
 class DetectNetROS
 {
@@ -24,12 +25,12 @@ class DetectNetROS
       std::string prototxt_path, model_path;
       if (!private_nh.getParam("prototxt_path", prototxt_path))
       {
-        ROS_ERROR("unable to read ~prototxt_path for imagenet_ node");
+        ROS_ERROR("unable to read ~prototxt_path");
         exit(1);
       }
       if (!private_nh.getParam("model_path", model_path))
       {
-        ROS_ERROR("unable to read ~model_path for imagenet_ node");
+        ROS_ERROR("unable to read ~model_path");
         exit(1);
       }
 
@@ -48,7 +49,7 @@ class DetectNetROS
       // create imageNet
       net_ = detectNet::Create(prototxt_path.c_str(), 
                                model_path.c_str(), 
-                               private_nh.param("mean_pixel", 117.0),
+                               private_nh.param("mean_pixel", 0.0),
                                private_nh.param("threshold", 0.5));
 
       if( !net_ )
@@ -75,12 +76,13 @@ class DetectNetROS
       }
 
       // setup image transport
-      image_transport::ImageTransport it(private_nh);
+      image_transport::ImageTransport it(nh);
 
       // subscriber for passing in images
-      image_subscriber_ = it.subscribe("imin", 10, &DetectNetROS::callback, this);
+      image_subscriber_ = it.subscribe("image", 10, &DetectNetROS::callback, this);
 
       recognitions_publisher_ = nh.advertise<image_recognition_msgs::Recognitions>("recognitions", 1);
+      recognition_service_ = nh.advertiseService("recognize", &DetectNetROS::srvCallback, this);
 
       // init gpu memory
       gpu_data_ = NULL;
@@ -98,8 +100,11 @@ class DetectNetROS
 
 
   private:
-    void callback(const sensor_msgs::ImageConstPtr& input)
+
+    std::vector<image_recognition_msgs::Recognition> processImage(const sensor_msgs::Image& input)
     {
+      ros::Time start = ros::Time::now();
+
       cv::Mat cv_im = cv_bridge::toCvCopy(input, "bgr8")->image;
 
       // convert bit depth
@@ -111,10 +116,10 @@ class DetectNetROS
       // allocate GPU data if necessary
       if (!gpu_data_)
       {
-        ROS_INFO("first allocation");
+        ROS_INFO("First GPU allocation");
         CUDA(cudaMalloc(&gpu_data_, cv_im.rows*cv_im.cols * sizeof(float4)));
       } else if(image_height_ != cv_im.rows || image_width_ != cv_im.cols){
-        ROS_INFO("re allocation");
+        ROS_INFO("GPU re-allocation");
         // reallocate for a new image size if necessary
         CUDA(cudaFree(gpu_data_));
         CUDA(cudaMalloc(&gpu_data_, cv_im.rows*cv_im.cols * sizeof(float4)));
@@ -130,27 +135,43 @@ class DetectNetROS
 
       int number_of_bounding_boxes_ = max_boxes_;
 
-      image_recognition_msgs::Recognitions msg;
-      msg.header = input->header;
+      std::vector<image_recognition_msgs::Recognition> recognitions;
       if (net_->Detect((float*)gpu_data_, image_width_, image_height_, bounding_box_CPU_, &number_of_bounding_boxes_, confidence_CPU_)) {
         ROS_INFO("Detected %d bounding boxes", number_of_bounding_boxes_);
-        msg.recognitions.resize(number_of_bounding_boxes_);
+        recognitions.resize(number_of_bounding_boxes_);
 		
-        for(int n=0; n < number_of_bounding_boxes_; n++)
+        for(int n = 0; n < number_of_bounding_boxes_; n++)
         {
-	  const int class_confidence = confidence_CPU_[n*2+1];
+          // confidence optional pointer to float2 array filled with a (confidence, class) pair for each bounding box (numBoxes)
+	  const float confidence = confidence_CPU_[n*2];
+	  const int label = confidence_CPU_[n*2+1];
           float* bounding_box = bounding_box_CPU_ + (n * 4);
-          msg.recognitions[n].roi.x_offset = bounding_box[0];
-          msg.recognitions[n].roi.y_offset = bounding_box[1];
-          msg.recognitions[n].roi.width = bounding_box[2] - bounding_box[0];
-          msg.recognitions[n].roi.height = bounding_box[3] - bounding_box[1];
-          msg.recognitions[n].categorical_distribution.probabilities.resize(1);
-          msg.recognitions[n].categorical_distribution.probabilities[0].label = "TODO";
-          msg.recognitions[n].categorical_distribution.probabilities[0].probability = 1.0;
+          recognitions[n].roi.x_offset = bounding_box[0];
+          recognitions[n].roi.y_offset = bounding_box[1];
+          recognitions[n].roi.width = bounding_box[2] - bounding_box[0];
+          recognitions[n].roi.height = bounding_box[3] - bounding_box[1];
+          recognitions[n].categorical_distribution.probabilities.resize(1);
+          recognitions[n].categorical_distribution.probabilities[0].label = std::to_string(label);
+          recognitions[n].categorical_distribution.probabilities[0].probability = confidence;
         }
       }
 
+      ROS_INFO_STREAM("Inference took " << (ros::Time::now() - start).toSec() << " seconds");
+      return recognitions;
+    }
+
+    void callback(const sensor_msgs::ImageConstPtr& input)
+    {
+      image_recognition_msgs::Recognitions msg;
+      msg.header = input->header;
+      msg.recognitions = processImage(*input);
       recognitions_publisher_.publish(msg);
+    }
+
+    bool srvCallback(image_recognition_msgs::Recognize::Request& req, image_recognition_msgs::Recognize::Response& res)
+    {
+      res.recognitions = processImage(req.image);
+      return true;
     }
 
     // private variables
@@ -158,6 +179,7 @@ class DetectNetROS
     detectNet* net_;
 
     ros::Publisher recognitions_publisher_;
+    ros::ServiceServer recognition_service_;
 
     float4* gpu_data_;
     float* bounding_box_CPU_;
