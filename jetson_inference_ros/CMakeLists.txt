@@ -15,13 +15,25 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
+catkin_package()
+
+find_package(jetson-inference QUIET)
+if( NOT jetson-inference_FOUND )
+  message("Launching pre-build dependency installer script...")
+
+	execute_process(COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/CMakePreBuild.bash
+				WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+				RESULT_VARIABLE PREBUILD_SCRIPT_RESULT)
+
+	message("Finished installing dependencies")
+
+endif()
+
 find_package(jetson-inference REQUIRED)
 find_package(CUDA REQUIRED)
 find_package(Qt4 REQUIRED)
 include(${QT_USE_FILE})
 add_definitions(${QT_DEFINITIONS})
-
-catkin_package()
 
 add_executable(detect_net_ros src/detect_net_ros.cpp)
 
