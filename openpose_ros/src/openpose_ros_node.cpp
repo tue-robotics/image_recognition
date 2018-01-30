@@ -7,9 +7,9 @@
 #include <opencv2/opencv.hpp>
 
 std::shared_ptr<OpenposeWrapper> g_openpose_wrapper;
-OpenposeDiagnosticUpdater openpose_diagnostic_updater;
 std::string g_save_images_folder = "";
 bool g_publish_to_topic = false;
+OpenposeDiagnosticUpdater* openpose_diagnostic_updater;
 ros::Publisher g_pub;
 
 //!
@@ -110,6 +110,8 @@ bool detectPosesCallback(image_recognition_msgs::Recognize::Request& req, image_
 {
   ROS_INFO("detectPosesCallback");
 
+  openpose_diagnostic_updater->tick();
+
   // Convert ROS message to opencv image
   cv_bridge::CvImagePtr cv_ptr;
   try
@@ -127,8 +129,6 @@ bool detectPosesCallback(image_recognition_msgs::Recognize::Request& req, image_
     ROS_ERROR("Empty image!");
     return false;
   }
-
-  openpose_diagnostic_updater.tick();
 
   return detectPoses(image, res.recognitions);
 }
@@ -165,6 +165,8 @@ int main(int argc, char** argv)
   {
     g_pub = nh.advertise<sensor_msgs::Image>("result_image", 1);
   }
+
+  openpose_diagnostic_updater = new OpenposeDiagnosticUpdater();
 
   ros::spin();
 

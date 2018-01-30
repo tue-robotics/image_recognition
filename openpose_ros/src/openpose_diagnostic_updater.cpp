@@ -14,4 +14,5 @@ OpenposeDiagnosticUpdater::OpenposeDiagnosticUpdater()
 void OpenposeDiagnosticUpdater::tick()
 {
     service_diagnostic_->tick();
+    update();
 }
