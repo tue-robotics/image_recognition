@@ -1,4 +1,5 @@
 #include "openpose_wrapper.h"
+#include "openpose_diagnostic_updater.h"
 
 #include <image_recognition_msgs/Recognize.h>
 #include <ros/node_handle.h>
@@ -6,6 +7,7 @@
 #include <opencv2/opencv.hpp>
 
 std::shared_ptr<OpenposeWrapper> g_openpose_wrapper;
+OpenposeDiagnosticUpdater openpose_diagnostic_updater;
 std::string g_save_images_folder = "";
 bool g_publish_to_topic = false;
 ros::Publisher g_pub;
@@ -125,6 +127,8 @@ bool detectPosesCallback(image_recognition_msgs::Recognize::Request& req, image_
     ROS_ERROR("Empty image!");
     return false;
   }
+
+  openpose_diagnostic_updater.tick();
 
   return detectPoses(image, res.recognitions);
 }

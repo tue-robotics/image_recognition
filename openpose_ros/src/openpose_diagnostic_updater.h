@@ -5,7 +5,9 @@
 #ifndef OPENPOSE_ROS_OPENPOSEDIAGNOSTICUPDATER_H
 #define OPENPOSE_ROS_OPENPOSEDIAGNOSTICUPDATER_H
 
+#include "diagnostic_updater/update_functions.h"
 #include "diagnostic_updater/diagnostic_updater.h"
+#include "diagnostic_updater/publisher.h"
 
 class OpenposeDiagnosticUpdater : private diagnostic_updater::Updater
 {
