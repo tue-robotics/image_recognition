@@ -6,11 +6,12 @@
 
 OpenposeDiagnosticUpdater::OpenposeDiagnosticUpdater()
 {
-    service_diagnostic_ = new diagnostic_updater::TopicDiagnostic("TODO", *this,
-        diagnostic_updater::FrequencyStatusParam(&expected_servicecall_frequency_, &expected_servicecall_frequency_, 0.1));
+    // TODO: Get expected frequency from parameter server
+    service_diagnostic_ = new diagnostic_updater::FrequencyStatus(
+            diagnostic_updater::FrequencyStatusParam(&expected_servicecall_frequency_, &expected_servicecall_frequency_, 0.1));
 }
 
-OpenposeDiagnosticUpdater::tick()
+void OpenposeDiagnosticUpdater::tick()
 {
     service_diagnostic_->tick();
 }

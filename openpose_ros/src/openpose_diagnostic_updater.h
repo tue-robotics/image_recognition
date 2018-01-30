@@ -18,7 +18,7 @@ public:
 
 private:
     double expected_servicecall_frequency_;
-    diagnostic_updater::TopicDiagnostic* service_diagnostic_;
+    diagnostic_updater::FrequencyStatus* service_diagnostic_;
 
 };
 
