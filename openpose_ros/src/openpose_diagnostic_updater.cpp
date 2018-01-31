@@ -7,6 +7,8 @@
 OpenposeDiagnosticUpdater::OpenposeDiagnosticUpdater()
 {
     // TODO: Get expected frequency from parameter server
+    expected_servicecall_frequency_ = 1.0;
+
     service_diagnostic_ = new diagnostic_updater::FrequencyStatus(
             diagnostic_updater::FrequencyStatusParam(&expected_servicecall_frequency_, &expected_servicecall_frequency_, 0.1));
 
