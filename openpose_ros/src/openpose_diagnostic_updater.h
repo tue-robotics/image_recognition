@@ -15,11 +15,11 @@ public:
     OpenposeDiagnosticUpdater();
 
     void tick();
+    void generalDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &stat);
 
 private:
     double expected_servicecall_frequency_;
     diagnostic_updater::FrequencyStatus* service_diagnostic_;
-
 };
 
 
