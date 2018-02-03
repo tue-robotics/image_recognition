@@ -15,23 +15,24 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
-find_package(jetson-inference REQUIRED)
-find_package(CUDA REQUIRED)
-find_package(Qt4 REQUIRED)
-include(${QT_USE_FILE})
-add_definitions(${QT_DEFINITIONS})
-
 catkin_package()
 
+include_directories(${catkin_INCLUDE_DIRS})
+
+find_package(jetson-inference)
+if(jetson-inference_FOUND) # If we are on Jetson, use the actual impl, otherwise a mock
+    find_package(CUDA REQUIRED)
+    find_package(Qt4 REQUIRED)
+    include(${QT_USE_FILE})
+    add_definitions(${QT_DEFINITIONS})
+    include_directories(${CUDA_INCLUDE_DIRS})
+    add_library(detect_net src/detect_net.cpp)
+    target_link_libraries(detect_net ${catkin_LIBRARIES} jetson-inference)
+else()
+  message(WARNING "Jetson-inference not found, using a mock instead ...")
+  add_library(detect_net src/detect_net_mock.cpp)
+  target_link_libraries(detect_net ${catkin_LIBRARIES})
+endif()
+
 add_executable(detect_net_ros src/detect_net_ros.cpp)
-
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-  ${CUDA_INCLUDE_DIRS}
-)
-
-target_link_libraries(detect_net_ros
-  ${catkin_LIBRARIES}
-  jetson-inference
-)
-
+target_link_libraries(detect_net_ros detect_net)
