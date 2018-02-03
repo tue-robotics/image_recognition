@@ -83,21 +83,23 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  // setup image transport
-  image_transport::ImageTransport it(nh);
-
-  // subscriber for passing in images
-  image_transport::Subscriber image_subscriber = it.subscribe("image", 10, &callback);
-  ros::ServiceServer recognition_service = nh.advertiseService("recognize", &srvCallback);
-
-  g_recognitions_publisher = nh.advertise<image_recognition_msgs::Recognitions>("recognitions", 1);
-
   try
   {
     g_detect_net = std::shared_ptr<DetectNet>(new DetectNet(prototxt_path, model_path,
                                                             local_nh.param("mean_pixel", 0.0),
                                                             local_nh.param("threshold", 0.5)));
+
+    // setup image transport
+    image_transport::ImageTransport it(nh);
+  
+    // subscriber for passing in images
+    image_transport::Subscriber image_subscriber = it.subscribe("image", 10, &callback);
+    ros::ServiceServer recognition_service = nh.advertiseService("recognize", &srvCallback);
+  
+    g_recognitions_publisher = nh.advertise<image_recognition_msgs::Recognitions>("recognitions", 1);
+
     ROS_INFO("DetectNetROS initialized, spinning ...");
+
     ros::spin();
   }
   catch (const std::exception& e)

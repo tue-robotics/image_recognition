@@ -23,11 +23,11 @@ DetectNet::DetectNet(std::string prototxt_path, std::string model_path, int mean
   // make sure files exist (and we can read them)
   if( access(prototxt_path.c_str(), R_OK) )
   {
-    throw std::runtime_error("unable to read file \"%s\", check filename and permissions", prototxt_path.c_str());
+    throw std::runtime_error("Unable to read prototxt file: " + prototxt_path);
   }
   if( access(model_path.c_str(), R_OK) )
   {
-    throw std::runtime_error("unable to read file \"%s\", check filename and permissions", model_path.c_str());
+    throw std::runtime_error("Unable to read model path file: " + model_path);
   }
 
   // create imageNet
@@ -51,7 +51,7 @@ DetectNet::DetectNet(std::string prototxt_path, std::string model_path, int mean
   }
 }
 
-DetectNetROS::~DetectNetROS()
+DetectNet::~DetectNet()
 {
   if(g_gpu_data)
     CUDA(cudaFree(g_gpu_data));
@@ -77,21 +77,20 @@ std::vector<image_recognition_msgs::Recognition> DetectNet::processImage(const c
   float4* cpu_data = (float4*)(cv_im.data);
 
   // copy to device
-  CUDA(cudaMemcpy(gpu_data_, cpu_data, image_size_, cudaMemcpyHostToDevice));
+  CUDA(cudaMemcpy(g_gpu_data, cpu_data, g_image_size, cudaMemcpyHostToDevice));
 
   int number_of_bounding_boxes = g_max_boxes;
 
   std::vector<image_recognition_msgs::Recognition> recognitions;
-  if (net_->Detect((float*)g_gpu_data, g_image_width, g_image_height, g_bounding_box_CPU, &number_of_bounding_boxes, g_confidence_CPU)) 
+  if (g_net->Detect((float*)g_gpu_data, g_image_width, g_image_height, g_bounding_box_CPU, &number_of_bounding_boxes, g_confidence_CPU)) 
   {
-    ROS_INFO("Detected %d bounding boxes", number_of_bounding_boxes);
     recognitions.resize(number_of_bounding_boxes);
 
     for(int n = 0; n < number_of_bounding_boxes; n++)
     {
       // confidence optional pointer to float2 array filled with a (confidence, class) pair for each bounding box (numBoxes)
-      const float confidence = confidence_CPU_[n*2];
-      const int label = confidence_CPU_[n*2+1];
+      const float confidence = g_confidence_CPU[n*2];
+      const int label = g_confidence_CPU[n*2+1];
       float* bounding_box = g_bounding_box_CPU + (n * 4);
       recognitions[n].roi.x_offset = bounding_box[0];
       recognitions[n].roi.y_offset = bounding_box[1];
