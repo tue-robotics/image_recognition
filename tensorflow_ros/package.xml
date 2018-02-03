@@ -19,5 +19,6 @@
   <run_depend>python-numpy</run_depend>
   <run_depend>python-six</run_depend>
   <run_depend>python-tensorflow-pip</run_depend>
+  <run_depend>diagnostic_updater</run_depend>
 
 </package>
