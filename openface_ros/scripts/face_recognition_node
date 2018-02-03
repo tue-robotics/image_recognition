@@ -7,6 +7,7 @@ from image_recognition_msgs.srv import Recognize, Annotate
 from image_recognition_msgs.msg import Recognition, Recognitions, CategoryProbability, CategoricalDistribution
 from sensor_msgs.msg import RegionOfInterest, Image
 from std_srvs.srv import Empty
+import diagnostic_updater
 
 import os
 import sys
@@ -205,5 +206,10 @@ if __name__ == '__main__':
     if db:
         rospy.loginfo('loading face database from %s', db)
         openface_ros.restore_trained_faces(db)
+
+    updater = diagnostic_updater.Updater()
+    updater.setHardwareID("none")
+    updater.add(diagnostic_updater.Heartbeat())
+    rospy.Timer(rospy.Duration(1), lambda event: updater.update())
 
     rospy.spin()
