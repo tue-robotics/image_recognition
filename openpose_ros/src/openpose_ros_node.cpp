@@ -171,7 +171,10 @@ int main(int argc, char** argv)
   diagnostic_updater::Heartbeat *heartbeat = new diagnostic_updater::Heartbeat();
   g_diagnostic_updater->add(*heartbeat);
 
-//  local_nh.createTimer(ros::Duration(1.0), []{g_diagnostic_updater->update();});
+  ros::Timer t = nh.createTimer(ros::Duration(1.0),
+                       (const ros::TimerCallback &) [](const ros::TimerEvent& te)->void {
+                           g_diagnostic_updater->update();
+                       });
 
   ros::spin();
 
