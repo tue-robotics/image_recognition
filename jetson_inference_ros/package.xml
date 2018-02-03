@@ -12,6 +12,7 @@
 
   <depend>cv_bridge</depend>
   <depend>image_recognition_msgs</depend>
+  <depend>image_recognition_util</depend>
   <depend>image_transport</depend>
   <depend>roscpp</depend>
   <depend>sensor_msgs</depend>
