@@ -4,9 +4,13 @@ jetson_inference_ros
 ROS Wrapper for Jetson inference https://github.com/dusty-nv/jetson-inference
 
 ## Description
-Provides a service and topic interface for jetson inference.
+Provides a service and topic interface for jetson inference. For now only the detect nets
 
-![Illustration](doc/illustration.png)
+### Some illustrations (pednet, bottlenet, facenet)
+
+![Pedestrians](doc/pedestrians.png)
+![Bottles](doc/bottles.png)
+![Faces](doc/faces.png)
 
 ## Installation on Jetson TX2
 
