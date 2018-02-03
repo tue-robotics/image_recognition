@@ -15,15 +15,20 @@ OpenposeDiagnosticUpdater::OpenposeDiagnosticUpdater()
 
     add("General", this, &OpenposeDiagnosticUpdater::generalDiagnostics);
 
+    update_timer_ = nh_.createTimer(ros::Duration(1.0), &OpenposeDiagnosticUpdater::updateCallback, this);
 }
 
 void OpenposeDiagnosticUpdater::tick()
 {
     service_diagnostic_->tick();
-    update(); // TODO: (Maybe) This needs to be called at some predefined interval, eg. on a ROS Timer
 }
 
 void OpenposeDiagnosticUpdater::generalDiagnostics(diagnostic_updater::DiagnosticStatusWrapper &stat)
 {
     stat.summary(diagnostic_msgs::DiagnosticStatus::OK, "System OK.");
+}
+
+void OpenposeDiagnosticUpdater::updateCallback(const ros::TimerEvent& te)
+{
+    update();
 }
