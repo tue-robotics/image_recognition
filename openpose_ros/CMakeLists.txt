@@ -54,8 +54,6 @@ else()
 
   include_directories(${catkin_INCLUDE_DIRS})
   add_library(openpose_wrapper src/openpose_wrapper_mock.cpp)
-
-  target_link_libraries(openpose_wrapper openpose_diagnostic_updater ${catkin_LIBRARIES})
 endif()
 
 # depend on generated messages
