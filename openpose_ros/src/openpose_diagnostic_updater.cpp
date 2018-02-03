@@ -11,8 +11,10 @@ OpenposeDiagnosticUpdater::OpenposeDiagnosticUpdater()
 
     service_diagnostic_ = new diagnostic_updater::FrequencyStatus(
             diagnostic_updater::FrequencyStatusParam(&expected_servicecall_frequency_, &expected_servicecall_frequency_, 0.1));
+    add(*service_diagnostic_);
 
     add("General", this, &OpenposeDiagnosticUpdater::generalDiagnostics);
+
 }
 
 void OpenposeDiagnosticUpdater::tick()
