@@ -9,9 +9,14 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   sensor_msgs
   image_recognition_msgs
+  diagnostic_msgs
+  diagnostic_updater
 )
 
 catkin_package()
+
+add_library(openpose_diagnostic_updater src/openpose_diagnostic_updater.cpp)
+target_link_libraries(openpose_diagnostic_updater ${catkin_LIBRARIES})
 
 set(OPENPOSE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/openpose)
 IF(EXISTS ${OPENPOSE_DIR})
@@ -39,6 +44,7 @@ IF(EXISTS ${OPENPOSE_DIR})
     ${CAFFE_LINK_LIBRARY}
     ${OPENPOSE_LINK_LIBRARY}
     ${catkin_LIBRARIES}
+    openpose_diagnostic_updater
   )
 
   add_executable(${PROJECT_NAME}_test test/test.cpp)
@@ -48,8 +54,6 @@ else()
 
   include_directories(${catkin_INCLUDE_DIRS})
   add_library(openpose_wrapper src/openpose_wrapper_mock.cpp)
-
-  target_link_libraries(openpose_wrapper ${catkin_LIBRARIES})
 endif()
 
 # depend on generated messages
@@ -58,4 +62,4 @@ add_dependencies(openpose_wrapper ${catkin_EXPORTED_TARGETS})
 add_executable(${PROJECT_NAME}_node src/openpose_ros_node.cpp)
 
 # Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_node openpose_wrapper)
+target_link_libraries(${PROJECT_NAME}_node openpose_wrapper openpose_diagnostic_updater)
