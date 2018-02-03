@@ -30,6 +30,7 @@ if(jetson-inference_FOUND) # If we are on Jetson, use the actual impl, otherwise
     target_link_libraries(detect_net ${catkin_LIBRARIES} jetson-inference)
 else()
   message(WARNING "Jetson-inference not found, using a mock instead ...")
+  message(WARNING "The library can be installed using scripts/install_jetson_inference.bash")
   add_library(detect_net src/detect_net_mock.cpp)
   target_link_libraries(detect_net ${catkin_LIBRARIES})
 endif()
