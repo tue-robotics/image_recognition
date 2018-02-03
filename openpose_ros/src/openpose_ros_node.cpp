@@ -110,8 +110,6 @@ bool detectPosesCallback(image_recognition_msgs::Recognize::Request& req, image_
 {
   ROS_INFO("detectPosesCallback");
 
-  openpose_diagnostic_updater->tick();
-
   // Convert ROS message to opencv image
   cv_bridge::CvImagePtr cv_ptr;
   try
