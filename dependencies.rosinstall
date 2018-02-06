@@ -1,1 +1,1 @@
-
+- git: {local-name: rosinstall, uri: 'https://github.com/tue-robotics/diagnostics.git', version: master}
