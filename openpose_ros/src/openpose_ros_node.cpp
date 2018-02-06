@@ -1,7 +1,7 @@
 #include "openpose_wrapper.h"
 
-#include "diagnostic_updater/update_functions.h"
-#include "diagnostic_updater/diagnostic_updater.h"
+#include <diagnostic_updater/update_functions.h>
+#include <diagnostic_updater/diagnostic_updater.h>
 
 #include <image_recognition_msgs/Recognize.h>
 #include <ros/node_handle.h>
