@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   sensor_msgs
   image_recognition_msgs
+  diagnostic_updater
 )
 
 catkin_package()
