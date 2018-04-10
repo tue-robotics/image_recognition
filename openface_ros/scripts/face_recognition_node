@@ -210,6 +210,6 @@ if __name__ == '__main__':
     updater = diagnostic_updater.Updater()
     updater.setHardwareID("none")
     updater.add(diagnostic_updater.Heartbeat())
-    rospy.Timer(rospy.Duration(1), lambda event: updater.update())
+    rospy.Timer(rospy.Duration(1), lambda event: updater.force_update())
 
     rospy.spin()

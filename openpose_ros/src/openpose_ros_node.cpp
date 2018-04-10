@@ -174,7 +174,7 @@ int main(int argc, char** argv)
 
   ros::Timer t = nh.createTimer(ros::Duration(1.0),
                        (const ros::TimerCallback &) [](const ros::TimerEvent& te)->void {
-                           g_diagnostic_updater->update();
+                           g_diagnostic_updater->force_update();
                        });
 
   ros::spin();
