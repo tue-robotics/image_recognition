@@ -28,6 +28,6 @@ dog,0.3,0.7
 To use this on e.g. a tensorflow model:
 ```bash
 cd path/to/dir/with/evaluation_set # directory with a subdir for each class, as with training
-rosrun tensorflow_ros evaluate_classifier output_graph.pb $output_labels.txt -o result.csv
+rosrun tensorflow_ros evaluate_classifier output_graph.pb $output_labels.txt -o result.csv .
 rosrun image_recognition_analysis classifier_metrics result.csv -o result.png --title "Your plot"
 ```
