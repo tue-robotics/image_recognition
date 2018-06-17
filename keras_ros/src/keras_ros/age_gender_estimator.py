@@ -5,15 +5,15 @@ from wide_resnet import WideResNet
 
 
 class AgeGenderEstimator(object):
-    def __init__(self, weight_file_path, img_size=64, depth=16, width=8):
+    def __init__(self, weights_file_path, img_size=64, depth=16, width=8):
         """
         Estimate the age and gender of the incoming image
 
-        :param weight_file_path: path to a pre-trained keras network
+        :param weights_file_path: path to a pre-trained keras network
         """
         self._model = None
 
-        self._weight_file_path = weight_file_path
+        self._weights_file_path = weights_file_path
         self._img_size = img_size
         self._depth = depth
         self._width = width
@@ -29,7 +29,7 @@ class AgeGenderEstimator(object):
         # Model should be constructed in same thread as the inference
         if self._model is None:
             self._model = WideResNet(self._img_size, depth=self._depth, k=self._width)()
-            self._model.load_weights(self._weight_file_path)
+            self._model.load_weights(self._weights_file_path)
 
         faces = np.empty((len(np_images), self._img_size, self._img_size, 3))
         for i, np_image in enumerate(np_images):
