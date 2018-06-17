@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-import rospy
-from cv_bridge import CvBridge, CvBridgeError
-
-from image_recognition_msgs.srv import GetFaceProperties
-from image_recognition_msgs.msg import FaceProperties
-from keras_ros.age_gender_estimator import AgeGenderEstimator
-
+import datetime
 import os
 import sys
+
 import cv2
-import datetime
+import rospy
+from cv_bridge import CvBridge, CvBridgeError
+from image_recognition_msgs.msg import FaceProperties
+from image_recognition_msgs.srv import GetFaceProperties
+from image_recognition_util import image_writer
+from keras_ros.age_gender_estimator import AgeGenderEstimator
 
 
 class WideResnetFaceProperties:
@@ -28,7 +28,12 @@ class WideResnetFaceProperties:
         else:
             self._save_images_folder = None
 
-        rospy.loginfo("WideResnetFaceProperties node initialized")
+        rospy.loginfo("WideResnetFaceProperties node initialized:")
+        rospy.loginfo(" - weights_file_path=%s", weights_file_path)
+        rospy.loginfo(" - img_size=%s", img_size)
+        rospy.loginfo(" - depth=%s", depth)
+        rospy.loginfo(" - width=%s", width)
+        rospy.loginfo(" - save_images_folder=%s", save_images_folder)
 
     def _get_face_properties_srv(self, req):
         """
@@ -42,15 +47,6 @@ class WideResnetFaceProperties:
         except CvBridgeError as e:
             raise Exception("Could not convert image to opencv image: %s" % str(e))
 
-        # Store images
-        if self._save_images_folder:
-            for image in bgr_images:
-                filename = "%s/get_face_properties_%s.jpeg" % \
-                           (self._save_images_folder, datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f"))
-                rospy.loginfo("Writing image to %s" % filename)
-                cv2.imwrite(filename, image)
-
-        # Call the Skybiometry API
         rospy.loginfo("Estimating the age and gender of %d incoming images ...", len(bgr_images))
         estimations = self._estimator.estimate(bgr_images)
         rospy.loginfo("Done")
@@ -61,6 +57,14 @@ class WideResnetFaceProperties:
                 age=int(age),
                 gender=FaceProperties.FEMALE if gender[0] > 0.5 else FaceProperties.MALE,
             ))
+
+        # Store images if specified
+        if self._save_images_folder:
+            def _get_label(p):
+                return "age_%d_gender_%s" % (p.age, "male" if p.gender == FaceProperties.MALE else "female")
+
+            image_writer.write_estimations(self._save_images_folder, bgr_images,
+                                           [_get_label(p) for p in face_properties_array])
 
         # Service response
         return {"properties_array": face_properties_array}
@@ -73,11 +77,11 @@ if __name__ == '__main__':
         img_size = rospy.get_param("~image_size", 64)
         depth = rospy.get_param("~depth", 16)
         width = rospy.get_param("~width", 8)
-        save_images = rospy.get_param("~save_images", False)
+        save_images = rospy.get_param("~save_images", True)
 
         save_images_folder = None
         if save_images:
-            save_images_folder = rospy.get_param("~save_images_folder", "/tmp/skybiometry")
+            save_images_folder = rospy.get_param("~save_images_folder", "/tmp/keras_ros")
     except KeyError as e:
         rospy.logerr("Parameter %s not found" % e)
         sys.exit(1)

@@ -32,6 +32,65 @@ def color_map(N=256, normalized=False):
     return cmap
 
 
+def write_estimation(dir_path, image, label):
+    """
+    Write estimation to a directory, for the estimation, a directory of the run will be created
+    """
+    if dir_path is None:
+        return False
+
+    # Check if path exists, otherwise created it
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+
+    # Check if path exists, otherwise created it
+    estimations_dir = dir_path + "/estimations"
+    if not os.path.exists(estimations_dir):
+        os.makedirs(estimations_dir)
+
+    # Make a directory of the estimation with current time
+    estimation_dir = "%s/%s" % (estimations_dir, datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S_%f"))
+    os.makedirs(estimation_dir)
+
+    filename = "%s/%s.jpg" % (estimation_dir, label)
+    cv2.imwrite(filename, image)
+
+    return True
+
+
+def write_estimations(dir_path, images, labels, annotated_original_image=None):
+    """
+    Write estimations to a directory, for each estimation cycle, a directory of the run will be created
+    """
+    assert len(images) == len(labels)
+
+    if dir_path is None:
+        return False
+
+    # Check if path exists, otherwise created it
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+
+    # Check if path exists, otherwise created it
+    estimations_dir = dir_path + "/estimations"
+    if not os.path.exists(estimations_dir):
+        os.makedirs(estimations_dir)
+
+    # Make a directory of the estimation with current time
+    estimation_dir = "%s/%s" % (estimations_dir, datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S_%f"))
+    os.makedirs(estimation_dir)
+
+    for (image, label) in zip(images, labels):
+        filename = "%s/%s.jpg" % (estimation_dir, label)
+        cv2.imwrite(filename, image)
+
+    if annotated_original_image:
+        filename = "%s/annotated_original_image.jpg" % (estimation_dir, label)
+        cv2.imwrite(filename, image)
+
+    return True
+
+
 def write_annotated(dir_path, image, label, verified=False):
     """
     Write an image with an annotation to a folder

@@ -80,6 +80,7 @@ class TensorflowObjectRecognition:
             # Write unverified annotated image
             if self._save_images_folder:
                 image_writer.write_annotated(self._save_images_folder, self._bgr_image, best_label, False)
+                image_writer.write_estimation(self._save_images_folder, self._bgr_image, best_label)
 
         return {"recognitions": [recognition]}
 
