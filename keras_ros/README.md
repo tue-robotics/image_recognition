@@ -11,7 +11,7 @@ See https://github.com/tue-robotics/image_recognition for installation instructi
 Age and gender estimation with use of WideResNet from https://github.com/yu4u/age-gender-estimation. You can download the pre-trained model here: https://github.com/yu4u/age-gender-estimation/releases/download/v0.5/weights.18-4.06.hdf5
 
 ```
-rosrun keras_ros face_properties_node _weight_file_path:=[path_to_model]
+rosrun keras_ros face_properties_node _weights_file_path:=[path_to_model]
 ```
 
 Run the image_recognition_rqt test gui (https://github.com/tue-robotics/image_recognition_rqt)

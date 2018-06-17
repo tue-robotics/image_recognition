@@ -13,13 +13,13 @@ import datetime
 
 
 class WideResnetFaceProperties:
-    def __init__(self, weight_file_path, img_size, depth, width, save_images_folder):
+    def __init__(self, weights_file_path, img_size, depth, width, save_images_folder):
         """
         ROS node that wraps the Wide Resnet age gender estimator
         """
         self._bridge = CvBridge()
         self._properties_srv = rospy.Service('get_face_properties', GetFaceProperties, self._get_face_properties_srv)
-        self._estimator = AgeGenderEstimator(weight_file_path, img_size, depth, width)
+        self._estimator = AgeGenderEstimator(weights_file_path, img_size, depth, width)
 
         if save_images_folder:
             self._save_images_folder = os.path.expanduser(save_images_folder)
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     rospy.init_node("face_properties")
 
     try:
-        weight_file_path = rospy.get_param("~weight_file_path")
+        weights_file_path = rospy.get_param("~weights_file_path")
         img_size = rospy.get_param("~image_size", 64)
         depth = rospy.get_param("~depth", 16)
         width = rospy.get_param("~width", 8)
@@ -82,5 +82,5 @@ if __name__ == '__main__':
         rospy.logerr("Parameter %s not found" % e)
         sys.exit(1)
 
-    WideResnetFaceProperties(weight_file_path, img_size, depth, width, save_images_folder)
+    WideResnetFaceProperties(weights_file_path, img_size, depth, width, save_images_folder)
     rospy.spin()
