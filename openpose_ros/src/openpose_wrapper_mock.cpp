@@ -34,26 +34,6 @@ bool OpenposeWrapper::detectPoses(const cv::Mat& image, std::vector<image_recogn
   size_t x = image.cols / 2;
   size_t y = image.rows / 2;
 
-  recognitions.push_back(getRecognition(x, y, "Nose"));
-  recognitions.push_back(getRecognition(x, y, "Neck"));
-  recognitions.push_back(getRecognition(x, y, "RShoulder"));
-  recognitions.push_back(getRecognition(x, y, "RElbow"));
-  recognitions.push_back(getRecognition(x, y, "RWrist"));
-  recognitions.push_back(getRecognition(x, y, "LShoulder"));
-  recognitions.push_back(getRecognition(x, y, "LElbow"));
-  recognitions.push_back(getRecognition(x, y, "LWrist"));
-  recognitions.push_back(getRecognition(x, y, "RHip"));
-  recognitions.push_back(getRecognition(x, y, "RKnee"));
-  recognitions.push_back(getRecognition(x, y, "RAnkle"));
-  recognitions.push_back(getRecognition(x, y, "LHip"));
-  recognitions.push_back(getRecognition(x, y, "LKnee"));
-  recognitions.push_back(getRecognition(x, y, "LAnkle"));
-  recognitions.push_back(getRecognition(x, y, "REye"));
-  recognitions.push_back(getRecognition(x, y, "LEye"));
-  recognitions.push_back(getRecognition(x, y, "REar"));
-  recognitions.push_back(getRecognition(x, y, "LEar"));
-  recognitions.push_back(getRecognition(x, y, "Chest"));
-
   overlayed_image = image;
 
   return true;
