@@ -15,6 +15,7 @@ Package | Build status Xenial Kinetic x64 | Description
 [openface_ros](https://github.com/tue-robotics/image_recognition/tree/master/openface_ros) | [![Build Status](http://build.ros.org/job/Ksrc_uX__openface_ros__ubuntu_xenial__source/1//badge/icon)](http://build.ros.org/job/Ksrc_uX__openface_ros__ubuntu_xenial__source/1/) | ROS wrapper for Openface (https://github.com/cmusatyalab/openface) to detect and recognize faces in images.
 [skybiometry_ros](https://github.com/tue-robotics/image_recognition/tree/master/skybiometry_ros) | [![Build Status](http://build.ros.org/job/Ksrc_uX__skybiometry_ros__ubuntu_xenial__source/1//badge/icon)](http://build.ros.org/job/Ksrc_uX__skybiometry_ros_ubuntu_xenial__source/1/) | ROS wrapper for Skybiometry (https://skybiometry.com/) for getting face properties of a detected face, e.g. age estimation, gender estimation etc.
 [openpose_ros](https://github.com/tue-robotics/image_recognition/tree/master/openpose_ros) | [![Build Status](http://build.ros.org/job/Ksrc_uX__openpose_ros__ubuntu_xenial__source/1//badge/icon)](http://build.ros.org/job/Ksrc_uX__openpose_ros_ubuntu_xenial__source/1/) | ROS wrapper for Openpose (https://github.com/CMU-Perceptual-Computing-Lab/) for getting poses of 2D images.
+[keras_ros](https://github.com/tue-robotics/image_recognition/tree/master/keras_ros) | [![Build Status](http://build.ros.org/job/Ksrc_uX__keras_ros__ubuntu_xenial__source/1//badge/icon)](http://build.ros.org/job/Ksrc_uX__keras_ros_ubuntu_xenial__source/1/) | ROS wrappers for Keras neural nets.
 
 ## Travis CI Build Status
 
