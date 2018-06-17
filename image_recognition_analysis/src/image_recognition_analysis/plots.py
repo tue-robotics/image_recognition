@@ -14,10 +14,9 @@ def plot_confusion_matrix(labels, classifications_ground_truth, classifications_
     """
     plt.figure()
 
-    cnf_matrix = confusion_matrix(classifications_ground_truth, classifications_predicted_label)
+    cnf_matrix = confusion_matrix(classifications_ground_truth, classifications_predicted_label, labels)
 
     # Plot normalized confusion matrix
-
     plt.imshow(cnf_matrix, interpolation='nearest', cmap=plt.cm.Blues)
     plt.colorbar()
     tick_marks = np.arange(len(labels))
