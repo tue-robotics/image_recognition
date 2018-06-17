@@ -153,7 +153,8 @@ class OpenfaceROS:
 
         annotated_original_image = image_writer.get_annotated_cv_image(bgr_image, recognitions)
         if save_images:
-            image_writer.write_estimations(self._save_images_folder, images, labels, annotated_original_image)
+            image_writer.write_estimations(self._save_images_folder, images, labels, annotated_original_image,
+                                           suffix="_face_recognition")
 
         if publish_images:
             self._result_image_publisher.publish(self._bridge.cv2_to_imgmsg(annotated_original_image, "bgr8"))

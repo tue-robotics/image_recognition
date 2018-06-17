@@ -32,7 +32,7 @@ def color_map(N=256, normalized=False):
     return cmap
 
 
-def write_estimation(dir_path, image, label):
+def write_estimation(dir_path, image, label, annotated_original_image=None, suffix=""):
     """
     Write estimation to a directory, for the estimation, a directory of the run will be created
     """
@@ -49,16 +49,20 @@ def write_estimation(dir_path, image, label):
         os.makedirs(estimations_dir)
 
     # Make a directory of the estimation with current time
-    estimation_dir = "%s/%s" % (estimations_dir, datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S_%f"))
+    estimation_dir = "%s/%s%s" % (estimations_dir, datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S_%f"), suffix)
     os.makedirs(estimation_dir)
 
     filename = "%s/%s.jpg" % (estimation_dir, label)
     cv2.imwrite(filename, image)
 
+    if annotated_original_image is not None:
+        filename = "%s/annotated_original_image.jpg" % estimation_dir
+        cv2.imwrite(filename, annotated_original_image)
+
     return True
 
 
-def write_estimations(dir_path, images, labels, annotated_original_image=None):
+def write_estimations(dir_path, images, labels, annotated_original_image=None, suffix=""):
     """
     Write estimations to a directory, for each estimation cycle, a directory of the run will be created
     """
@@ -77,11 +81,11 @@ def write_estimations(dir_path, images, labels, annotated_original_image=None):
         os.makedirs(estimations_dir)
 
     # Make a directory of the estimation with current time
-    estimation_dir = "%s/%s" % (estimations_dir, datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S_%f"))
+    estimation_dir = "%s/%s%s" % (estimations_dir, datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S_%f"), suffix)
     os.makedirs(estimation_dir)
 
-    for (image, label) in zip(images, labels):
-        filename = "%s/%s.jpg" % (estimation_dir, label)
+    for i, (image, label) in enumerate(zip(images, labels)):
+        filename = "%s/%s_%d.jpg" % (estimation_dir, label, i)
         cv2.imwrite(filename, image)
 
     if annotated_original_image is not None:

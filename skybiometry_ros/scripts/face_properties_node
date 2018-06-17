@@ -69,7 +69,8 @@ class SkybiometryFaceProperties:
                 return "age_%d_gender_%s" % (p.age, "male" if p.gender == FaceProperties.MALE else "female")
 
             image_writer.write_estimations(self._save_images_folder, bgr_images,
-                                           [_get_label(p) for p in face_properties_array])
+                                           [_get_label(p) for p in face_properties_array],
+                                           suffix="_face_properties")
 
         # Service response
         return {"properties_array": face_properties_array}
