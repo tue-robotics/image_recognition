@@ -37,3 +37,11 @@ rosrun keras_ros get_face_properties --image doc/face.png --weights-path [path_t
 Output: 
 
     [(50.5418073660112, array([0.5845756 , 0.41542447], dtype=float32))]
+
+## Troubleshooting
+
+```
+An error occurred: softmax() got an unexpected keyword argument 'axis'
+```
+
+Make sure you have tensorflow version >= 1.5.
