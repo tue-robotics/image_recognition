@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import os.path
 
 from wide_resnet import WideResNet
 
@@ -11,8 +12,12 @@ class AgeGenderEstimator(object):
 
         :param weights_file_path: path to a pre-trained keras network
         """
-        self._model = None
+        weights_file_path = os.path.expanduser(weights_file_path)
 
+        if not os.path.isfile(weights_file_path):
+            raise IOError("Weights file {}, no such file ..".format(weights_file_path))
+
+        self._model = None
         self._weights_file_path = weights_file_path
         self._img_size = img_size
         self._depth = depth
