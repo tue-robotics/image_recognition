@@ -86,7 +86,7 @@ def write_estimations(dir_path, images, labels, annotated_original_image=None):
 
     if annotated_original_image is not None:
         filename = "%s/annotated_original_image.jpg" % estimation_dir
-        cv2.imwrite(filename, image)
+        cv2.imwrite(filename, annotated_original_image)
 
     return True
 
