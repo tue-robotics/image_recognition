@@ -87,5 +87,9 @@ if __name__ == '__main__':
         rospy.logerr("Parameter %s not found" % e)
         sys.exit(1)
 
-    WideResnetFaceProperties(weights_file_path, img_size, depth, width, save_images_folder)
-    rospy.spin()
+    try:
+        WideResnetFaceProperties(weights_file_path, img_size, depth, width, save_images_folder)
+        rospy.spin()
+    except Exception as e:
+        rospy.logfatal(e)
+
