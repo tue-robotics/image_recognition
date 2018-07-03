@@ -122,6 +122,9 @@ class OpenfaceROS:
         recognitions = []
 
         rospy.loginfo("Face recognitions: %s", face_recognitions)
+
+        images = []
+        labels = []
         for face_recognition in face_recognitions:
 
             if save_images:
@@ -131,6 +134,9 @@ class OpenfaceROS:
                             face_recognition.roi.y_offset:face_recognition.roi.y_offset + face_recognition.roi.height,
                             face_recognition.roi.x_offset:face_recognition.roi.x_offset + face_recognition.roi.width]
                 image_writer.write_annotated(self._save_images_folder, roi_image, label, False)
+
+                images.append(roi_image)
+                labels.append(label)
 
             recognitions.append(Recognition(
                 categorical_distribution=CategoricalDistribution(
@@ -146,9 +152,13 @@ class OpenfaceROS:
                 )
             ))
 
+        annotated_original_image = image_writer.get_annotated_cv_image(bgr_image, recognitions)
+        if save_images:
+            image_writer.write_estimations(self._save_images_folder, images, labels, annotated_original_image,
+                                           suffix="_face_recognition")
+
         if publish_images:
-            annotated_image = image_writer.get_annotated_cv_image(bgr_image, recognitions)
-            self._result_image_publisher.publish(self._bridge.cv2_to_imgmsg(annotated_image, "bgr8"))
+            self._result_image_publisher.publish(self._bridge.cv2_to_imgmsg(annotated_original_image, "bgr8"))
 
         # Service response
         return recognitions

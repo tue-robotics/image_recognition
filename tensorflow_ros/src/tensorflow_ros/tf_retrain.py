@@ -289,6 +289,15 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
         testing_images.append(base_name)
       else:
         training_images.append(base_name)
+
+    if not len(validation_images):
+        print('WARNING: taking 1 validation image for', label_name)
+        validation_images.append(training_images.pop())
+
+    if not len(testing_images):
+        print('WARNING: taking 1 testing_image for', label_name)
+        testing_images.append(training_images.pop())
+
     result[label_name] = {
         'dir': dir_name,
         'training': training_images,

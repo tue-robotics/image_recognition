@@ -5,6 +5,7 @@ import diagnostic_updater
 
 from image_recognition_msgs.srv import GetFaceProperties
 from image_recognition_msgs.msg import FaceProperties
+from image_recognition_util import image_writer
 from skybiometry_ros import Skybiometry, SkyFaceProperties
 
 import os
@@ -52,14 +53,6 @@ class SkybiometryFaceProperties:
         except CvBridgeError as e:
             raise Exception("Could not convert image to opencv image: %s" % str(e))
 
-        # Store images
-        if self._save_images_folder:
-            for image in bgr_images:
-                filename = "%s/get_face_properties_%s.jpeg" % \
-                           (self._save_images_folder, datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f"))
-                rospy.loginfo("Writing image to %s" % filename)
-                cv2.imwrite(filename, image)
-
         # Call the Skybiometry API
         rospy.loginfo("Trying Skybiometry API request for %d seconds" % self._api_timeout)
         sky_face_properties_array = self._skybiometry.get_face_properties(bgr_images, self._api_timeout)
@@ -71,18 +64,26 @@ class SkybiometryFaceProperties:
                 age=int(sky_face_properties.age_est.value)
             ))
 
+        # Store images if specified
+        if self._save_images_folder:
+            def _get_label(p):
+                return "age_%d_gender_%s" % (p.age, "male" if p.gender == FaceProperties.MALE else "female")
+
+            image_writer.write_estimations(self._save_images_folder, bgr_images,
+                                           [_get_label(p) for p in face_properties_array],
+                                           suffix="_face_properties")
+
         # Service response
         return {"properties_array": face_properties_array}
 
 if __name__ == '__main__':
-
     rospy.init_node("face_properties")
 
     try:
         api_key = rospy.get_param("~api_key", "69efefc20c7f42d8af1f2646ce6742ec")
         api_secret = rospy.get_param("~api_secret", "5fab420ca6cf4ff28e7780efcffadb6c")
         api_timeout = rospy.get_param("~api_timeout", 10)
-        save_images = rospy.get_param("~save_images", False)
+        save_images = rospy.get_param("~save_images", True)
 
         save_images_folder = None
         if save_images:
