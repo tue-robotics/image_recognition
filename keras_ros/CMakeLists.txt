@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(skybiometry_ros)
+project(keras_ros)
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  rospy
+  image_recognition_msgs
+  image_recognition_util
+)
 
 catkin_python_setup()
 
@@ -12,3 +16,4 @@ install(PROGRAMS
   scripts/get_face_properties
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
