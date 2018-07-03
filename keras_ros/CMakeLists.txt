@@ -12,7 +12,8 @@ catkin_python_setup()
 catkin_package()
 
 install(PROGRAMS
-  scripts/retrain
-  scripts/object_recognition_node
+  scripts/face_properties_node
+  scripts/get_face_properties
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
