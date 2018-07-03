@@ -1,11 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(skybiometry_ros)
 
-find_package(catkin REQUIRED COMPONENTS
-  cv_bridge
-  image_recognition_msgs
-  rospy
-)
+find_package(catkin REQUIRED)
 
 catkin_python_setup()
 
