@@ -133,6 +133,11 @@ bool detectPosesCallback(image_recognition_msgs::Recognize::Request& req, image_
   return detectPoses(image, res.recognitions);
 }
 
+void updateDiagnosticsCallback(const ros::TimerEvent &)
+{
+    g_diagnostic_updater->force_update();
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "openpose");
@@ -172,10 +177,7 @@ int main(int argc, char** argv)
   diagnostic_updater::Heartbeat heartbeat = diagnostic_updater::Heartbeat();
   g_diagnostic_updater->add(heartbeat);
 
-  ros::Timer t = nh.createTimer(ros::Duration(1.0),
-                       (const ros::TimerCallback &) [](const ros::TimerEvent& te)->void {
-                           g_diagnostic_updater->force_update();
-                       });
+  ros::Timer t = nh.createTimer(ros::Duration(1.0), updateDiagnosticsCallback);
 
   ros::spin();
 
