@@ -54,8 +54,11 @@ class ObjectRecognizer(object):
         if np_image.ndim != 3:  # x, y, channel
             raise ValueError("Shape of image is {sp}. Cannot classify this, shape must be (?, ?, 3). "
                              "First 2 dimensions can are not constrained, "
-                             "but image must have 3 channels (R,G,B)".format(sp=np_image.shape))
-
+                             "but image must have 3 channels (B,G,R)".format(sp=np_image.shape))
+        
+        # Actually we want the image in RGB therefore we transform it
+        np_image = np_image[:,:,::-1]
+        
         # Open tf session
         with self.session.as_default() as sess:  # Be able to call this function from any thread
             # Open Image and perform prediction
