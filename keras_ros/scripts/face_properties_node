@@ -4,6 +4,7 @@ import os
 import sys
 
 import cv2
+import diagnostic_updater
 import rospy
 from cv_bridge import CvBridge, CvBridgeError
 from image_recognition_msgs.msg import FaceProperties
@@ -89,6 +90,10 @@ if __name__ == '__main__':
 
     try:
         WideResnetFaceProperties(weights_file_path, img_size, depth, width, save_images_folder)
+        updater = diagnostic_updater.Updater()
+        updater.setHardwareID("none")
+        updater.add(diagnostic_updater.Heartbeat())
+        rospy.Timer(rospy.Duration(1), lambda event: updater.force_update())
         rospy.spin()
     except Exception as e:
         rospy.logfatal(e)
