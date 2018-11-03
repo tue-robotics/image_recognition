@@ -36,4 +36,6 @@ else()
 endif()
 
 add_executable(detect_net_ros src/detect_net_ros.cpp)
+add_dependencies(detect_net_ros ${catkin_EXPORTED_TARGETS})
+
 target_link_libraries(detect_net_ros detect_net)
