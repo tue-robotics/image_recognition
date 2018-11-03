@@ -16,7 +16,9 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS cv_bridge image_recognition_msgs image_recognition_util image_transport roscpp sensor_msgs
+)
 
 include_directories(${catkin_INCLUDE_DIRS})
 
@@ -39,3 +41,16 @@ add_dependencies(detect_net ${catkin_EXPORTED_TARGETS})
 
 add_executable(detect_net_ros src/detect_net_ros.cpp)
 target_link_libraries(detect_net_ros detect_net)
+
+install(TARGETS
+  detect_net_ros
+  detect_net
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(PROGRAMS
+  scripts/install_jetson_inference.bash
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
