@@ -19,5 +19,6 @@
   <run_depend>image_recognition_util</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>python-numpy</run_depend>
+  <run_depend>diagnostic_updater</run_depend>
 
 </package>

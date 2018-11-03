@@ -8,7 +8,7 @@ See https://github.com/tue-robotics/image_recognition for installation instructi
 
 ## ROS Node (face_properties_node)
 
-Age and gender estimation with use of WideResNet from https://github.com/yu4u/age-gender-estimation. You can download the pre-trained model here: https://github.com/yu4u/age-gender-estimation/releases/download/v0.5/weights.18-4.06.hdf5
+Age and gender estimation with use of WideResNet from https://github.com/yu4u/age-gender-estimation. You can download the pre-trained model here: https://github.com/yu4u/age-gender-estimation/releases/download/v0.5/weights.28-3.73.hdf5
 
 ```
 rosrun keras_ros face_properties_node _weights_file_path:=[path_to_model]

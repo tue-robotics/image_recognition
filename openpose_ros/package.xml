@@ -15,5 +15,6 @@
   <depend>image_recognition_msgs</depend>
 
   <depend>libopencv-dev</depend>
+  <depend>diagnostic_updater</depend>
 
 </package>

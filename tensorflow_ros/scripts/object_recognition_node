@@ -6,6 +6,7 @@ import sys
 
 # ROS
 import rospy
+import diagnostic_updater
 
 # OpenCV
 from cv_bridge import CvBridge, CvBridgeError
@@ -122,5 +123,10 @@ if __name__ == '__main__':
                                                                                                          _labels_path, e)
         rospy.logerr(err_msg)
         sys.exit(err_msg)
+
+    updater = diagnostic_updater.Updater()
+    updater.setHardwareID("none")
+    updater.add(diagnostic_updater.Heartbeat())
+    rospy.Timer(rospy.Duration(1), lambda event: updater.force_update())
 
     rospy.spin()
