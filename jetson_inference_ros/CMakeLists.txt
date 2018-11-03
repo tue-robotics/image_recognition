@@ -34,8 +34,7 @@ else()
   add_library(detect_net src/detect_net_mock.cpp)
   target_link_libraries(detect_net ${catkin_LIBRARIES})
 endif()
+add_dependencies(detect_net ${catkin_EXPORTED_TARGETS})
 
 add_executable(detect_net_ros src/detect_net_ros.cpp)
-add_dependencies(detect_net_ros ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(detect_net_ros detect_net)
