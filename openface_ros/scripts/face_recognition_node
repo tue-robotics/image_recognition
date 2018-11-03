@@ -1,19 +1,17 @@
 #!/usr/bin/env python
 
-import rospy
-from cv_bridge import CvBridge, CvBridgeError
-
-from image_recognition_msgs.srv import Recognize, Annotate
-from image_recognition_msgs.msg import Recognition, Recognitions, CategoryProbability, CategoricalDistribution
-from sensor_msgs.msg import RegionOfInterest, Image
-from std_srvs.srv import Empty
-import diagnostic_updater
-
 import os
 import sys
 
+import diagnostic_updater
+import rospy
+from cv_bridge import CvBridge, CvBridgeError
+from image_recognition_msgs.msg import Recognition, Recognitions, CategoryProbability, CategoricalDistribution
+from image_recognition_msgs.srv import Recognize, Annotate
 from image_recognition_util import image_writer
-from openface_ros.face_recognizer import FaceRecognizer, RecognizedFace
+from openface_ros.face_recognizer import FaceRecognizer
+from sensor_msgs.msg import RegionOfInterest, Image
+from std_srvs.srv import Empty
 
 
 class OpenfaceROS:
@@ -75,8 +73,8 @@ class OpenfaceROS:
             raise Exception("Could not convert to opencv image: %s" % str(e))
 
         for annotation in req.annotations:
-            roi_image = bgr_image[annotation.roi.y_offset:annotation.roi.y_offset+annotation.roi.height,
-                                  annotation.roi.x_offset:annotation.roi.x_offset + annotation.roi.width]
+            roi_image = bgr_image[annotation.roi.y_offset:annotation.roi.y_offset + annotation.roi.height,
+                        annotation.roi.x_offset:annotation.roi.x_offset + annotation.roi.width]
 
             if self._save_images_folder:
                 image_writer.write_annotated(self._save_images_folder, roi_image, annotation.label, True)
@@ -184,8 +182,8 @@ class OpenfaceROS:
     def restore_trained_faces(self, file_name):
         self._face_recognizer.restore_trained_faces(file_name)
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     rospy.init_node("face_recognition")
 
     try:
