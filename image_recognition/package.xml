@@ -1,28 +1,26 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>image_recognition</name>
   <version>0.0.4</version>
   <description>The image_recognition package</description>
 
   <maintainer email="reinzor@gmail.com">Rein Appeldoorn</maintainer>
 
-  <license>TODO</license>
+  <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>image_recognition_msgs</run_depend>
-
-  <run_depend>image_recognition_tensorflow</run_depend>
-  <run_depend>image_recognition_keras</run_depend>
-  <run_depend>image_recognition_openface</run_depend>
-  <run_depend>image_recognition_skybiometry</run_depend>
-  <run_depend>image_recognition_openpose</run_depend>
-  <run_depend>image_recognition_util</run_depend>
   <run_depend>image_recognition_analysis</run_depend>
-
+  <run_depend>image_recognition_keras</run_depend>
+  <run_depend>image_recognition_msgs</run_depend>
+  <run_depend>image_recognition_openface</run_depend>
+  <run_depend>image_recognition_openpose</run_depend>
   <run_depend>image_recognition_rqt</run_depend>
+  <run_depend>image_recognition_skybiometry</run_depend>
+  <run_depend>image_recognition_tensorflow</run_depend>
   <run_depend>image_recognition_tensorflow_rqt</run_depend>
+  <run_depend>image_recognition_util</run_depend>
 
   <export>
-      <metapackage/>
+    <metapackage/>
   </export>
 </package>

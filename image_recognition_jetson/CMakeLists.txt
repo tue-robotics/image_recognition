@@ -10,6 +10,7 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_recognition_msgs
+  image_recognition_util
   image_transport
   roscpp
   sensor_msgs
