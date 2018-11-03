@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+import message_filters
+import rospy
+from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
+from image_recognition_msgs.msg import Recognitions
+from image_recognition_util import image_writer
+
+
+class OverlayPublisher(object):
+
+    def __init__(self):
+        self._bridge = CvBridge()
+
+        # Topics
+        image_sub = message_filters.Subscriber('image', Image, queue_size=1)
+        recognitions_sub = message_filters.Subscriber('recognitions', Recognitions, queue_size=1)
+
+        self._ts = message_filters.TimeSynchronizer([image_sub, recognitions_sub], queue_size=100)
+        # self._ts = message_filters.ApproximateTimeSynchronizer([image_sub, recognitions_sub],
+        #                                                        queue_size=10, slop=1.0)
+        self._ts.registerCallback(self.callback)
+
+	self._result_image_publisher = rospy.Publisher("image_recognitions_overlay", Image, queue_size=10)
+
+    def callback(self, image_msg, recognitions_msg):
+        rospy.loginfo('got image cb')
+
+        cv_image = self._bridge.imgmsg_to_cv2(image_msg, "bgr8")
+	annotated_image = image_writer.get_annotated_cv_image(cv_image, recognitions_msg.recognitions)
+	self._result_image_publisher.publish(self._bridge.cv2_to_imgmsg(annotated_image, "bgr8"))
+
+
+if __name__ == '__main__':
+    rospy.init_node('publish_image_with_recognitions_overlay')
+    OverlayPublisher()
+    rospy.spin()
