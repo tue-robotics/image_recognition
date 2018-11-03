@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+import argparse
+from image_recognition_skybiometry import Skybiometry
+import cv2
+
+# Assign description to the help doc
+parser = argparse.ArgumentParser(description='Get face properties using the Skybiometry API')
+
+# Add arguments
+parser.add_argument(
+    '-i', '--image', type=str, help='Image', required=True)
+parser.add_argument(
+    '-k', '--key', type=str, help='API Key', required=False, default='69efefc20c7f42d8af1f2646ce6742ec')
+parser.add_argument(
+    '-s', '--secret', type=str, help='API Secret', required=False, default='5fab420ca6cf4ff28e7780efcffadb6c')
+parser.add_argument(
+    '-t', '--timeout', type=int, help='Timeout in seconds', required=False, default=10)
+parser.add_argument(
+    '-v', '--verbose', help="Increase output verbosity", action="store_true")
+args = parser.parse_args()
+
+# Read the image
+img = cv2.imread(args.image)
+
+# Create Skybiometry iface
+s = Skybiometry(args.key, args.secret)
+
+if args.verbose:
+    print "Trying Skybiometry API request for %d seconds" % args.timeout
+
+# Pretty print the output
+try:
+    print s.get_face_properties([img], args.timeout)
+except Exception as e:
+    print "An error occurred: %s" % e

@@ -11,16 +11,16 @@
 
   <run_depend>image_recognition_msgs</run_depend>
 
-  <run_depend>tensorflow_ros</run_depend>
-  <run_depend>keras_ros</run_depend>
-  <run_depend>openface_ros</run_depend>
-  <run_depend>skybiometry_ros</run_depend>
-  <run_depend>openpose_ros</run_depend>
+  <run_depend>image_recognition_tensorflow</run_depend>
+  <run_depend>image_recognition_keras</run_depend>
+  <run_depend>image_recognition_openface</run_depend>
+  <run_depend>image_recognition_skybiometry</run_depend>
+  <run_depend>image_recognition_openpose</run_depend>
   <run_depend>image_recognition_util</run_depend>
   <run_depend>image_recognition_analysis</run_depend>
 
   <run_depend>image_recognition_rqt</run_depend>
-  <run_depend>tensorflow_ros_rqt</run_depend>
+  <run_depend>image_recognition_tensorflow_rqt</run_depend>
 
   <export>
       <metapackage/>

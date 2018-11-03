@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>image_recognition_tensorflow</name>
+  <version>0.0.4</version>
+  <description>The image_recognition_tensorflow package</description>
+
+  <maintainer email="reinzor@gmail.com">Rein Appeldoorn</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>image_recognition_msgs</build_depend>
+  <build_depend>image_recognition_util</build_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>image_recognition_msgs</run_depend>
+  <run_depend>image_recognition_util</run_depend>
+  <run_depend>python-numpy</run_depend>
+  <run_depend>python-six</run_depend>
+  <run_depend>python-tensorflow-pip</run_depend>
+  <run_depend>diagnostic_updater</run_depend>
+
+</package>

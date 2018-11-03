@@ -26,7 +26,7 @@ Changelog for package image_recognition_rqt
 * fixed ROIs
 * Added documentation to code
 * Updates to plugins to support the GetFaceProperties service
-* Working annotation gui and test gui for both tensorflow_ros object recognition and openface_ros face recognition
+* Working annotation gui and test gui for both image_recognition_tensorflow object recognition and image_recognition_openface face recognition
 * Bug in test gui
 * Tools working with new interface
 * Update README.md

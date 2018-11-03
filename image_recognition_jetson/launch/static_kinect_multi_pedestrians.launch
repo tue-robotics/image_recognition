@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find image_recognition_jetson)/launch/static_kinect.launch">
+    <arg name="prototxt_path" value="multiped-500/deploy.prototxt" />
+    <arg name="model_path" value="multiped-500/snapshot_iter_178000.caffemodel" />
+  </include> 
+</launch>
