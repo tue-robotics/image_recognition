@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+CMakeLists.txt.user
 
 # C extensions
 *.so
