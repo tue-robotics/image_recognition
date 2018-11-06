@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>image_recognition_rqt</name>
+  <name>image_recognition_openface</name>
   <version>0.0.4</version>
-  <description>The image_recognition_rqt package</description>
+  <description>The image_recognition_openface package</description>
 
   <maintainer email="reinzor@gmail.com">Rein Appeldoorn</maintainer>
 
@@ -10,14 +10,10 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <exec_depend>cv_bridge</exec_depend>
   <exec_depend>image_recognition_msgs</exec_depend>
   <exec_depend>image_recognition_util</exec_depend>
   <exec_depend>rospy</exec_depend>
-  <exec_depend>rqt_gui</exec_depend>
-  <exec_depend>rqt_gui_py</exec_depend>
-
-  <!-- The export tag contains other, unspecified, tags -->
-  <export>
-    <rqt_gui plugin="${prefix}/plugin.xml"/>
-  </export>
+  <exec_depend>python-numpy</exec_depend>
+  <exec_depend>diagnostic_updater</exec_depend>
 </package>

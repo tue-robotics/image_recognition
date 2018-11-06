@@ -4,14 +4,7 @@ project(image_recognition_rqt)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  rospy
-  rqt_gui
-  rqt_gui_py
-  image_recognition_msgs
-  image_recognition_util
-  sensor_msgs
-)
+find_package(catkin REQUIRED)
 
 catkin_python_setup()
 
@@ -23,6 +16,7 @@ install(FILES plugin.xml
 
 install(PROGRAMS
   scripts/annotation_gui
+  scripts/folder_image_publisher
   scripts/manual_gui
   scripts/test_gui
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

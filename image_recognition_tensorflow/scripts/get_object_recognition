@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+"""
+Get image classifications via some TensorFlow network
+
+For example:
+$ ./get_object_recognition -g output_graph.pb -l output_labels.txt -i ~/Pictures/cat.jpg
+"""
+
+import argparse
+from image_recognition_tensorflow.object_recognizer import ObjectRecognizer
+import cv2
+
+import pprint
+
+# Assign description to the help doc. Use Raw formatter to handle newlines
+parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
+
+# Add arguments
+parser.add_argument('graph_path', type=str, help='Path to a trained TensorFlow output_graph.pb network')
+parser.add_argument('labels_path', type=str, help='Path to a file with the output labels, eg. output_labels.txt')
+parser.add_argument('image', type=str, help='Image')
+parser.add_argument('-n', '--top_n', type=int, help='Top N results to display', default=1)
+parser.add_argument('--input-tensor', type=str, help='Tensor name of input image',  default="Cast:0")
+parser.add_argument('--output-tensor', type=str, help='Tensor name of classifications label', default="final_result:0")
+
+args = parser.parse_args()
+
+object_recognizer = ObjectRecognizer(args.graph_path, args.labels_path, args.input_tensor, args.output_tensor)
+
+# Read the image
+img = cv2.imread(args.image)
+scores = object_recognizer.classify(img)
+
+pprint.pprint(sorted(zip(object_recognizer.labels, scores), key=lambda x: x[1], reverse=True))

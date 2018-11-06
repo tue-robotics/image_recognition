@@ -6,7 +6,7 @@
 
   <maintainer email="loy.vanbeek@gmail.com">Loy van Beek</maintainer>
 
-  <license>TODO</license>
+  <license>MIT</license>
 
   <url type="website">https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_analysis</url>
 
@@ -17,5 +17,4 @@
   <exec_depend>python-numpy</exec_depend>
   <exec_depend>python-scipy</exec_depend>
   <exec_depend>python-sklearn</exec_depend>
-
 </package>

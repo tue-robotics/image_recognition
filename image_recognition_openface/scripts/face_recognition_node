@@ -1,0 +1,223 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+import diagnostic_updater
+import rospy
+from cv_bridge import CvBridge, CvBridgeError
+from image_recognition_msgs.msg import Recognition, Recognitions, CategoryProbability, CategoricalDistribution
+from image_recognition_msgs.srv import Recognize, Annotate
+from image_recognition_util import image_writer
+from image_recognition_openface.face_recognizer import FaceRecognizer
+from sensor_msgs.msg import RegionOfInterest, Image
+from std_srvs.srv import Empty
+
+
+class OpenfaceROS:
+    def __init__(self, align_path, net_path, save_images_folder, topic_save_images,
+                 service_save_images, topic_publish_result_image, service_publish_result_image):
+        """
+        OpenfaceROS class that wraps the FaceRecognizer in a ROS node
+        :param align_path: dlib face align path
+        :param net_path: openface neural net path
+        :param save_images_folder: path where to store the images
+        :param topic_save_images: whether to save images originated from image topic callback
+        :param service_save_images: whether to save images originated from a service call
+        :param topic_publish_result_image: whether to publish images originated from image topic callback
+        :param service_publish_result_image: whether to publish images originated from a serice call
+        """
+
+        # Openface ROS
+        self._face_recognizer = FaceRecognizer(align_path, net_path)
+        self._save_images_folder = save_images_folder
+        self._topic_save_images = topic_save_images
+        self._service_save_images = service_save_images
+        self._topic_publish_result_image = topic_publish_result_image
+        self._service_publish_result_image = service_publish_result_image
+
+        self._bridge = CvBridge()
+        self._annotate_srv = rospy.Service('annotate', Annotate, self._annotate_srv)
+        self._recognize_srv = rospy.Service('recognize', Recognize, self._recognize_srv)
+        self._clear_srv = rospy.Service('clear', Empty, self._clear_srv)
+
+        self._image_subscriber = rospy.Subscriber('image', Image, self._image_callback)
+        self._recognitions_publisher = rospy.Publisher('recognitions', Recognitions, queue_size=10)
+
+        if not self._save_images_folder and (self._topic_save_images or self._service_save_images):
+            rospy.logerr("~save_images_folder is not defined but we would like to save images ...")
+            rospy.signal_shutdown("")
+
+        if self._topic_publish_result_image or self._service_publish_result_image:
+            self._result_image_publisher = rospy.Publisher("result_image", Image, queue_size=10)
+
+        rospy.loginfo("OpenfaceROS initialized:")
+        rospy.loginfo(" - dlib_align_path=%s", align_path)
+        rospy.loginfo(" - openface_net_path=%s", net_path)
+        rospy.loginfo(" - save_images_folder=%s", save_images_folder)
+        rospy.loginfo(" - topic_save_images=%s", topic_save_images)
+        rospy.loginfo(" - service_save_images=%s", service_save_images)
+        rospy.loginfo(" - topic_publish_result_image=%s", topic_publish_result_image)
+        rospy.loginfo(" - service_publish_result_image=%s", service_publish_result_image)
+
+    def _annotate_srv(self, req):
+        # Convert to opencv image
+        """
+        Annotate service callback that trains the face of the user
+        :param req: Face annotation request
+        :return: Empty
+        """
+        try:
+            bgr_image = self._bridge.imgmsg_to_cv2(req.image, "bgr8")
+        except CvBridgeError as e:
+            raise Exception("Could not convert to opencv image: %s" % str(e))
+
+        for annotation in req.annotations:
+            roi_image = bgr_image[annotation.roi.y_offset:annotation.roi.y_offset + annotation.roi.height,
+                        annotation.roi.x_offset:annotation.roi.x_offset + annotation.roi.width]
+
+            if self._save_images_folder:
+                image_writer.write_annotated(self._save_images_folder, roi_image, annotation.label, True)
+
+            try:
+                self._face_recognizer.train(roi_image, annotation.label)
+            except Exception as e:
+                raise Exception("Could not get representation of face image: %s" % str(e))
+
+            rospy.loginfo("Succesfully learned face of '%s'" % annotation.label)
+
+        return {}
+
+    def _clear_srv(self, req):
+        """
+        Service to clear the trained faces
+        :param req: Empty
+        :return: Empty
+        """
+        self._face_recognizer.clear_trained_faces()
+        return {}
+
+    def _get_recognitions(self, image_msg, save_images, publish_images):
+        # Convert to opencv image
+        """
+        Recognize service callback
+        :param req: The input image
+        :return: Recognitions
+        """
+        try:
+            bgr_image = self._bridge.imgmsg_to_cv2(image_msg, "bgr8")
+        except CvBridgeError as e:
+            raise Exception("Could not convert to opencv image: %s" % str(e))
+
+        # Write raw image
+        if save_images:
+            image_writer.write_raw(self._save_images_folder, bgr_image)
+
+        # Call openface
+        face_recognitions = self._face_recognizer.recognize(bgr_image)
+
+        # Fill recognitions
+        recognitions = []
+
+        rospy.loginfo("Face recognitions: %s", face_recognitions)
+
+        images = []
+        labels = []
+        for face_recognition in face_recognitions:
+
+            if save_images:
+                label = face_recognition.l2_distances[0].label if len(
+                    face_recognition.l2_distances) > 0 else "face_unknown"
+                roi_image = bgr_image[
+                            face_recognition.roi.y_offset:face_recognition.roi.y_offset + face_recognition.roi.height,
+                            face_recognition.roi.x_offset:face_recognition.roi.x_offset + face_recognition.roi.width]
+                image_writer.write_annotated(self._save_images_folder, roi_image, label, False)
+
+                images.append(roi_image)
+                labels.append(label)
+
+            recognitions.append(Recognition(
+                categorical_distribution=CategoricalDistribution(
+                    unknown_probability=0.0,  # TODO: When is it unknown?
+                    probabilities=[CategoryProbability(label=l2.label, probability=1.0 / l2.distance)
+                                   for l2 in face_recognition.l2_distances]
+                ),
+                roi=RegionOfInterest(
+                    x_offset=face_recognition.roi.x_offset,
+                    y_offset=face_recognition.roi.y_offset,
+                    width=face_recognition.roi.width,
+                    height=face_recognition.roi.height
+                )
+            ))
+
+        annotated_original_image = image_writer.get_annotated_cv_image(bgr_image, recognitions)
+        if save_images:
+            image_writer.write_estimations(self._save_images_folder, images, labels, annotated_original_image,
+                                           suffix="_face_recognition")
+
+        if publish_images:
+            self._result_image_publisher.publish(self._bridge.cv2_to_imgmsg(annotated_original_image, "bgr8"))
+
+        # Service response
+        return recognitions
+
+    def _image_callback(self, image_msg):
+        try:
+            recognitions = self._get_recognitions(image_msg, save_images=False, publish_images=True)
+        except Exception as e:
+            rospy.logerr(str(e))
+            return
+
+        self._recognitions_publisher.publish(Recognitions(
+            header=image_msg.header,
+            recognitions=recognitions
+        ))
+
+    def _recognize_srv(self, req):
+        recognitions = self._get_recognitions(req.image, save_images=True, publish_images=True)
+
+        # Service response
+        return {"recognitions": recognitions}
+
+    def restore_trained_faces(self, file_name):
+        self._face_recognizer.restore_trained_faces(file_name)
+
+
+if __name__ == '__main__':
+    rospy.init_node("face_recognition")
+
+    try:
+        dlib_shape_predictor_path = os.path.expanduser(
+            rospy.get_param("~align_path", "~/openface/models/dlib/shape_predictor_68_face_landmarks.dat"))
+        openface_neural_network_path = os.path.expanduser(
+            rospy.get_param("~net_path", "~/openface/models/openface/nn4.small2.v1.t7"))
+        save_images = rospy.get_param("~save_images", True)
+        topic_save_images = rospy.get_param("~topic_save_images", False)
+        service_save_images = rospy.get_param("~service_save_images", True)
+        topic_publish_result_image = rospy.get_param("~topic_publish_result_image", True)
+        service_publish_result_image = rospy.get_param("~service_publish_result_image", True)
+
+        db = rospy.get_param('~db', None)
+        if db:
+            db = os.path.expanduser(db)
+
+        save_images_folder = None
+        if save_images:
+            save_images_folder = os.path.expanduser(rospy.get_param("~save_images_folder", "/tmp/openface"))
+    except KeyError as e:
+        rospy.logerr("Parameter %s not found" % e)
+        sys.exit(1)
+
+    image_recognition_openface = OpenfaceROS(dlib_shape_predictor_path, openface_neural_network_path,
+                               save_images_folder, topic_save_images, service_save_images, topic_publish_result_image,
+                               service_publish_result_image)
+    if db:
+        rospy.loginfo('loading face database from %s', db)
+        image_recognition_openface.restore_trained_faces(db)
+
+    updater = diagnostic_updater.Updater()
+    updater.setHardwareID("none")
+    updater.add(diagnostic_updater.Heartbeat())
+    rospy.Timer(rospy.Duration(1), lambda event: updater.force_update())
+
+    rospy.spin()
