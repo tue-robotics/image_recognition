@@ -1,0 +1,159 @@
+#!/usr/bin/env python
+import os
+from queue import Queue, Empty
+
+import diagnostic_updater
+import rospy
+from cv_bridge import CvBridge, CvBridgeError
+from sensor_msgs.msg import Image
+
+from image_recognition_msgs.msg import Recognitions
+from image_recognition_msgs.srv import Recognize
+from image_recognition_openpose import OpenposeWrapper
+from image_recognition_util import image_writer
+
+
+class OpenposeNode:
+    def __init__(self, model_folder, pose_model, net_input_size, net_output_size, num_scales, scale_gap, num_gpu_start,
+                 overlay_alpha, python_path, topic_save_images, service_save_images, topic_publish_result_image,
+                 service_publish_result_image, save_images_folder):
+        """
+        Openpose node that wraps the openpose functionality and exposes service and subscriber interfaces
+        :param model_folder: Where to look for the models
+        :param pose_model: What model to use
+        :param net_input_size: What net input resolution we would like to use
+        :param net_output_size: Output resolution for the overlayed image
+        :param num_scales: Scale factor
+        :param scale_gap: Scale gap
+        :param num_gpu_start: What GPU to use
+        :param overlay_alpha: What alpha to use for the overlay image
+        :param python_path: Additional python_path if openpose is not on the PYTHONPATH env variable
+        :param topic_save_images: Whether we would like to store the (result) images that we receive over topics
+        :param service_save_images: Whether we would like to store the (result) images that we receive over topics
+        :param topic_publish_result_image: Whether we would like to publish the result images of a topic request
+        :param service_publish_result_image: Whether we woule like to publish the result images of a service request
+        :param save_images_folder: Where to store the images
+        """
+        self._openpose_wrapper = OpenposeWrapper(model_folder, pose_model, net_input_size, net_output_size, num_scales,
+                                                 scale_gap, num_gpu_start, overlay_alpha, python_path)
+
+        # We need this q construction because openpose python is not thread safe
+        self._input_q = Queue()  # image_msg, save_images, publish_images, is_service_request
+        self._service_output_q = Queue()  # recognitions
+        self._subscriber_output_q = Queue()  # recognitions
+
+        # Debug
+        self._topic_save_images = topic_save_images
+        self._service_save_images = service_save_images
+        self._topic_publish_result_image = topic_publish_result_image
+        self._service_publish_result_image = service_publish_result_image
+        self._save_images_folder = save_images_folder
+
+        # ROS IO
+        self._bridge = CvBridge()
+        self._recognize_srv = rospy.Service('recognize', Recognize, self._recognize_srv)
+        self._image_subscriber = rospy.Subscriber('image', Image, self._image_callback)
+        self._recognitions_publisher = rospy.Publisher('recognitions', Recognitions, queue_size=10)
+        if self._topic_publish_result_image or self._service_publish_result_image:
+            self._result_image_publisher = rospy.Publisher("result_image", Image, queue_size=10)
+
+        rospy.loginfo("OpenposeNode initialized:")
+        rospy.loginfo(" - model_folder=%s", model_folder)
+        rospy.loginfo(" - pose_model=%s", pose_model)
+        rospy.loginfo(" - net_input_size=%s", net_input_size)
+        rospy.loginfo(" - net_output_size=%s", net_output_size)
+        rospy.loginfo(" - num_scales=%d", num_scales)
+        rospy.loginfo(" - scale_gap=%f", scale_gap)
+        rospy.loginfo(" - num_gpu_start=%d", num_gpu_start)
+        rospy.loginfo(" - overlay_alpha=%f", overlay_alpha)
+        rospy.loginfo(" - python_path=%s", python_path)
+        rospy.loginfo(" - topic_save_images=%r", topic_save_images)
+        rospy.loginfo(" - service_save_images=%r", service_save_images)
+        rospy.loginfo(" - topic_publish_result_image=%r", topic_publish_result_image)
+        rospy.loginfo(" - service_publish_result_image=%r", service_publish_result_image)
+        rospy.loginfo(" - save_images_folder=%s", save_images_folder)
+
+    def _image_callback(self, image_msg):
+        self._input_q.put((image_msg, self._topic_save_images, self._topic_publish_result_image, False))
+        self._recognitions_publisher.publish(Recognitions(
+            header=image_msg.header,
+            recognitions=self._subscriber_output_q.get()
+        ))
+
+    def _recognize_srv(self, req):
+        self._input_q.put((req.image, self._service_save_images, self._service_publish_result_image, True))
+        return {"recognitions": self._service_output_q.get()}
+
+    def _get_recognitions(self, image_msg, save_images, publish_images):
+        """
+        Handles the recognition and publishes and stores the debug images (should be called in main thread)
+        :param image_msg: Incoming image
+        :param save_images: Whether to store the images
+        :param publish_images: Whether to publish the images
+        :return: The recognized recognitions
+        """
+        try:
+            bgr_image = self._bridge.imgmsg_to_cv2(image_msg, "bgr8")
+        except CvBridgeError as e:
+            rospy.logerr("Could not convert to opencv image: %s" % str(e))
+            return []
+
+        recognitions, result_image = self._openpose_wrapper.detect_poses(bgr_image)
+
+        # Write images
+        if save_images:
+            image_writer.write_raw(self._save_images_folder, bgr_image)
+            image_writer.write_raw(self._save_images_folder, result_image, "overlayed")
+
+        if publish_images:
+            self._result_image_publisher.publish(self._bridge.cv2_to_imgmsg(result_image, "bgr8"))
+
+        # Service response
+        return recognitions
+
+    def spin(self):
+        """
+        We have to do this weird q construction since the openpose python API is not thread safe
+        """
+        while not rospy.is_shutdown():
+            try:
+                image_msg, save_images, publish_images, is_service_request = self._input_q.get(timeout=1.0)
+            except Empty:
+                pass
+            else:
+                if is_service_request:
+                    self._service_output_q.put(self._get_recognitions(image_msg, save_images, publish_images))
+                else:
+                    self._subscriber_output_q.put(self._get_recognitions(image_msg, save_images, publish_images))
+
+
+if __name__ == '__main__':
+    rospy.init_node("openpose")
+
+    try:
+        node = OpenposeNode(
+            rospy.get_param("~model_folder"),
+            rospy.get_param("~pose_model", "BODY_25"),
+            rospy.get_param("~net_input_size", "-1x368"),
+            rospy.get_param("~net_output_size", "-1x-1"),
+            rospy.get_param("~num_scales", 1),
+            rospy.get_param("~scale_gap", 0.5),
+            rospy.get_param("~num_gpu_start", 0),
+            rospy.get_param("~overlay_alpha", 0.6),
+            rospy.get_param("~python_path", "/usr/local/python/"),
+            rospy.get_param("~topic_save_images", False),
+            rospy.get_param("~service_save_images", True),
+            rospy.get_param("~topic_publish_result_image", True),
+            rospy.get_param("~service_publish_result_image", True),
+            os.path.expanduser(rospy.get_param("~save_images_folder", "/tmp/openpose"))
+        )
+
+        updater = diagnostic_updater.Updater()
+        updater.setHardwareID("none")
+        updater.add(diagnostic_updater.Heartbeat())
+        rospy.Timer(rospy.Duration(1), lambda event: updater.force_update())
+
+        node.spin()
+    except Exception as e:
+        rospy.logfatal(e)
+        raise

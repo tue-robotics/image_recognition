@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+
+import argparse
+import logging
+import sys
+
+import cv2
+
+from image_recognition_openpose import OpenposeWrapper
+
+parser = argparse.ArgumentParser(description='Detect poses in an image',
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('model_folder', help='Path where the models are stored')
+parser.add_argument('--pose_model', help='What pose model to use', default="BODY_25")
+parser.add_argument('--net_input_size', help='Net input size', default="-1x368")
+parser.add_argument('--net_output_size', help='Net output size', default="-1x-1")
+parser.add_argument('--num_scales', type=int, help='Num scales', default=1)
+parser.add_argument('--scale_gap', type=float, help='Scale gap', default=0.3)
+parser.add_argument('--num_gpu_start', type=int, help='What GPU support', default=0)
+parser.add_argument('--overlay_alpha', type=float, help='Overlay alpha for the output image', default=0.6)
+parser.add_argument('--python_path', help='Python path where Openpose is stored', default='/usr/local/python/')
+
+mode_parser = parser.add_subparsers(help='Mode')
+image_parser = mode_parser.add_parser('image', help='Use image mode')
+image_parser.set_defaults(mode='image')
+cam_parser = mode_parser.add_parser('cam', help='Use cam mode')
+cam_parser.set_defaults(mode='cam')
+
+# Image specific arguments
+image_parser.add_argument('image', help='Input image')
+
+args = parser.parse_args()
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+
+wrapper = OpenposeWrapper(args.model_folder, args.pose_model, args.net_input_size, args.net_output_size,
+                          args.num_scales, args.scale_gap, args.num_gpu_start, args.overlay_alpha, args.python_path)
+
+if args.mode == 'image':
+    # Read the image
+    image = cv2.imread(args.image)
+    recognitions, overlayed_image = wrapper.detect_poses(image)
+
+    logging.info(recognitions)
+    cv2.imshow("overlayed_image", overlayed_image)
+
+    cv2.waitKey()
+elif args.mode == 'cam':
+    cap = cv2.VideoCapture(0)
+    while True:
+        ret, img = cap.read()
+        recognitions, overlayed_image = wrapper.detect_poses(img)
+        cv2.imshow("overlayed_image", overlayed_image)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
