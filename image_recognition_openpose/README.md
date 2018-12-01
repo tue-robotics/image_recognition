@@ -2,49 +2,85 @@
 
 ROS Wrapper for openpose https://github.com/CMU-Perceptual-Computing-Lab/openpose
 
-## Description
-Provides a service interface for openpose. Returns the skeleton when an image is send
+## Installation notes
 
-## Installation
-ROS Kinetic uses OpenCV 3.2 as default. Therefore it is important to compile openpose and caffe against OpenCV 3.2 as well
+This ROS wrapper makes use of the [Openpose python interface](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/modules/python_module.md).
+Please follow the [installation manual](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/installation.md) and ensure that the `BUILD_PYTHON` flag is turned on while running CMake.
 
-#### A simple example using the opencv 3.2 version distributed by ROS kinetic:
-```
-sudo apt remove opencv* libopencv*
-sudo apt install ros-kinetic-opencv3
+## Scripts
 
-sudo ln -fs /opt/ros/kinetic/lib/libopencv_core3.so /usr/lib/libopencv_core.so
-sudo ln -fs /opt/ros/kinetic/lib/libopencv_highgui3.so /usr/lib/libopencv_highgui.so
-sudo ln -fs /opt/ros/kinetic/lib/libopencv_imgcodecs3.so /usr/lib/libopencv_imgcodecs.so
-sudo ln -fs /opt/ros/kinetic/lib/libopencv_imgproc3.so /usr/lib/libopencv_imgproc.so
-sudo ln -fs /opt/ros/kinetic/lib/libopencv_videoio3.so /usr/lib/libopencv_videoio.so
-sudo ln -fs /opt/ros/kinetic/lib/libopencv_objdetect3.so /usr/lib/libopencv_objdetect.so
-sudo ln -fs /opt/ros/kinetic/include/opencv-3.2.0-dev/opencv2 /usr/include/opencv2
+### detect_poses
+
+Example for the following picture:
+
+![Example](doc/example.jpg)
+
+```bash
+export MODEL_FOLDER=~/dev/openpose/models
+rosrun image_recognition_openpose detect_poses $MODEL_FOLDER image `rospack find image_recognition_openpose`/doc/example.jpg
 ```
 
-Next compile openpose using the [openpose installation manual](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/installation.md)
+Output:
 
-Make sure at the end a symbolic link is added to the ROS package, for example if the openpose folder is in your home dir:
+![Example result](doc/example_result.jpg)
+
+It also works with a webcam stream, usage:
+
+```bash
+usage: detect_poses [-h] [--pose_model POSE_MODEL]
+                    [--net_input_size NET_INPUT_SIZE]
+                    [--net_output_size NET_OUTPUT_SIZE]
+                    [--num_scales NUM_SCALES] [--scale_gap SCALE_GAP]
+                    [--num_gpu_start NUM_GPU_START]
+                    [--overlay_alpha OVERLAY_ALPHA]
+                    [--python_path PYTHON_PATH]
+                    model_folder {image,cam} ...
+
+Detect poses in an image
+
+positional arguments:
+  model_folder          Path where the models are stored
+  {image,cam}           Mode
+    image               Use image mode
+    cam                 Use cam mode
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --pose_model POSE_MODEL
+                        What pose model to use (default: BODY_25)
+  --net_input_size NET_INPUT_SIZE
+                        Net input size (default: -1x368)
+  --net_output_size NET_OUTPUT_SIZE
+                        Net output size (default: -1x-1)
+  --num_scales NUM_SCALES
+                        Num scales (default: 1)
+  --scale_gap SCALE_GAP
+                        Scale gap (default: 0.3)
+  --num_gpu_start NUM_GPU_START
+                        What GPU support (default: 0)
+  --overlay_alpha OVERLAY_ALPHA
+                        Overlay alpha for the output image (default: 0.6)
+  --python_path PYTHON_PATH
+                        Python path where Openpose is stored (default:
+                        /usr/local/python/)
 ```
-roscd image_recognition_openpose
-ln -s ~/openpose
-```
 
-If the symbolic link is not present a mock node will be used for testing. 
-
-(After creating the symlink, do not forget to clean first)
+### openpose_node
 
 ## How-to
 
 Run the image_recognition_openpose node in one terminal, e.g.:
 
-    rosrun image_recognition_openpose image_recognition_openpose_node _net_input_width:=368 _net_input_height:=368 _net_output_width:=368 _net_output_height:=368 _model_folder:=/home/ubuntu/openpose/models/
+```bash
+export MODEL_FOLDER=~/dev/openpose/models
+rosrun image_recognition_openpose openpose_node _model_folder:=$MODEL_FOLDER
+```
 
 Next step is starting the image_recognition_Rqt test gui (https://github.com/tue-robotics/image_recognition_rqt)
 
     rosrun image_recognition_rqt test_gui
-    
-Again configure the service you want to call with the gear-wheel in the top-right corner of the screen. If everything is set-up, draw a rectangle in the image and ask the service for detections:
+
+Configure the service you want to call with the gear-wheel in the top-right corner of the screen. If everything is set-up, draw a rectangle in the image and ask the service for detections:
 
 ![Test](doc/openpose.png)
 
