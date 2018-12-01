@@ -10,6 +10,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>python-catkin-lint</build_depend>
+
   <exec_depend>python-numpy</exec_depend>
   <exec_depend>python-opencv</exec_depend>
   <exec_depend>rospy</exec_depend>
