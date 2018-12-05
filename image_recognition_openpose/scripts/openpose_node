@@ -37,7 +37,14 @@ class OpenposeNode:
         self._openpose_wrapper = OpenposeWrapper(model_folder, pose_model, net_input_size, net_output_size, num_scales,
                                                  scale_gap, num_gpu_start, overlay_alpha, python_path)
 
-        # We need this q construction because openpose python is not thread safe
+        # We need this q construction because openpose python is not thread safe and the rospy client side library
+        # uses a thread per pub/sub and service. Since the openpose wrapper is created in the main thread, we have
+        # to communicate our openpose requests (inputs) to the main thread where the request is processed by the
+        # openpose wrapper (step 1).
+        # We have a separate spin loop in the main thead that checks whether there are items in the input q and
+        # processes these using the Openpose wrapper (step 2).
+        # When the processing has finished, we add the result in the corresponding output queue (specified by the
+        # request in the input queue) (step 3).
         self._input_q = Queue()  # image_msg, save_images, publish_images, is_service_request
         self._service_output_q = Queue()  # recognitions
         self._subscriber_output_q = Queue()  # recognitions
@@ -113,7 +120,7 @@ class OpenposeNode:
 
     def spin(self):
         """
-        We have to do this weird q construction since the openpose python API is not thread safe
+        Empty input queues and fill output queues (see __init__ doc)
         """
         while not rospy.is_shutdown():
             try:
