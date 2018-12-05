@@ -2,7 +2,7 @@
 <package format="2">
   <name>image_recognition</name>
   <version>0.0.4</version>
-  <description>The image_recognition package</description>
+  <description>The image_recognition packages for extracting recognitions from images.</description>
 
   <maintainer email="reinzor@gmail.com">Rein Appeldoorn</maintainer>
 

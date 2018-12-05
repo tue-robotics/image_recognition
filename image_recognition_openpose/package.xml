@@ -2,7 +2,7 @@
 <package format="2">
   <name>image_recognition_openpose</name>
   <version>0.0.0</version>
-  <description>The image_recognition_openpose package</description>
+  <description>ROS Wrapper for the openpose software package. Exposes a service and topic interface.</description>
 
   <maintainer email="reinzor@gmail.com">Rein Appeldoorn</maintainer>
 
@@ -10,10 +10,11 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>cv_bridge</depend>
-  <depend>diagnostic_updater</depend>
-  <depend>image_recognition_msgs</depend>
-  <depend>libopencv-dev</depend>
-  <depend>roscpp</depend>
-  <depend>sensor_msgs</depend>
+  <build_depend>python-catkin-lint</build_depend>
+
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>diagnostic_updater</exec_depend>
+  <exec_depend>image_recognition_msgs</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
 </package>

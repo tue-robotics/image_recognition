@@ -4,13 +4,16 @@
   <version>0.0.1</version>
   <description>The image_recognition_analysis package</description>
 
-  <maintainer email="loy.vanbeek@gmail.com">Loy van Beek</maintainer>
+  <author email="loy.vanbeek@gmail.com">Loy van Beek</author>
+  <maintainer email="reinzor@gmail.com">Rein Appeldoorn</maintainer>
 
   <license>MIT</license>
 
   <url type="website">https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_analysis</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>python-catkin-lint</build_depend>
 
   <exec_depend>image_recognition_util</exec_depend>
   <exec_depend>python-matplotlib</exec_depend>

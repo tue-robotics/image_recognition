@@ -132,11 +132,12 @@ def write_annotated(dir_path, image, label, verified=False):
     return True
 
 
-def write_raw(dir_path, image):
+def write_raw(dir_path, image, subfolder_name="raw"):
     """
     Write an image to a file (path) with the label as subfolder
     :param dir_path: The base directory we are going to write to
     :param image: The OpenCV image
+    :param subfolder_name: A directory within the path is created with this name
     """
 
     if dir_path is None:
@@ -147,7 +148,7 @@ def write_raw(dir_path, image):
         os.makedirs(dir_path)
 
     # Check if path exists, otherwise created it
-    raw_dir = dir_path + "/raw"
+    raw_dir = os.path.join(dir_path, subfolder_name)
     if not os.path.exists(raw_dir):
         os.makedirs(raw_dir)
 

@@ -6,12 +6,13 @@ import sys
 import diagnostic_updater
 import rospy
 from cv_bridge import CvBridge, CvBridgeError
-from image_recognition_msgs.msg import Recognition, Recognitions, CategoryProbability, CategoricalDistribution
-from image_recognition_msgs.srv import Recognize, Annotate
-from image_recognition_util import image_writer
 from image_recognition_openface.face_recognizer import FaceRecognizer
 from sensor_msgs.msg import RegionOfInterest, Image
 from std_srvs.srv import Empty
+
+from image_recognition_msgs.msg import Recognition, Recognitions, CategoryProbability, CategoricalDistribution
+from image_recognition_msgs.srv import Recognize, Annotate
+from image_recognition_util import image_writer
 
 
 class OpenfaceROS:
@@ -163,7 +164,8 @@ class OpenfaceROS:
 
     def _image_callback(self, image_msg):
         try:
-            recognitions = self._get_recognitions(image_msg, save_images=False, publish_images=True)
+            recognitions = self._get_recognitions(image_msg, save_images=self._topic_save_images,
+                                                  publish_images=self._topic_publish_result_image)
         except Exception as e:
             rospy.logerr(str(e))
             return
@@ -174,7 +176,8 @@ class OpenfaceROS:
         ))
 
     def _recognize_srv(self, req):
-        recognitions = self._get_recognitions(req.image, save_images=True, publish_images=True)
+        recognitions = self._get_recognitions(req.image, save_images=self._service_save_images,
+                                              publish_images=self._service_publish_result_image)
 
         # Service response
         return {"recognitions": recognitions}
@@ -209,8 +212,9 @@ if __name__ == '__main__':
         sys.exit(1)
 
     image_recognition_openface = OpenfaceROS(dlib_shape_predictor_path, openface_neural_network_path,
-                               save_images_folder, topic_save_images, service_save_images, topic_publish_result_image,
-                               service_publish_result_image)
+                                             save_images_folder, topic_save_images, service_save_images,
+                                             topic_publish_result_image,
+                                             service_publish_result_image)
     if db:
         rospy.loginfo('loading face database from %s', db)
         image_recognition_openface.restore_trained_faces(db)
