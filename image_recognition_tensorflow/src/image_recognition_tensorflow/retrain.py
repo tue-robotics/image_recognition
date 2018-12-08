@@ -24,15 +24,16 @@ def mkdir_p(path):
             raise
 
 
-def main(image_dir, model_dir, output_dir, steps, batch, architecture="inception_v3", flip_left_right=False, random_crop=0, random_scale=0, random_brightness=0):
+def main(image_dir, output_dir, steps, batch,
+         tfhub_module="https://tfhub.dev/google/imagenet/inception_v3/feature_vector/1",
+         flip_left_right=False, random_crop=0, random_scale=0, random_brightness=0):
     tf.app.flags.FLAGS.image_dir = image_dir
-    tf.app.flags.FLAGS.model_dir = model_dir
 
     mkdir_p(output_dir)
     tf.app.flags.FLAGS.output_graph = os.path.join(output_dir, 'output_graph.pb')
     tf.app.flags.FLAGS.output_labels = os.path.join(output_dir, 'output_labels.txt')
 
-    tf.app.flags.FLAGS.architecture = architecture
+    tf.app.flags.FLAGS.tfhub_module = tfhub_module
 
     tf.app.flags.FLAGS.how_many_training_steps = steps
 

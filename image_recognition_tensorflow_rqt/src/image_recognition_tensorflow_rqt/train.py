@@ -113,12 +113,8 @@ class TrainPlugin(Plugin):
         """
         The train method that does the actual training of the neural net
         """
-        model_dir = "/tmp/inception"
-        utils.maybe_download_and_extract("http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz",
-                                         "/tmp/inception")
-
         try:
-            retrain.main(self.images_directory, model_dir, self.output_directory,
+            retrain.main(self.images_directory, self.output_directory,
                          steps=self.steps, batch=self.batch)
             dialog("Retrain succes", "Succesfully retrained the top layers! Check Tensorboard for the results!")
             self._train_button.setDisabled(True)

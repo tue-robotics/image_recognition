@@ -18,5 +18,6 @@
   <exec_depend>python-numpy</exec_depend>
   <exec_depend>python-six</exec_depend>
   <exec_depend>python-tensorflow-pip</exec_depend>
+  <exec_depend>python-tensorflow-hub-pip</exec_depend>
   <exec_depend>rospy</exec_depend>
 </package>
