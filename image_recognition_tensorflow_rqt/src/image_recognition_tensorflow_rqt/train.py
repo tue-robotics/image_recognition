@@ -4,7 +4,7 @@ from python_qt_binding.QtWidgets import *
 from python_qt_binding.QtGui import * 
 from python_qt_binding.QtCore import *
 
-from image_recognition_tensorflow import retrain, utils
+from image_recognition_tensorflow import retrain
 import webbrowser
 import subprocess
 import time
