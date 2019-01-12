@@ -19,4 +19,6 @@
   <exec_depend>python-six</exec_depend>
   <exec_depend>python-tensorflow-pip</exec_depend>
   <exec_depend>rospy</exec_depend>
+
+  <test_depend>rostest</test_depend>
 </package>

@@ -1,0 +1,3 @@
+<launch>
+  <test test-name="test_retrain_and_evaluate" pkg="image_recognition_tensorflow" type="test_retrain_and_evaluate.py" />
+</launch>
