@@ -4,11 +4,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import errno
 import os
 import sys
 from argparse import Namespace
 
-import errno
 import tensorflow as tf
 from image_recognition_tensorflow.tf_retrain import main as tf_main
 
@@ -25,7 +25,8 @@ def mkdir_p(path):
             raise
 
 
-def main(image_dir, model_dir, output_dir, steps, batch, architecture="inception_v3", flip_left_right=False, random_crop=0, random_scale=0, random_brightness=0):
+def main(image_dir, model_dir, output_dir, steps, batch, architecture="inception_v3", flip_left_right=False,
+         random_crop=0, random_scale=0, random_brightness=0):
     tf.app.flags.FLAGS.image_dir = image_dir
     tf.app.flags.FLAGS.model_dir = model_dir
 
@@ -46,8 +47,7 @@ def main(image_dir, model_dir, output_dir, steps, batch, architecture="inception
     tf.app.flags.FLAGS.random_scale = random_scale
     tf.app.flags.FLAGS.random_brightness = random_brightness
 
-    # Do not pass on the '-s' argument of rqt
-    if "rqt" in sys.argv[0]:
-        sys.argv.pop(1)
+    # Do not pass additional flags to tf (from rqt and nose)
+    sys.argv = [arg for arg in sys.argv if not arg.startswith("-")]
 
     tf_main('')
