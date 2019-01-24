@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import sys
 from argparse import Namespace
 
 import errno
@@ -45,5 +46,9 @@ def main(image_dir, output_dir, steps, batch,
     tf.app.flags.FLAGS.random_crop = random_crop
     tf.app.flags.FLAGS.random_scale = random_scale
     tf.app.flags.FLAGS.random_brightness = random_brightness
+
+    # Do not pass on the '-s' argument of rqt
+    if "rqt" in sys.argv[0]:
+        sys.argv.pop(1)
 
     tf_main('')
