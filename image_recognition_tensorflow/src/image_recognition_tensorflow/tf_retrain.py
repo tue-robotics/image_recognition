@@ -438,8 +438,7 @@ def maybe_download_and_extract(data_url):
     filepath, _ = urllib.request.urlretrieve(data_url, filepath, _progress)
     print()
     statinfo = os.stat(filepath)
-    tf.logging.info('Successfully downloaded', filename, statinfo.st_size,
-                    'bytes.')
+    #tf.logging.info('Successfully downloaded', filename, statinfo.st_size, 'bytes.')
     print('Extracting file from ', filepath)
     tarfile.open(filepath, 'r:gz').extractall(dest_directory)
   else:
