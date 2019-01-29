@@ -1,4 +1,4 @@
-from face_client import FaceClient
+from .face_client import FaceClient
 import cv2
 from timeout import Timeout
 
