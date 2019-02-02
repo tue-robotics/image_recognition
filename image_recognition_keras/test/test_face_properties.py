@@ -14,7 +14,9 @@ def test_face_properties():
     local_path = "/tmp/age_gender_weights.hdf5"
 
     if not os.path.exists(local_path):
-        http_path = "https://github.com/yu4u/age-gender-estimation/releases/download/v0.5/weights.28-3.73.hdf5"
+        http_path = "https://github.com/tue-robotics/image_recognition/releases/download/" \
+                    "image_recognition_keras_face_properties_weights.28-3.73/" \
+                    "image_recognition_keras_face_properties_weights.28-3.73.hdf5"
         urllib.urlretrieve(http_path, local_path)
         print("Downloaded weights to {}".format(local_path))
 
