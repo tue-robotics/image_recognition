@@ -11,7 +11,7 @@ Please follow the [installation manual](https://github.com/CMU-Perceptual-Comput
 export OPENPOSE_INSTALL_PATH=~/openpose && \
 mkdir -p $OPENPOSE_INSTALL_PATH && \
 wget https://github.com/CMU-Perceptual-Computing-Lab/openpose/archive/v1.4.0.tar.gz -O /tmp/v1.4.0.tar.gz && \
-tar -xvf /tmp/v1.4.0.tar.gz -C /tmp/ && cp -r /tmp/openpose-1.4.0/* $OPENPOSE_INSTALL_PATH  \
+tar -xvf /tmp/v1.4.0.tar.gz -C /tmp/ && cp -r /tmp/openpose-1.4.0/* $OPENPOSE_INSTALL_PATH  && \
 $OPENPOSE_INSTALL_PATH/ubuntu/install_cuda.sh && \
 $OPENPOSE_INSTALL_PATH/ubuntu/install_cudnn.sh && \
 wget https://github.com/CMU-Perceptual-Computing-Lab/caffe/archive/1.0.tar.gz -O /tmp/1.0.tar.gz && \
