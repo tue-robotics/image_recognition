@@ -1,16 +1,14 @@
 #!/usr/bin/env python
-import datetime
 import os
 import sys
 
-import cv2
 import diagnostic_updater
 import rospy
 from cv_bridge import CvBridge, CvBridgeError
+from image_recognition_keras.age_gender_estimator import AgeGenderEstimator
 from image_recognition_msgs.msg import FaceProperties
 from image_recognition_msgs.srv import GetFaceProperties
 from image_recognition_util import image_writer
-from image_recognition_keras.age_gender_estimator import AgeGenderEstimator
 
 
 class WideResnetFaceProperties:
@@ -71,11 +69,13 @@ class WideResnetFaceProperties:
         # Service response
         return {"properties_array": face_properties_array}
 
+
 if __name__ == '__main__':
     rospy.init_node("face_properties")
 
     try:
-        weights_file_path = rospy.get_param("~weights_file_path")
+        default_weights_path = os.path.expanduser('~/keras/models/face_properties_weights.28-3.73.hdf5')
+        weights_file_path = rospy.get_param("~weights_file_path", default_weights_path)
         img_size = rospy.get_param("~image_size", 64)
         depth = rospy.get_param("~depth", 16)
         width = rospy.get_param("~width", 8)
@@ -97,4 +97,3 @@ if __name__ == '__main__':
         rospy.spin()
     except Exception as e:
         rospy.logfatal(e)
-
