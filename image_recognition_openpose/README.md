@@ -5,7 +5,22 @@ ROS Wrapper for openpose https://github.com/CMU-Perceptual-Computing-Lab/openpos
 ## Installation notes
 
 This ROS wrapper makes use of the [Openpose python interface](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/modules/python_module.md).
-Please follow the [installation manual](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/installation.md) and ensure that the `BUILD_PYTHON` flag is turned on while running CMake.
+Please follow the [installation manual](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/installation.md) and ensure that the `BUILD_PYTHON` flag is turned on while running CMake. Also make sure that you install a release instead of the latest master version with **CUDA8** since Torch (image_recognition_openface) cannot handle **CUDA10**.
+
+```bash
+export OPENPOSE_INSTALL_PATH=~/openpose && \
+mkdir -p $OPENPOSE_INSTALL_PATH && \
+wget https://github.com/CMU-Perceptual-Computing-Lab/openpose/archive/v1.4.0.tar.gz -O /tmp/v1.4.0.tar.gz && \
+tar -xvf /tmp/v1.4.0.tar.gz -C /tmp/ && cp -r /tmp/openpose-1.4.0/* $OPENPOSE_INSTALL_PATH  && \
+$OPENPOSE_INSTALL_PATH/ubuntu/install_cuda.sh && \
+$OPENPOSE_INSTALL_PATH/ubuntu/install_cudnn.sh && \
+wget https://github.com/CMU-Perceptual-Computing-Lab/caffe/archive/1.0.tar.gz -O /tmp/1.0.tar.gz && \
+tar -xvf /tmp/1.0.tar.gz -C /tmp/ && cp -r /tmp/caffe-1.0/* $OPENPOSE_INSTALL_PATH/3rdparty/caffe && \
+cd $OPENPOSE_INSTALL_PATH && mkdir -p build && cd build && \
+cmake .. -DBUILD_PYTHON=1 -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda && \
+make -j`nproc` && \
+sudo make install
+```
 
 ## Scripts
 
@@ -16,7 +31,7 @@ Example for the following picture:
 ![Example](doc/example.jpg)
 
 ```bash
-export MODEL_FOLDER=~/dev/openpose/models
+export MODEL_FOLDER=~/openpose/models
 rosrun image_recognition_openpose detect_poses $MODEL_FOLDER image `rospack find image_recognition_openpose`/doc/example.jpg
 ```
 
@@ -72,7 +87,7 @@ optional arguments:
 Run the image_recognition_openpose node in one terminal, e.g.:
 
 ```bash
-export MODEL_FOLDER=~/dev/openpose/models
+export MODEL_FOLDER=~/openpose/models
 rosrun image_recognition_openpose openpose_node _model_folder:=$MODEL_FOLDER
 ```
 

@@ -6,7 +6,19 @@ Face recognition with use of Openface (https://cmusatyalab.github.io/openface/)
 
 See https://github.com/tue-robotics/image_recognition
 
-Make sure that openface is correctly installed. Installation instructions can be found here: https://cmusatyalab.github.io/openface/setup/
+Make sure that openface is correctly installed. Installation instructions can be found here: https://cmusatyalab.github.io/openface/setup/. Make sure you have installed **CUDA8**. CUDA10 is not working: https://github.com/torch/torch7/issues/1180
+
+```bash
+export TORCH_INSTALL_PATH=~/torch
+export OPENFACE_INSTALL_PATH=~/openface
+git clone https://github.com/torch/distro.git ~/torch --recursive && \
+cd $TORCH_INSTALL_PATH && bash install-deps && ./install.sh && \
+for NAME in dpnn nn optim optnet csvigo cutorch cunn fblualib torchx tds; do $TORCH_INSTALL_PATH/install/bin/luarocks install $NAME; done && \
+sudo -H pip install dlib && \
+git clone https://github.com/cmusatyalab/openface.git $OPENFACE_INSTALL_PATH && \
+cd $OPENFACE_INSTALL_PATH && sudo -H python setup.py install && \
+./models/get-models.sh
+```
 
 ## How-to
 

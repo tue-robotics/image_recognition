@@ -23,12 +23,24 @@ Configure the service you want to call with the gear-wheel in the top-right corn
 
 ## Scripts
 
+### Download model
+
+Download weights from github.
+
+```
+usage: download_model [-h] [--model_path MODEL_PATH]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --model_path MODEL_PATH
+```
+
 ### Get face properties (get_face_properties)
 
 Get the classification result of an input image:
 
 ```
-rosrun image_recognition_keras get_face_properties --image doc/face.png --weights-path [path_to_model]
+rosrun image_recognition_keras get_face_properties `rospack find image_recognition_keras`/doc/face.png
 ```
 
 ![Example](doc/face.png)
