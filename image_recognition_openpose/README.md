@@ -31,8 +31,7 @@ Example for the following picture:
 ![Example](doc/example.jpg)
 
 ```bash
-export MODEL_FOLDER=~/openpose/models
-rosrun image_recognition_openpose detect_poses $MODEL_FOLDER image `rospack find image_recognition_openpose`/doc/example.jpg
+rosrun image_recognition_openpose detect_poses image `rospack find image_recognition_openpose`/doc/example.jpg
 ```
 
 Output:
@@ -87,8 +86,7 @@ optional arguments:
 Run the image_recognition_openpose node in one terminal, e.g.:
 
 ```bash
-export MODEL_FOLDER=~/openpose/models
-rosrun image_recognition_openpose openpose_node _model_folder:=$MODEL_FOLDER
+rosrun image_recognition_openpose openpose_node
 ```
 
 Next step is starting the image_recognition_Rqt test gui (https://github.com/tue-robotics/image_recognition_rqt)
