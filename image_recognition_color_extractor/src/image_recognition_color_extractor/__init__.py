@@ -1,0 +1,1 @@
+from .color_extractor_wrapper import ColorExtractor

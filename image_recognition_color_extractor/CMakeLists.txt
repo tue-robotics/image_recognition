@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(image_recognition_color_extractor)
+
+find_package(catkin REQUIRED)
+
+catkin_python_setup()
+
+catkin_package()
+
+if (CATKIN_ENABLE_TESTING)
+    # Test catkin lint
+    find_program(CATKIN_LINT catkin_lint REQUIRED)
+    execute_process(COMMAND "${CATKIN_LINT}" "-q" "-W2" "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE lint_result)
+    if(NOT ${lint_result} EQUAL 0)
+      message(FATAL_ERROR "catkin_lint failed")
+    endif()
+
+    catkin_add_nosetests(test)
+endif()
+
+install(PROGRAMS
+  scripts/color_extractor_node
+  scripts/get_colors
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+

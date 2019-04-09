@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+import os
+import sys
+
+import diagnostic_updater
+import rospy
+from cv_bridge import CvBridge, CvBridgeError
+from image_recognition_color_extractor import ColorExtractor
+from image_recognition_msgs.msg import Recognition, CategoricalDistribution, CategoryProbability
+from image_recognition_msgs.srv import Recognize
+from image_recognition_util import image_writer
+from sensor_msgs.msg import RegionOfInterest
+
+
+class ColorExtractorNode:
+    def __init__(self, save_images_folder):
+        """
+        ROS node that wraps the color extractor
+        """
+        self._bridge = CvBridge()
+        self._recognize_srv = rospy.Service('recognize', Recognize, self._recognize_srv)
+        self._extractor = ColorExtractor()
+
+        if save_images_folder:
+            self._save_images_folder = os.path.expanduser(save_images_folder)
+            if not os.path.exists(self._save_images_folder):
+                os.makedirs(self._save_images_folder)
+        else:
+            self._save_images_folder = None
+
+        rospy.loginfo("ColorExtractorNode initialized:")
+        rospy.loginfo(" - save_images_folder=%s", save_images_folder)
+
+    def _recognize_srv(self, req):
+        try:
+            bgr_image = self._bridge.imgmsg_to_cv2(req.image, "bgr8")
+        except CvBridgeError as e:
+            raise Exception("Could not convert image to opencv image: %s" % str(e))
+
+        rospy.loginfo("Extracting color")
+        color = self._extractor.extract_colors([bgr_image])[0]
+        rospy.loginfo("Done")
+
+        # Store images if specified
+        if self._save_images_folder:
+            image_writer.write_estimation(self._save_images_folder, bgr_image, color, None, suffix="_color")
+
+        # Service response
+        return {
+            "recognitions": [
+                Recognition(
+                    roi=RegionOfInterest(width=req.image.width, height=req.image.height),
+                    categorical_distribution=CategoricalDistribution(
+                        probabilities=[CategoryProbability(
+                            label=color,
+                            probability=0.7
+                        )]
+                    )
+                )
+            ]
+        }
+
+
+if __name__ == '__main__':
+    rospy.init_node("color_extractor")
+
+    try:
+        save_images = rospy.get_param("~save_images", True)
+        save_images_folder = None
+        if save_images:
+            save_images_folder = rospy.get_param("~save_images_folder", "/tmp/image_recognition_keras")
+    except KeyError as e:
+        rospy.logerr("Parameter %s not found" % e)
+        sys.exit(1)
+
+    try:
+        ColorExtractorNode(save_images_folder)
+        updater = diagnostic_updater.Updater()
+        updater.setHardwareID("none")
+        updater.add(diagnostic_updater.Heartbeat())
+        rospy.Timer(rospy.Duration(1), lambda event: updater.force_update())
+        rospy.spin()
+    except Exception as e:
+        rospy.logfatal(e)
