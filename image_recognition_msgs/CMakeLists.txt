@@ -15,6 +15,8 @@ add_message_files(
   Recognition.msg
   Recognitions.msg
   Annotation.msg
+  Person.msg
+  People.msg
 )
 
 # Generate services in the 'srv' folder
