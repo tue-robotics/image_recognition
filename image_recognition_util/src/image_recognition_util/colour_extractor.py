@@ -76,14 +76,14 @@ class ColourExtractor(object):
                 colours.append('red')
 
             # print colours
-            dominant_colours = [colours[0]]
+        dominant_colours = [colours[0]]
 
-            if percentages[0] - percentages[1] < 10 and colours[0] != colours[1]:
-                dominant_colours.append(colours[1])
+        if percentages[0] - percentages[1] < 10 and colours[0] != colours[1]:
+            dominant_colours.append(colours[1])
 
-            resp = ExtractColourResponse()
-            resp.colours = map(String, dominant_colours)
-            return resp
+        resp = ExtractColourResponse()
+        resp.colours = map(String, dominant_colours)
+        return resp
 
 
 if __name__ == "__main__":
