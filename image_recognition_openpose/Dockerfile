@@ -19,7 +19,13 @@ RUN sudo apt-get update -qq && \
     # This step needs to be executed at every RUN step
     source ~/.bashrc && \
     # Install ros-image_recognition_openpose target
-    tue-get install ros-image_recognition_openpose --branch="$BRANCH" && \
+    tue-get install ros-image_recognition_openpose --branch="$BRANCH"
+
+RUN export CI=$CI && \
+    export BRANCH=$BRANCH && \
+    export PULL_REQUEST=$PULL_REQUEST && \
+    export COMMIT=$COMMIT && \
+    source ~/.bashrc && \
     # Install openpose
     tue-get install openpose_cuda10 && \
     # Make ros workspace
