@@ -21,6 +21,6 @@ RUN sudo apt-get update -qq && \
     # Install ros-image_recognition_openpose target
     tue-get install ros-image_recognition_openpose --branch="$BRANCH" && \
     # Install openpose
-    tue-get install openpose && \
+    tue-get install openpose_cuda10 && \
     # Make ros workspace
     tue-make
