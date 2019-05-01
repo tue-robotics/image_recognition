@@ -19,7 +19,7 @@ class ColourExtractor(object):
     def __init__(self):
 
         # services
-        self._extract_colour_srv = rospy.Service('extract_color', ExtractColour, self._extract_colour_srv)
+        self._extract_colour_srv = rospy.Service('extract_colour', ExtractColour, self._extract_colour_srv)
 
         # initialize parameters
         self._bridge = CvBridge()
