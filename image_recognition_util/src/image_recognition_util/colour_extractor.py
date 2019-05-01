@@ -1,19 +1,25 @@
-#!/usr/bin/env python
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
-import rospy
-from sklearn.cluster import KMeans
+#! /usr/bin/env python
+
+# Python libraries
 import numpy as np
 import colorsys as cs
-from image_recognition_msgs.srv import ExtractColour, ExtractColourResponse
+from sklearn.cluster import KMeans
+
+# ROS libraries
+import rospy
 from std_msgs.msg import String
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge, CvBridgeError
+
+# Image recognition repository imports
+from image_recognition_msgs.srv import ExtractColour, ExtractColourResponse
 
 
 class ColourExtractor(object):
     def __init__(self):
 
         # services
-        self.srv_extract_colour = rospy.Service('~extract_color', ExtractColour, self._extract_colour_srv)
+        self._extract_colour_srv = rospy.Service('~extract_color', ExtractColour, self._extract_colour_srv)
 
         # initialize parameters
         self._bridge = CvBridge()
@@ -30,8 +36,9 @@ class ColourExtractor(object):
         sort_ix = np.argsort(counts_l)
         factor_counts = 100.0 / sum(counts_l)
         percentages = [factor_counts * counts_l[sort_ix[2]], factor_counts * counts_l[sort_ix[1]]]
-        colours = []
+        colours = list()
         sort_ix = sort_ix[::-1]
+
         for i, cluster_center in enumerate(kmeans.cluster_centers_[sort_ix]):
             hue, sat, val = cs.rgb_to_hsv(cluster_center[2] / 255.0, cluster_center[1] / 255.0,
                                           cluster_center[0] / 255.0)
@@ -68,7 +75,7 @@ class ColourExtractor(object):
             else:
                 colours.append('red')
 
-                # print colours
+            # print colours
             dominant_colours = [colours[0]]
 
             if percentages[0] - percentages[1] < 10 and colours[0] != colours[1]:
