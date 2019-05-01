@@ -5,19 +5,21 @@ import rospy
 from sklearn.cluster import KMeans
 import numpy as np
 import colorsys as cs
+from image_recognition_msgs.srv import ExtractColour, ExtractColourResponse
+from std_msgs.msg import String
 
 
 class ColourExtractor(object):
     def __init__(self):
 
         # services
-        self.srv_extract_colour = rospy.Service('~extract_color', Image, self._extract_colour_srv)
+        self.srv_extract_colour = rospy.Service('~extract_color', ExtractColour, self._extract_colour_srv)
 
         # initialize parameters
         self._bridge = CvBridge()
 
-    def _extract_color_srv(self, img_msg):
-        img = self._bridge.imgmsg_to_cv2(img_msg, desired_encoding="passthrough")
+    def _extract_colour_srv(self, req):
+        img = self._bridge.imgmsg_to_cv2(req.image, desired_encoding="passthrough")
         height, width, dim = img.shape
         img_vec = np.reshape(img, [height * width, dim])
 
@@ -72,7 +74,9 @@ class ColourExtractor(object):
             if percentages[0] - percentages[1] < 10 and colours[0] != colours[1]:
                 dominant_colours.append(colours[1])
 
-            return dominant_colours
+            resp = ExtractColourResponse()
+            resp.colours = map(String, dominant_colours)
+            return resp
 
 
 if __name__ == "__main__":

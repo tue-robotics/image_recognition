@@ -1,0 +1,5 @@
+# Interface for extracting the dominant colours in a specified region of interest
+
+sensor_msgs/Image image
+---
+std_msgs/String[] colours
