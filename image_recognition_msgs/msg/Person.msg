@@ -1,4 +1,5 @@
 string name
-FaceProperties face
+uint8 age
+uint8 gender
 Recognition[] body_parts
 string[] shirt_colors
