@@ -66,25 +66,26 @@ class OpenposeWrapper(object):
         overlayed_image = datum.cvOutputData
         # keypoints, overlayed_image = self._openpose.forward(image, True)
 
-        num_persons, num_bodyparts, _ = keypoints.shape
-
         recognitions = []
-        for person_id in range(0, num_persons):
-            for body_part_id in range(0, num_bodyparts):
-                body_part = self._model["body_parts"][body_part_id]
-                x, y, probability = keypoints[person_id][body_part_id]
-                if probability > 0:
-                    recognitions.append(Recognition(
-                        group_id=person_id,
-                        roi=RegionOfInterest(
-                            width=1,
-                            height=1,
-                            x_offset=int(x),
-                            y_offset=int(y)
-                        ),
-                        categorical_distribution=CategoricalDistribution(
-                            probabilities=[CategoryProbability(label=body_part, probability=float(probability))]
-                        )
-                    ))
+
+        if keypoints and len(keypoints.shape) == 3:
+            num_persons, num_bodyparts, _ = keypoints.shape
+            for person_id in range(0, num_persons):
+                for body_part_id in range(0, num_bodyparts):
+                    body_part = self._model["body_parts"][body_part_id]
+                    x, y, probability = keypoints[person_id][body_part_id]
+                    if probability > 0:
+                        recognitions.append(Recognition(
+                            group_id=person_id,
+                            roi=RegionOfInterest(
+                                width=1,
+                                height=1,
+                                x_offset=int(x),
+                                y_offset=int(y)
+                            ),
+                            categorical_distribution=CategoricalDistribution(
+                                probabilities=[CategoryProbability(label=body_part, probability=float(probability))]
+                            )
+                        ))
 
         return recognitions, overlayed_image
