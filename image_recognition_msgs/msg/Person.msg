@@ -2,5 +2,6 @@ string name
 uint8 age
 uint8 gender
 float64 gender_confidence
-Recognition[] body_parts
+string posture
+string emotion
 string[] shirt_colors
