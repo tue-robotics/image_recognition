@@ -1,1 +1,1 @@
-from .openpose_wrapper2 import OpenposeWrapper
+from .openpose_wrapper import OpenposeWrapper
