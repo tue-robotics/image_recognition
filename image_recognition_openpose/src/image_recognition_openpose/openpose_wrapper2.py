@@ -68,7 +68,7 @@ class OpenposeWrapper(object):
 
         recognitions = []
 
-        if keypoints and len(keypoints.shape) == 3:
+        if len(keypoints.shape) == 3:
             num_persons, num_bodyparts, _ = keypoints.shape
             for person_id in range(0, num_persons):
                 for body_part_id in range(0, num_bodyparts):
