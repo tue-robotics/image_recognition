@@ -2,4 +2,4 @@
 
 sensor_msgs/Image image
 ---
-std_msgs/String[] colours
+string[] colours
