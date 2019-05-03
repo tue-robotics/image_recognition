@@ -15,6 +15,7 @@
   <exec_depend>image_recognition_msgs</exec_depend>
   <exec_depend>image_recognition_openface</exec_depend>
   <exec_depend>image_recognition_openpose</exec_depend>
+  <exec_depend>image_recognition_people_detector</exec_depend>
   <exec_depend>image_recognition_rqt</exec_depend>
   <exec_depend>image_recognition_skybiometry</exec_depend>
   <exec_depend>image_recognition_tensorflow</exec_depend>
