@@ -7,8 +7,8 @@ from sklearn.cluster import KMeans
 
 # ROS libraries
 import rospy
-from std_msgs.msg import String
-from sensor_msgs.msg import Image
+#from std_msgs.msg import String
+#from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
 # Image recognition repository imports
@@ -81,9 +81,9 @@ class ColourExtractor(object):
         if percentages[0] - percentages[1] < 10 and colours[0] != colours[1]:
             dominant_colours.append(colours[1])
 
-        resp = ExtractColourResponse()
-        resp.colours = map(String, dominant_colours)
-        return resp
+        #resp = ExtractColourResponse()
+        #resp.colours = map(String, dominant_colours)
+        return ExtractColourResponse(colours=dominant_colours)
 
 
 if __name__ == "__main__":
