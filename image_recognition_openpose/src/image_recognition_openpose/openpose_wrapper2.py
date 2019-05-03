@@ -66,7 +66,7 @@ class OpenposeWrapper(object):
         overlayed_image = datum.cvOutputData
         # keypoints, overlayed_image = self._openpose.forward(image, True)
 
-        recognitions = []
+        recognitions = list()
 
         if len(keypoints.shape) == 3:
             num_persons, num_bodyparts, _ = keypoints.shape
