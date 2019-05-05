@@ -10,8 +10,15 @@ class ColourExtractor(object):
         self._total_colours = total_colours
 
     def recognize(self, img):
-        print("Image dimension {}".format(img.shape))
+        dominant_colours = list()
+        return_message = None
+
         height, width, dim = img.shape
+        if height * width <= self._total_colours:
+            return_message = "Total image pixels lesser than requested total dominant colours"
+            return dominant_colours, return_message
+
+
         img_vec = np.reshape(img, [height * width, dim])
 
         kmeans = KMeans(n_clusters=self._total_colours)
@@ -61,9 +68,10 @@ class ColourExtractor(object):
                 colours.append('red')
 
         # print colours
-        dominant_colours = [colours[0]]
+        dominant_colours.append(colours[0])
 
         if percentages[0] - percentages[1] < 10 and colours[0] != colours[1]:
             dominant_colours.append(colours[1])
 
-        return dominant_colours
+        return dominant_colours, return_message
+
