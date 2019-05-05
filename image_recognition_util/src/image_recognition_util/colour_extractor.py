@@ -15,7 +15,7 @@ class ColourExtractor(object):
 
         height, width, dim = img.shape
         if height * width <= self._total_colours:
-            return_message = "Total image pixels lesser than requested total dominant colours"
+            return_message = "Total image pixels lesser than requested total dominant colours. No dominant colours detected"
             return dominant_colours, return_message
 
 
