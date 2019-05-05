@@ -5,29 +5,16 @@ import numpy as np
 import colorsys as cs
 from sklearn.cluster import KMeans
 
-# ROS libraries
-import rospy
-from cv_bridge import CvBridge, CvBridgeError
-
-# Image recognition repository imports
-from image_recognition_msgs.srv import ExtractColour, ExtractColourResponse
-
-
 class ColourExtractor(object):
-    def __init__(self):
+    def __init__(self, total_colours):
+        self._total_colours = total_colours
 
-        # services
-        self._extract_colour_srv = rospy.Service('extract_colour', ExtractColour, self._extract_colour_srv)
-
-        # initialize parameters
-        self._bridge = CvBridge()
-
-    def _extract_colour_srv(self, req):
-        img = self._bridge.imgmsg_to_cv2(req.image, desired_encoding="passthrough")
+    def recognize(self, img):
+        print("Image dimension {}".format(img.shape))
         height, width, dim = img.shape
         img_vec = np.reshape(img, [height * width, dim])
 
-        kmeans = KMeans(n_clusters=3)
+        kmeans = KMeans(n_clusters=self._total_colours)
         kmeans.fit(img_vec)
         unique_l, counts_l = np.unique(kmeans.labels_, return_counts=True)
 
@@ -73,17 +60,10 @@ class ColourExtractor(object):
             else:
                 colours.append('red')
 
-            # print colours
+        # print colours
         dominant_colours = [colours[0]]
 
         if percentages[0] - percentages[1] < 10 and colours[0] != colours[1]:
             dominant_colours.append(colours[1])
 
-        return ExtractColourResponse(colours=dominant_colours)
-
-
-if __name__ == "__main__":
-    rospy.init_node('colour_extractor')
-    colour_extractor = ColourExtractor()
-
-    rospy.spin()
+        return dominant_colours

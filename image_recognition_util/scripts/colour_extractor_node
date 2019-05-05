@@ -1,0 +1,38 @@
+#! /usr/bin/env python
+
+# ROS libraries
+import rospy
+from cv_bridge import CvBridge, CvBridgeError
+
+# Image recognition repository imports
+from image_recognition_msgs.srv import ExtractColour, ExtractColourResponse
+
+class ColourExtractorNode:
+    def __init__(self):
+        # initialize parameters
+        total_colours = self._get_param('~total_colours', 3)
+        self._bridge = CvBridge()
+        self._colour_extractor = ColourExtractor(total_colours)
+
+        # services
+        self._extract_colour_srv = rospy.Service('extract_colour', ExtractColour, self._extract_colour_srv)
+
+    def _get_param(self, name, default):
+        if rospy.has_param(name):
+            return rospy.get_param(name)
+        else:
+            rospy.logwarn('parameter %s not set, using the default value of %s', name, default)
+            return rospy.get_param(name, default)
+
+    def _extract_colour_srv(self, req):
+        img = self._bridge.imgmsg_to_cv2(req.image, desired_encoding="passthrough")
+        colours = self._colour_extractor.recognize(img)
+
+        return ExtractColourResponse(colours=colours)
+
+
+if __name__ == "__main__":
+    rospy.init_node('colour_extractor')
+    node = ColourExtractorNode()
+    rospy.spin()
+
