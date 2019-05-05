@@ -5,6 +5,7 @@ import rospy
 from cv_bridge import CvBridge, CvBridgeError
 
 # Image recognition repository imports
+from image_recognition_util import ColourExtractor
 from image_recognition_msgs.srv import ExtractColour, ExtractColourResponse
 
 class ColourExtractorNode:
