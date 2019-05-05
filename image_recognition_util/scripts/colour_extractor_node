@@ -27,7 +27,10 @@ class ColourExtractorNode:
 
     def _extract_colour_srv(self, req):
         img = self._bridge.imgmsg_to_cv2(req.image, desired_encoding="passthrough")
-        colours = self._colour_extractor.recognize(img)
+        colours, return_message = self._colour_extractor.recognize(img)
+
+        if return_message:
+            rospy.loginfo(return_message)
 
         return ExtractColourResponse(colours=colours)
 
