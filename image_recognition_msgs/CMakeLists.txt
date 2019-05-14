@@ -15,8 +15,6 @@ add_message_files(
   Recognition.msg
   Recognitions.msg
   Annotation.msg
-  Person.msg
-  People.msg
 )
 
 # Generate services in the 'srv' folder
@@ -25,8 +23,7 @@ add_service_files(
   Recognize.srv
   Annotate.srv
   GetFaceProperties.srv
-  ExtractColour.srv
-  DetectPeople.srv
+  ExtractColor.srv
 )
 
 # Generate added messages and services with any dependencies listed here
