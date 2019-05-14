@@ -5,18 +5,18 @@ import rospy
 from cv_bridge import CvBridge, CvBridgeError
 
 # Image recognition repository imports
-from image_recognition_util import ColourExtractor
-from image_recognition_msgs.srv import ExtractColour, ExtractColourResponse
+from image_recognition_util import ColorExtractor
+from image_recognition_msgs.srv import ExtractColor, ExtractColorResponse
 
-class ColourExtractorNode:
+class ColorExtractorNode:
     def __init__(self):
         # initialize parameters
-        total_colours = self._get_param('~total_colours', 3)
+        total_colors = self._get_param('~total_colors', 3)
         self._bridge = CvBridge()
-        self._colour_extractor = ColourExtractor(total_colours)
+        self._color_extractor = ColorExtractor(total_colors)
 
         # services
-        self._extract_colour_srv = rospy.Service('extract_colour', ExtractColour, self._extract_colour_srv)
+        self._extract_color_srv = rospy.Service('extract_color', ExtractColor, self._extract_color_srv)
 
     def _get_param(self, name, default):
         if rospy.has_param(name):
@@ -25,18 +25,18 @@ class ColourExtractorNode:
             rospy.logwarn('parameter %s not set, using the default value of %s', name, default)
             return rospy.get_param(name, default)
 
-    def _extract_colour_srv(self, req):
+    def _extract_color_srv(self, req):
         img = self._bridge.imgmsg_to_cv2(req.image, desired_encoding="passthrough")
-        colours, return_message = self._colour_extractor.recognize(img)
+        colors, return_message = self._color_extractor.recognize(img)
 
         if return_message:
             rospy.loginfo(return_message)
 
-        return ExtractColourResponse(colours=colours)
+        return ExtractColorResponse(colors=colors)
 
 
 if __name__ == "__main__":
-    rospy.init_node('colour_extractor')
-    node = ColourExtractorNode()
+    rospy.init_node('color_extractor')
+    node = ColorExtractorNode()
     rospy.spin()
 

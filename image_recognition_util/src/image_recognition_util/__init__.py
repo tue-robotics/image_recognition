@@ -1,1 +1,1 @@
-from .colour_extractor import ColourExtractor
+from .color_extractor import ColorExtractor
