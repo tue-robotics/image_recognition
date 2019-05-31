@@ -8,8 +8,7 @@ See https://github.com/tue-robotics/image_recognition for installation instructi
 
 ## ROS Node (face_properties_node)
 
-Age and gender estimation with use of WideResNet from https://github.com/yu4u/age-gender-estimation. You can download the pre-trained model here: https://github.com/yu4u/age-gender-estimation/releases/download/v0.5/weights.28-3.73.hdf5
-
+Age and gender estimation with use of WideResNet from https://github.com/yu4u/age-gender-estimation. You can download the pre-trained model here: https://github.com/tue-robotics/image_recognition/releases/download/image_recognition_keras_face_properties_weights.28-3.73/image_recognition_keras_face_properties_weights.28-3.73.hdf5
 ```
 rosrun image_recognition_keras face_properties_node _weights_file_path:=[path_to_model]
 ```
@@ -24,12 +23,24 @@ Configure the service you want to call with the gear-wheel in the top-right corn
 
 ## Scripts
 
+### Download model
+
+Download weights from github.
+
+```
+usage: download_model [-h] [--model_path MODEL_PATH]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --model_path MODEL_PATH
+```
+
 ### Get face properties (get_face_properties)
 
 Get the classification result of an input image:
 
 ```
-rosrun image_recognition_keras get_face_properties --image doc/face.png --weights-path [path_to_model]
+rosrun image_recognition_keras get_face_properties `rospack find image_recognition_keras`/doc/face.png
 ```
 
 ![Example](doc/face.png)

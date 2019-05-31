@@ -2,15 +2,16 @@
 
 import argparse
 import logging
+import os
 import sys
 
 import cv2
-
 from image_recognition_openpose import OpenposeWrapper
 
 parser = argparse.ArgumentParser(description='Detect poses in an image',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('model_folder', help='Path where the models are stored')
+parser.add_argument('--model_folder', help='Path where the models are stored',
+                    default=os.path.expanduser('~/openpose/models'))
 parser.add_argument('--pose_model', help='What pose model to use', default="BODY_25")
 parser.add_argument('--net_input_size', help='Net input size', default="-1x368")
 parser.add_argument('--net_output_size', help='Net output size', default="-1x-1")
