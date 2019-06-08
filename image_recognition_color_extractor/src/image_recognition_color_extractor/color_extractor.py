@@ -1,9 +1,8 @@
-#! /usr/bin/env python
-
-# Python libraries
-import numpy as np
 import colorsys as cs
+
+import numpy as np
 from sklearn.cluster import KMeans
+
 
 class ColorExtractor(object):
     def __init__(self, total_colors):
@@ -11,13 +10,10 @@ class ColorExtractor(object):
 
     def recognize(self, img):
         dominant_colors = list()
-        return_message = None
 
         height, width, dim = img.shape
         if height * width <= self._total_colors:
-            return_message = "Total image pixels lesser than requested total dominant colors. No dominant colors detected"
-            return dominant_colors, return_message
-
+            raise RuntimeError("Total image pixels < requested total dominant colors. No dominant colors detected")
 
         img_vec = np.reshape(img, [height * width, dim])
 
@@ -67,11 +63,9 @@ class ColorExtractor(object):
             else:
                 colors.append('red')
 
-        # print colors
         dominant_colors.append(colors[0])
 
         if percentages[0] - percentages[1] < 10 and colors[0] != colors[1]:
             dominant_colors.append(colors[1])
 
-        return dominant_colors, return_message
-
+        return dominant_colors

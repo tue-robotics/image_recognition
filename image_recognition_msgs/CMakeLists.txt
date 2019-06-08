@@ -23,7 +23,6 @@ add_service_files(
   Recognize.srv
   Annotate.srv
   GetFaceProperties.srv
-  ExtractColor.srv
 )
 
 # Generate added messages and services with any dependencies listed here

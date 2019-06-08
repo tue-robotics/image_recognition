@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(image_recognition_color_extractor)
 
-find_package(catkin REQUIRED COMPONENTS cv_bridge image_recognition_msgs rospy)
+find_package(catkin REQUIRED)
 
 catkin_python_setup()
 

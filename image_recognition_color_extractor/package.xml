@@ -4,7 +4,8 @@
   <version>0.0.1</version>
   <description>The image_recognition_color_extractor package</description>
 
-  <maintainer email="ar13pit@gmail.com">Arpit Aggarwal</maintainer>
+  <author email="ar13pit@gmail.com">Arpit Aggarwal</author>
+  <maintainer email="reinzor@gmail.com">Rein Appeldoorn</maintainer>
 
   <license>MIT</license>
 
@@ -12,10 +13,9 @@
 
   <build_depend>python-catkin-lint</build_depend>
 
-  <depend>cv_bridge</depend>
-  <depend>image_recognition_msgs</depend>
-  <depend>python-numpy</depend>
-  <depend>python-sklearn</depend>
-  <depend>rospy</depend>
-
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>image_recognition_msgs</exec_depend>
+  <exec_depend>python-numpy</exec_depend>
+  <exec_depend>python-sklearn</exec_depend>
+  <exec_depend>rospy</exec_depend>
 </package>
