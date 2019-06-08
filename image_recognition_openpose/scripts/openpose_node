@@ -15,7 +15,7 @@ from image_recognition_util import image_writer
 
 class OpenposeNode:
     def __init__(self, model_folder, pose_model, net_input_size, net_output_size, num_scales, scale_gap, num_gpu_start,
-                 overlay_alpha, python_path, topic_save_images, service_save_images, topic_publish_result_image,
+                 overlay_alpha, python_path, enable_topic_mode, topic_save_images, service_save_images, topic_publish_result_image,
                  service_publish_result_image, save_images_folder):
         """
         Openpose node that wraps the openpose functionality and exposes service and subscriber interfaces
@@ -52,17 +52,25 @@ class OpenposeNode:
         # Debug
         self._topic_save_images = topic_save_images
         self._service_save_images = service_save_images
-        self._topic_publish_result_image = topic_publish_result_image
-        self._service_publish_result_image = service_publish_result_image
         self._save_images_folder = save_images_folder
 
         # ROS IO
         self._bridge = CvBridge()
         self._recognize_srv = rospy.Service('recognize', Recognize, self._recognize_srv)
-        self._image_subscriber = rospy.Subscriber('image', Image, self._image_callback)
-        self._recognitions_publisher = rospy.Publisher('recognitions', Recognitions, queue_size=10)
-        if self._topic_publish_result_image or self._service_publish_result_image:
-            self._result_image_publisher = rospy.Publisher("result_image", Image, queue_size=10)
+
+        # Enable subscriber/publisher only if topic mode is enabled
+        if enable_topic_mode:
+            # Set the publish result args for debugging
+            self._topic_publish_result_image = topic_publish_result_image
+            self._service_publish_result_image = service_publish_result_image
+
+            self._image_subscriber = rospy.Subscriber('image', Image, self._image_callback)
+            self._recognitions_publisher = rospy.Publisher('recognitions', Recognitions, queue_size=10)
+            if self._topic_publish_result_image or self._service_publish_result_image:
+                self._result_image_publisher = rospy.Publisher("result_image", Image, queue_size=10)
+        else:
+            self._topic_publish_result_image = False
+            self._service_publish_result_image = False
 
         rospy.loginfo("OpenposeNode initialized:")
         rospy.loginfo(" - model_folder=%s", model_folder)
@@ -148,6 +156,7 @@ if __name__ == '__main__':
             rospy.get_param("~num_gpu_start", 0),
             rospy.get_param("~overlay_alpha", 0.6),
             rospy.get_param("~python_path", "/usr/local/python/"),
+            rospy.get_param("~enable_topic_mode", True),
             rospy.get_param("~topic_save_images", False),
             rospy.get_param("~service_save_images", True),
             rospy.get_param("~topic_publish_result_image", True),
