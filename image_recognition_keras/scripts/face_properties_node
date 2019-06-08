@@ -51,10 +51,13 @@ class WideResnetFaceProperties:
         rospy.loginfo("Done")
 
         face_properties_array = []
-        for (age, gender) in estimations:
+        for (age, gender_prob) in estimations:
+            gender, gender_confidence = (FaceProperties.FEMALE, gender_prob[0]) if gender_prob[0] > 0.5 else (FaceProperties.MALE, gender_prob[1])
+
             face_properties_array.append(FaceProperties(
                 age=int(age),
-                gender=FaceProperties.FEMALE if gender[0] > 0.5 else FaceProperties.MALE,
+                gender=gender,
+                gender_confidence=gender_confidence
             ))
 
         # Store images if specified

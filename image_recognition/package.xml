@@ -10,6 +10,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <exec_depend>image_recognition_analysis</exec_depend>
+  <exec_depend>image_recognition_color_extractor</exec_depend>
   <exec_depend>image_recognition_keras</exec_depend>
   <exec_depend>image_recognition_msgs</exec_depend>
   <exec_depend>image_recognition_openface</exec_depend>

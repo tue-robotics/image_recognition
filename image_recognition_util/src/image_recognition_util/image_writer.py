@@ -158,11 +158,12 @@ def write_raw(dir_path, image, subfolder_name="raw"):
     return True
 
 
-def get_annotated_cv_image(cv_image, recognitions):
+def get_annotated_cv_image(cv_image, recognitions, labels=[]):
     """
     Gets an annotated CV image based on recognitions, drawin using cv.rectangle
     :param cv_image: Original cv image
     :param recognitions: List of recognitions
+    :param labels: List of labels per recognition
     :return: Annotated image
     """
     annotated_cv_image = cv_image.copy()
@@ -174,4 +175,23 @@ def get_annotated_cv_image(cv_image, recognitions):
 
         cv2.rectangle(annotated_cv_image, (x_min, y_min), (x_max, y_max),
                       (c_map[i, 2] * 255, c_map[i, 1] * 255, c_map[i, 0] * 255), 10)
+
+    for i, (recognition, label) in enumerate(zip(recognitions, labels)):
+        font = cv2.FONT_HERSHEY_PLAIN
+        x, y = recognition.roi.x_offset, recognition.roi.y_offset
+        font_scale = 1.0
+        font_color = (255, 255, 255)
+        bg_color = (0, 0, 0)
+        line_type = 1
+
+        (text_width, text_height) = cv2.getTextSize(label, font, fontScale=font_scale, thickness=1)[0]
+        box_coords = ((x, y), (x + text_width - 2, y - text_height - 2))
+        cv2.rectangle(annotated_cv_image, box_coords[0], box_coords[1], bg_color, cv2.FILLED)
+        cv2.putText(annotated_cv_image, label,
+                    (x, y),
+                    font,
+                    font_scale,
+                    font_color,
+                    line_type)
+
     return annotated_cv_image

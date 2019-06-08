@@ -49,6 +49,8 @@ class AgeGenderEstimator(object):
             faces[i, :, :, :] = cv2.resize(np_image, (self._img_size, self._img_size))
 
         results = self._model.predict(faces)
+        if not results:
+            return []
 
         predicted_genders = results[0]
         ages = np.arange(0, 101).reshape(101, 1)
