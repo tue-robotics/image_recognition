@@ -14,7 +14,7 @@ class OpenposeWrapper(object):
             sys.path.append(self._validate_dir(python_path))
 
         try:
-            import openpose
+            from openpose import pyopenpose as op
         except ImportError as e:
             raise ImportError("{}, please add openpose to your python path using the constructor argument or extend the"
                               " PYTHONPATH environment variable".format(e))
@@ -33,7 +33,7 @@ class OpenposeWrapper(object):
             "logging_level": 3,
             "render_threshold": 0.05,
             "disable_blending": False,
-            "default_model_folder": model_folder,
+            "model_folder": model_folder,
             "model_pose": str(pose_model),
             "net_resolution": str(net_input_size),
             "output_resolution": str(net_output_size),
@@ -45,7 +45,10 @@ class OpenposeWrapper(object):
 
         logging.info("Loading openpose with parameters: %s", parameters)
 
-        self._openpose = openpose.OpenPose(parameters)
+        self._op = op
+        self._opWrapper = op.WrapperPython()
+        self._opWrapper.configure(parameters)
+        self._opWrapper.start()
 
     @staticmethod
     def _validate_dir(dir_path):
@@ -55,27 +58,34 @@ class OpenposeWrapper(object):
         return dir_path if dir_path[-1] == "/" else dir_path + "/"
 
     def detect_poses(self, image):
-        keypoints, overlayed_image = self._openpose.forward(image, True)
+        datum = self._op.Datum()
+        datum.cvInputData = image
+        self._opWrapper.emplaceAndPop([datum])
 
-        num_persons, num_bodyparts, _ = keypoints.shape
+        keypoints = datum.poseKeypoints
+        overlayed_image = datum.cvOutputData
+        # keypoints, overlayed_image = self._openpose.forward(image, True)
 
-        recognitions = []
-        for person_id in range(0, num_persons):
-            for body_part_id in range(0, num_bodyparts):
-                body_part = self._model["body_parts"][body_part_id]
-                x, y, probability = keypoints[person_id][body_part_id]
-                if probability > 0:
-                    recognitions.append(Recognition(
-                        group_id=person_id,
-                        roi=RegionOfInterest(
-                            width=1,
-                            height=1,
-                            x_offset=int(x),
-                            y_offset=int(y)
-                        ),
-                        categorical_distribution=CategoricalDistribution(
-                            probabilities=[CategoryProbability(label=body_part, probability=float(probability))]
-                        )
-                    ))
+        recognitions = list()
+
+        if len(keypoints.shape) == 3:
+            num_persons, num_bodyparts, _ = keypoints.shape
+            for person_id in range(0, num_persons):
+                for body_part_id in range(0, num_bodyparts):
+                    body_part = self._model["body_parts"][body_part_id]
+                    x, y, probability = keypoints[person_id][body_part_id]
+                    if probability > 0:
+                        recognitions.append(Recognition(
+                            group_id=person_id,
+                            roi=RegionOfInterest(
+                                width=1,
+                                height=1,
+                                x_offset=int(x),
+                                y_offset=int(y)
+                            ),
+                            categorical_distribution=CategoricalDistribution(
+                                probabilities=[CategoryProbability(label=body_part, probability=float(probability))]
+                            )
+                        ))
 
         return recognitions, overlayed_image
