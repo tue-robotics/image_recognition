@@ -2,6 +2,17 @@
 Changelog for package image_recognition_util
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* new: label support
+* Added catkin lint to all packages
+* refactor package xml to 2.0
+* feat(recognition_overlay_image_publisher): Recognitions on images
+* Classification score matrix helper for reading and writing csv files
+* feat(read_annotated): Read images from an annotated folder structure
+* feat(interface): Added topic interface with recognitions
+* Contributors: Arpit Aggarwal, Josja Geijsberts, Loy van Beek, Matthijs van der Burgh, Rein Appeldoorn
+
 0.0.4 (2017-02-07)
 ------------------
 

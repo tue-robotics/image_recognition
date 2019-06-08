@@ -2,6 +2,13 @@
 Changelog for package image_recognition_tensorflow_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added catkin lint to all packages
+* refactor package xml to 2.0
+* rename ROS pkgs with image_recognition_prefix
+* Contributors: Rein Appeldoorn
+
 0.0.4 (2017-02-07)
 ------------------
 

@@ -2,6 +2,18 @@
 Changelog for package image_recognition_openface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Installation instructions openpose / openface + model download
+  * Added installation instructions openpose + model dowload
+  * Added installation instructions openface + model download
+  * Added download script for model
+* Added catkin lint to all packages
+* Correctly store and publish images on parameters
+* refactor package xml to 2.0
+* rename ROS pkgs with image_recognition_prefix
+* Contributors: Rein Appeldoorn
+
 0.0.4 (2017-02-07)
 ------------------
 

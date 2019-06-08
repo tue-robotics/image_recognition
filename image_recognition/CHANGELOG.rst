@@ -2,6 +2,18 @@
 Changelog for package image_recognition
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* color extractor in meta pkg
+* meta package no catkin lint since metapackages should not have build depends
+* Added catkin lint to all packages
+* fix: exec_depend
+* refactor package xml to 2.0
+* rename ROS pkgs with image_recognition_prefix
+* Add to _tools to metapackage
+* Enable CI
+* Contributors: Arpit Aggarwal, Loy van Beek, Matthijs van der Burgh, Rein Appeldoorn, Tim Clephas
+
 0.0.4 (2017-02-07)
 ------------------
 

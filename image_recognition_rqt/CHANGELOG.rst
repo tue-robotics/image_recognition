@@ -2,6 +2,16 @@
 Changelog for package image_recognition_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added gender confidence to test tools
+* Added catkin lint to all packages
+* refactor package xml to 2.0
+* rename ROS pkgs with image_recognition_prefix
+* feat(rqt): Folder image publisher
+* feat(GetPersons.srv): Ability to call the GetPersons service
+* Contributors: Loy van Beek, Rein Appeldoorn
+
 0.0.4 (2017-02-07)
 ------------------
 
