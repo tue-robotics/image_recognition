@@ -2,8 +2,8 @@
 Changelog for package image_recognition_util
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2019-06-08)
+------------------
 * new: label support
 * Added catkin lint to all packages
 * refactor package xml to 2.0

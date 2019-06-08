@@ -2,8 +2,8 @@
 Changelog for package image_recognition_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2019-06-08)
+------------------
 * Added gender confidence to test tools
 * Added catkin lint to all packages
 * refactor package xml to 2.0

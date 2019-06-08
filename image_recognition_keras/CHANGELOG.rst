@@ -2,8 +2,8 @@
 Changelog for package image_recognition_keras
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2019-06-08)
+------------------
 * added gender confidence in return msg
 * Installation instructions openpose / openface + model download
   * Added installation instructions openpose + model dowload

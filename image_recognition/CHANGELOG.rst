@@ -2,8 +2,8 @@
 Changelog for package image_recognition
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2019-06-08)
+------------------
 * color extractor in meta pkg
 * meta package no catkin lint since metapackages should not have build depends
 * Added catkin lint to all packages

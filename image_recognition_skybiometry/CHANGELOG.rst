@@ -2,8 +2,8 @@
 Changelog for package image_recognition_skybiometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2019-06-08)
+------------------
 * test for image_recognition_skybiometry
 * Added catkin lint to all packages
 * refactor package xml to 2.0

@@ -2,8 +2,8 @@
 Changelog for package image_recognition_openface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2019-06-08)
+------------------
 * Installation instructions openpose / openface + model download
   * Added installation instructions openpose + model dowload
   * Added installation instructions openface + model download

@@ -2,8 +2,8 @@
 Changelog for package image_recognition_tensorflow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2019-06-08)
+------------------
 * Added test for image_recognition_tensorflow
 * Added catkin lint to all packages
 * refactor package xml to 2.0
