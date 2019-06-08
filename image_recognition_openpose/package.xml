@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>image_recognition_openpose</name>
-  <version>0.0.0</version>
+  <version>0.0.4</version>
   <description>ROS Wrapper for the openpose software package. Exposes a service and topic interface.</description>
 
   <maintainer email="reinzor@gmail.com">Rein Appeldoorn</maintainer>
