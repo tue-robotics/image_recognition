@@ -2,6 +2,14 @@
 Changelog for package image_recognition_tensorflow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.5 (2019-06-08)
+------------------
+* Added test for image_recognition_tensorflow
+* Added catkin lint to all packages
+* refactor package xml to 2.0
+* rename ROS pkgs with image_recognition_prefix
+* Contributors: Matthijs van der Burgh, Rein Appeldoorn
+
 0.0.4 (2017-02-07)
 ------------------
 

@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+import argparse
+
+import cv2
+from image_recognition_color_extractor import ColorExtractor
+
+# Assign description to the help doc
+parser = argparse.ArgumentParser(description='Get dominant colors from image')
+parser.add_argument('image', type=argparse.FileType('r'), help='Image')
+parser.add_argument('--total_colors', default=3, type=int, help='Total colors')
+
+args = parser.parse_args()
+
+colors = ColorExtractor(args.total_colors).recognize(cv2.imread(args.image.name))
+
+print("Colors:", colors)

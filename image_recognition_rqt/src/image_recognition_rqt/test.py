@@ -1,21 +1,17 @@
 import rospy
-import rostopic
 import rosservice
-
-from qt_gui.plugin import Plugin
-
-from python_qt_binding.QtWidgets import * 
-from python_qt_binding.QtGui import * 
-from python_qt_binding.QtCore import * 
-
-from sensor_msgs.msg import Image
+import rostopic
 from cv_bridge import CvBridge, CvBridgeError
-from image_recognition_msgs.msg import CategoryProbability, FaceProperties
-
-from image_widget import ImageWidget
 from dialogs import option_dialog, warning_dialog, info_dialog
-
+from image_recognition_msgs.msg import CategoryProbability, FaceProperties
 from image_recognition_msgs.srv import GetFaceProperties, Recognize
+from image_widget import ImageWidget
+from python_qt_binding.QtCore import *
+from python_qt_binding.QtGui import *
+from python_qt_binding.QtWidgets import *
+from qt_gui.plugin import Plugin
+from sensor_msgs.msg import Image
+
 _SUPPORTED_SERVICES = ["image_recognition_msgs/Recognize",
                        "image_recognition_msgs/GetFaceProperties"]
 
@@ -34,9 +30,9 @@ class TestPlugin(Plugin):
 
         self._widget = QWidget()
         context.add_widget(self._widget)
-        
+
         # Layout and attach to widget
-        layout = QVBoxLayout()  
+        layout = QVBoxLayout()
         self._widget.setLayout(layout)
 
         self._image_widget = ImageWidget(self._widget, self.image_roi_callback, clear_on_click=True)
@@ -69,8 +65,6 @@ class TestPlugin(Plugin):
             warning_dialog("Service Exception", str(e))
             return
 
-        print result
-
         for r in result.recognitions:
             text_array = []
             best = CategoryProbability(label="unknown", probability=r.categorical_distribution.unknown_probability)
@@ -99,8 +93,9 @@ class TestPlugin(Plugin):
 
         msg = ""
         for properties in result.properties_array:
-            msg += "- FaceProperties(gender=%s, age=%s)" % \
-                   ("male" if properties.gender == FaceProperties.MALE else "female", properties.age)
+            msg += "- FaceProperties(gender=%s, gender_confidence=%.2f, age=%s)" % \
+                   ("male" if properties.gender == FaceProperties.MALE else "female", properties.gender_confidence,
+                    properties.age)
 
         info_dialog("Face Properties array", msg)
 
