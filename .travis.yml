@@ -1,10 +1,10 @@
 sudo: required
 language: generic
-dist: trusty
+dist: xenial
 
 matrix:
   include:
-  - name: "Kinetic"
+  - name: "kinetic"
     env: ROS_DISTRO=kinetic
 
 install:
