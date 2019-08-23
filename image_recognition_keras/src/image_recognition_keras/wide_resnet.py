@@ -12,7 +12,7 @@ from keras.regularizers import l2
 from keras import __version__ as kv
 if version.parse(kv) < version.parse("2.2.5"):
     from keras import backend as K
-else
+else:
     from keras.backend import common as K
 
 sys.setrecursionlimit(2 ** 20)
