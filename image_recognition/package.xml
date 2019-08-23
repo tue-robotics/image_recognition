@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>image_recognition</name>
-  <version>0.0.4</version>
+  <version>0.0.5</version>
   <description>The image_recognition packages for extracting recognitions from images.</description>
 
   <maintainer email="reinzor@gmail.com">Rein Appeldoorn</maintainer>
@@ -10,6 +10,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <exec_depend>image_recognition_analysis</exec_depend>
+  <exec_depend>image_recognition_color_extractor</exec_depend>
   <exec_depend>image_recognition_keras</exec_depend>
   <exec_depend>image_recognition_msgs</exec_depend>
   <exec_depend>image_recognition_openface</exec_depend>

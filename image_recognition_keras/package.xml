@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>image_recognition_keras</name>
-  <version>0.0.1</version>
+  <version>0.0.5</version>
   <description>The image_recognition_keras package</description>
 
   <maintainer email="reinzor@gmail.com">Rein Appeldoorn</maintainer>
@@ -16,6 +16,7 @@
   <exec_depend>python-keras-pip</exec_depend>
   <exec_depend>python-numpy</exec_depend>
   <exec_depend>python-opencv</exec_depend>
+  <exec_depend>python-packaging</exec_depend>
   <exec_depend>python-tensorflow-pip</exec_depend>
   <exec_depend>rospy</exec_depend>
 

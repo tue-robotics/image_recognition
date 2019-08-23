@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+import rospy
+from cv_bridge import CvBridge
+from image_recognition_color_extractor import ColorExtractor
+from image_recognition_msgs.msg import CategoryProbability, CategoricalDistribution, Recognition
+from image_recognition_msgs.srv import Recognize, RecognizeResponse
+from sensor_msgs.msg import RegionOfInterest
+
+
+class ColorExtractorNode:
+    def __init__(self, total_colors):
+        self._bridge = CvBridge()
+        self._color_extractor = ColorExtractor(total_colors)
+        self._extract_color_srv = rospy.Service('extract_color', Recognize, self._extract_color_srv)
+
+    def _extract_color_srv(self, req):
+        img = self._bridge.imgmsg_to_cv2(req.image)
+
+        try:
+            colors = self._color_extractor.recognize(img)
+        except RuntimeError as e:
+            raise rospy.ServiceException(e)
+
+        return RecognizeResponse(
+            recognitions=[Recognition(
+                categorical_distribution=CategoricalDistribution(
+                    unknown_probability=0.0,
+                    probabilities=[CategoryProbability(label=color, probability=1.0) for color in colors]
+                ),
+                roi=RegionOfInterest(width=req.image.width, height=req.image.height)
+            )]
+        )
+
+
+if __name__ == "__main__":
+    rospy.init_node('color_extractor')
+    try:
+        ColorExtractorNode(rospy.get_param('~total_colors', 3))
+        rospy.spin()
+    except Exception as e:
+        rospy.logfatal("Exception: %s" % e)
+        rospy.sleep(0.5)  # Some time to send the fatal message
+        raise

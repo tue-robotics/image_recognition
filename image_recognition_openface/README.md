@@ -60,11 +60,11 @@ You will see that the result of the detection will prompt in a dialog combo box.
 
 Command line interface to test the detection / recognition based on an image:
 
-    usage: get_face_recognition [-h] -i IMAGE [-k ALIGN_PATH] [-s NET_PATH] [-v]
+    usage: get_face_recognition IMAGE [-k ALIGN_PATH] [-s NET_PATH] [-v]
 
 Run the command on an example image:
 
-    rosrun image_recognition_openface get_face_recognition -i `rospack find image_recognition_openface`/doc/example.png
+    rosrun image_recognition_openface get_face_recognition `rospack find image_recognition_openface`/doc/example.png
 
 This will lookup this image in the image_recognition_openface/doc folder and perform recognitions
 

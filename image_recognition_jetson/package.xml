@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>image_recognition_jetson</name>
-  <version>0.0.0</version>
+  <version>0.0.5</version>
   <description>The image_recognition_jetson package</description>
 
   <maintainer email="reinzor@gmail.com">Rein Appeldoorn</maintainer>
