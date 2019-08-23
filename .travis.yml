@@ -5,7 +5,7 @@ dist: xenial
 matrix:
   include:
   - name: "Kinetic"
-    env: BEFORE_SCRIPT="pip install pip --upgrade" ROS_DISTRO=kinetic
+    env: BEFORE_SCRIPT="pip install pip setuptools --upgrade && hash -r" ROS_DISTRO=kinetic
 
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
