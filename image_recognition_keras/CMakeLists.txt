@@ -7,6 +7,12 @@ catkin_python_setup()
 
 catkin_package()
 
+install(PROGRAMS
+  scripts/face_properties_node
+  scripts/get_face_properties
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 if (CATKIN_ENABLE_TESTING)
     # Test catkin lint
     find_program(CATKIN_LINT catkin_lint REQUIRED)
@@ -17,10 +23,3 @@ if (CATKIN_ENABLE_TESTING)
 
     catkin_add_nosetests(test)
 endif()
-
-install(PROGRAMS
-  scripts/face_properties_node
-  scripts/get_face_properties
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-

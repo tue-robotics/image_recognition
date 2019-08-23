@@ -7,6 +7,11 @@ catkin_python_setup()
 
 catkin_package()
 
+install(PROGRAMS
+  scripts/classifier_metrics
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 if (CATKIN_ENABLE_TESTING)
     # Test catkin lint
     find_program(CATKIN_LINT catkin_lint REQUIRED)
@@ -15,8 +20,3 @@ if (CATKIN_ENABLE_TESTING)
       message(FATAL_ERROR "catkin_lint failed")
     endif()
 endif()
-
-install(PROGRAMS
-  scripts/classifier_metrics
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)

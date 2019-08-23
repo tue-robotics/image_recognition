@@ -42,15 +42,6 @@ add_dependencies(detect_net ${catkin_EXPORTED_TARGETS})
 add_executable(detect_net_ros src/detect_net_ros.cpp)
 target_link_libraries(detect_net_ros detect_net)
 
-if (CATKIN_ENABLE_TESTING)
-    # Test catkin lint
-    find_program(CATKIN_LINT catkin_lint REQUIRED)
-    execute_process(COMMAND "${CATKIN_LINT}" "-q" "-W2" "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE lint_result)
-    if(NOT ${lint_result} EQUAL 0)
-      message(FATAL_ERROR "catkin_lint failed")
-    endif()
-endif()
-
 install(TARGETS
   detect_net_ros
   detect_net
@@ -63,3 +54,12 @@ install(PROGRAMS
   scripts/install_jetson_inference.bash
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+if (CATKIN_ENABLE_TESTING)
+    # Test catkin lint
+    find_program(CATKIN_LINT catkin_lint REQUIRED)
+    execute_process(COMMAND "${CATKIN_LINT}" "-q" "-W2" "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE lint_result)
+    if(NOT ${lint_result} EQUAL 0)
+      message(FATAL_ERROR "catkin_lint failed")
+    endif()
+endif()
