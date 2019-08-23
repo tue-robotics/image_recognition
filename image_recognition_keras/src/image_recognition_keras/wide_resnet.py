@@ -2,13 +2,18 @@
 
 import logging
 import sys
+from packaging import version
 import numpy as np
 from keras.models import Model
 from keras.layers import Input, Activation, add, Dense, Flatten, Dropout
 from keras.layers.convolutional import Conv2D, AveragePooling2D
 from keras.layers.normalization import BatchNormalization
 from keras.regularizers import l2
-from keras import backend as K
+from keras import __version__ as kv
+if version.parse(kv) < version.parse("2.2.5"):
+    from keras import backend as K
+else
+    from keras.backend import common as K
 
 sys.setrecursionlimit(2 ** 20)
 np.random.seed(2 ** 10)
