@@ -5,7 +5,7 @@ dist: trusty
 matrix:
   include:
   - name: "Kinetic"
-    env: ROS_DISTRO=kinetic BEFORE_SCRIPT="pip install --upgrade pip && hash -r pip"
+    env: ROS_DISTRO=kinetic BEFORE_SCRIPT="pip install --upgrade pip enum34 && hash -r pip"
 
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
