@@ -18,6 +18,7 @@
   <exec_depend>python-keras-pip</exec_depend>
   <exec_depend>python-numpy</exec_depend>
   <exec_depend>python-opencv</exec_depend>
+  <exec_depend>python-packaging</exec_depend>
   <exec_depend>python-tensorflow-pip</exec_depend>
   <exec_depend>rospy</exec_depend>
 </package>
