@@ -35,9 +35,11 @@ catkin_package(
   CATKIN_DEPENDS message_runtime sensor_msgs
 )
 
-# Test catkin lint
-find_program(CATKIN_LINT catkin_lint REQUIRED)
-execute_process(COMMAND "${CATKIN_LINT}" "-q" "-W2" "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE lint_result)
-if(NOT ${lint_result} EQUAL 0)
-  message(FATAL_ERROR "catkin_lint failed")
+if (CATKIN_ENABLE_TESTING)
+    # Test catkin lint
+    find_program(CATKIN_LINT catkin_lint REQUIRED)
+    execute_process(COMMAND "${CATKIN_LINT}" "-q" "-W2" "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE lint_result)
+    if(NOT ${lint_result} EQUAL 0)
+      message(FATAL_ERROR "catkin_lint failed")
+    endif()
 endif()
