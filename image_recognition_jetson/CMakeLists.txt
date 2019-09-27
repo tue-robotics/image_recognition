@@ -22,6 +22,7 @@ catkin_package(
 
 include_directories(${catkin_INCLUDE_DIRS})
 
+find_package(jetson-utils)
 find_package(jetson-inference)
 if(jetson-inference_FOUND) # If we are on Jetson, use the actual impl, otherwise a mock
     find_package(CUDA REQUIRED)
