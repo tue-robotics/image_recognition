@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(image_recognition_openpose)
+project(image_recognition_color_extractor)
 
 find_package(catkin REQUIRED)
 
@@ -8,8 +8,7 @@ catkin_python_setup()
 catkin_package()
 
 install(PROGRAMS
-  scripts/detect_poses
-  scripts/openpose_node
+  scripts/color_extractor_node
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
