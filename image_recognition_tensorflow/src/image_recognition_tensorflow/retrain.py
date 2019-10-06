@@ -26,7 +26,7 @@ def mkdir_p(path):
 
 
 def main(image_dir, output_dir, steps, batch,
-         tfhub_module="https://tfhub.dev/google/imagenet/inception_v3/feature_vector/1",
+         tfhub_module="https://tfhub.dev/google/imagenet/inception_v3/feature_vector/3",
          flip_left_right=False, random_crop=0, random_scale=0, random_brightness=0):
     tf.app.flags.FLAGS.image_dir = image_dir
 
