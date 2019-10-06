@@ -27,12 +27,12 @@ class ObjectRecognizer(object):
         self.output_tensor_name = output_tensor
 
         with open(graph_path, 'rb') as f:
-            graph_def = tf.GraphDef()
+            graph_def = tf.compat.v1.GraphDef()
             graph_def.ParseFromString(f.read())
             _ = tf.import_graph_def(graph_def, name='')
-            tf.get_default_graph().finalize()  # Make the graph read-only, safe to use from any thread
+            tf.compat.v1.get_default_graph().finalize()  # Make the graph read-only, safe to use from any thread
 
-        self.session = tf.Session(graph=tf.get_default_graph())
+        self.session = tf.compat.v1.Session(graph=tf.compat.v1.get_default_graph())
 
         # This is only done to 'statically' check that the given tensor actually exists.
         # Not really statically but directly at startup, not when you need a first recognition
