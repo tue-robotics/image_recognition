@@ -8,7 +8,7 @@ from image_recognition_util.image_reader import read_annotated
 
 
 def evaluate_classifier(graph_path, labels_path, annotated_dir, output,
-                        input_tensor="Cast:0", output_tensor="final_result:0"):
+                        input_tensor="Placeholder:0", output_tensor="final_result:0"):
     """
     Evaluate a given classifier against a directory of annotated images.
     The script will output a .csv that can be evaluated.
