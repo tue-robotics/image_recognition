@@ -114,7 +114,7 @@ import numpy as np
 from six.moves import urllib
 import tensorflow as tf
 
-from tensorflow.contrib.quantize.python import quant_ops
+from image_recognition_tensorflow.MovingAvgQuantize import MovingAvgQuantize
 from tensorflow.python.framework import graph_util
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.platform import gfile
@@ -123,10 +123,10 @@ from tensorflow.python.util import compat
 
 import struct
 
-FLAGS = tf.app.flags.FLAGS
+FLAGS = tf.compat.v1.app.flags.FLAGS
 
 # Architecture
-tf.app.flags.DEFINE_string('architecture', 'inception_v3',
+tf.compat.v1.app.flags.DEFINE_string('architecture', 'inception_v3',
 """Which model architecture to use. 'inception_v3' is the most accurate, but"""
 """the slowest. For faster or smaller models, chose a MobileNet with the"""
 """form 'mobilenet_<parameter size>_<input_size>[_quantized]'. For example,"""
@@ -137,72 +137,72 @@ tf.app.flags.DEFINE_string('architecture', 'inception_v3',
 """for more information on Mobilenet.""")
 
 # Input and output file flags.
-tf.app.flags.DEFINE_string('image_dir', '',
+tf.compat.v1.app.flags.DEFINE_string('image_dir', '',
                            """Path to folders of labeled images.""")
-tf.app.flags.DEFINE_string('output_graph', '/tmp/output_graph.pb',
+tf.compat.v1.app.flags.DEFINE_string('output_graph', '/tmp/output_graph.pb',
                            """Where to save the trained graph.""")
-tf.app.flags.DEFINE_string('output_labels', '/tmp/output_labels.txt',
+tf.compat.v1.app.flags.DEFINE_string('output_labels', '/tmp/output_labels.txt',
                            """Where to save the trained graph's labels.""")
-tf.app.flags.DEFINE_string('summaries_dir', '/tmp/retrain_logs',
+tf.compat.v1.app.flags.DEFINE_string('summaries_dir', '/tmp/retrain_logs',
                           """Where to save summary logs for TensorBoard.""")
-tf.app.flags.DEFINE_string('intermediate_output_graphs_dir','/tmp/intermediate_graph/',
+tf.compat.v1.app.flags.DEFINE_string('intermediate_output_graphs_dir','/tmp/intermediate_graph/',
                           """Where to save the intermediate graphs.""")
-tf.app.flags.DEFINE_integer('intermediate_store_frequency', 0,
+tf.compat.v1.app.flags.DEFINE_integer('intermediate_store_frequency', 0,
     """How many steps to store intermediate graph. If "0" then will not store.""")
 
 # Details of the training configuration.
-tf.app.flags.DEFINE_integer('how_many_training_steps', 4000,
+tf.compat.v1.app.flags.DEFINE_integer('how_many_training_steps', 4000,
                             """How many training steps to run before ending.""")
-tf.app.flags.DEFINE_float('learning_rate', 0.01,
+tf.compat.v1.app.flags.DEFINE_float('learning_rate', 0.01,
                           """How large a learning rate to use when training.""")
-tf.app.flags.DEFINE_integer(
+tf.compat.v1.app.flags.DEFINE_integer(
     'testing_percentage', 10,
     """What percentage of images to use as a test set.""")
-tf.app.flags.DEFINE_integer(
+tf.compat.v1.app.flags.DEFINE_integer(
     'validation_percentage', 10,
     """What percentage of images to use as a validation set.""")
-tf.app.flags.DEFINE_integer('eval_step_interval', 10,
+tf.compat.v1.app.flags.DEFINE_integer('eval_step_interval', 10,
                             """How often to evaluate the training results.""")
-tf.app.flags.DEFINE_integer('train_batch_size', 100,
+tf.compat.v1.app.flags.DEFINE_integer('train_batch_size', 100,
                             """How many images to train on at a time.""")
-tf.app.flags.DEFINE_integer('test_batch_size', 500,
+tf.compat.v1.app.flags.DEFINE_integer('test_batch_size', 500,
                             """How many images to test on at a time. This"""
                             """ test set is only used infrequently to verify"""
                             """ the overall accuracy of the model.""")
-tf.app.flags.DEFINE_integer(
+tf.compat.v1.app.flags.DEFINE_integer(
     'validation_batch_size', 100,
     """How many images to use in an evaluation batch. This validation set is"""
     """ used much more often than the test set, and is an early indicator of"""
     """ how accurate the model is during training.""")
 
-tf.app.flags.DEFINE_boolean('print_misclassified_test_images', False,
+tf.compat.v1.app.flags.DEFINE_boolean('print_misclassified_test_images', False,
     """Whether to print out a list of all misclassified test images.""")
 
 # File-system cache locations.
-tf.app.flags.DEFINE_string('model_dir', '/tmp/imagenet',
+tf.compat.v1.app.flags.DEFINE_string('model_dir', '/tmp/imagenet',
                            """Path to classify_image_graph_def.pb, """
                            """imagenet_synset_to_human_label_map.txt, and """
                            """imagenet_2012_challenge_label_map_proto.pbtxt.""")
-tf.app.flags.DEFINE_string(
+tf.compat.v1.app.flags.DEFINE_string(
     'bottleneck_dir', '/tmp/bottleneck',
     """Path to cache bottleneck layer values as files.""")
-tf.app.flags.DEFINE_string('final_tensor_name', 'final_result',
+tf.compat.v1.app.flags.DEFINE_string('final_tensor_name', 'final_result',
                            """The name of the output classification layer in"""
                            """ the retrained graph.""")
 
 # Controls the distortions used during training.
-tf.app.flags.DEFINE_boolean(
+tf.compat.v1.app.flags.DEFINE_boolean(
     'flip_left_right', False,
     """Whether to randomly flip half of the training images horizontally.""")
-tf.app.flags.DEFINE_integer(
+tf.compat.v1.app.flags.DEFINE_integer(
     'random_crop', 0,
     """A percentage determining how much of a margin to randomly crop off the"""
     """ training images.""")
-tf.app.flags.DEFINE_integer(
+tf.compat.v1.app.flags.DEFINE_integer(
     'random_scale', 0,
     """A percentage determining how much to randomly scale up the size of the"""
     """ training images by.""")
-tf.app.flags.DEFINE_integer(
+tf.compat.v1.app.flags.DEFINE_integer(
     'random_brightness', 0,
     """A percentage determining how much to randomly multiply the training"""
     """ image input pixels up or down by.""")
@@ -231,7 +231,7 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
     into training, testing, and validation sets within each label.
   """
   if not gfile.Exists(image_dir):
-    tf.logging.error("Image directory '" + image_dir + "' not found.")
+    tf.compat.v1.logging.error("Image directory '" + image_dir + "' not found.")
     return None
   result = {}
   sub_dirs = [x[0] for x in gfile.Walk(image_dir)]
@@ -246,18 +246,18 @@ def create_image_lists(image_dir, testing_percentage, validation_percentage):
     dir_name = os.path.basename(sub_dir)
     if dir_name == image_dir:
       continue
-    tf.logging.info("Looking for images in '" + dir_name + "'")
+    tf.compat.v1.logging.info("Looking for images in '" + dir_name + "'")
     for extension in extensions:
       file_glob = os.path.join(image_dir, dir_name, '*.' + extension)
       file_list.extend(gfile.Glob(file_glob))
     if not file_list:
-      tf.logging.warning('No files found')
+      tf.compat.v1.logging.warning('No files found')
       continue
     if len(file_list) < 20:
-      tf.logging.warning(
+      tf.compat.v1.logging.warning(
           'WARNING: Folder has less than 20 images, which may cause issues.')
     elif len(file_list) > MAX_NUM_IMAGES_PER_CLASS:
-      tf.logging.warning(
+      tf.compat.v1.logging.warning(
           'WARNING: Folder {} has more than {} images. Some images will '
           'never be selected.'.format(dir_name, MAX_NUM_IMAGES_PER_CLASS))
     label_name = re.sub(r'[^a-z0-9_]+', ' ', dir_name.lower())
@@ -325,13 +325,13 @@ def get_image_path(image_lists, label_name, index, image_dir, category):
 
   """
   if label_name not in image_lists:
-    tf.logging.fatal('Label does not exist %s.', label_name)
+    tf.compat.v1.logging.fatal('Label does not exist %s.', label_name)
   label_lists = image_lists[label_name]
   if category not in label_lists:
-    tf.logging.fatal('Category does not exist %s.', category)
+    tf.compat.v1.logging.fatal('Category does not exist %s.', category)
   category_list = label_lists[category]
   if not category_list:
-    tf.logging.fatal('Label %s has no images in the category %s.',
+    tf.compat.v1.logging.fatal('Label %s has no images in the category %s.',
                      label_name, category)
   mod_index = index % len(category_list)
   base_name = category_list[mod_index]
@@ -375,7 +375,7 @@ def create_model_graph(model_info):
     model_path = os.path.join(FLAGS.model_dir, model_info['model_file_name'])
     print('Model path: ', model_path)
     with gfile.FastGFile(model_path, 'rb') as f:
-      graph_def = tf.GraphDef()
+      graph_def = tf.compat.v1.GraphDef()
       graph_def.ParseFromString(f.read())
       bottleneck_tensor, resized_input_tensor = (tf.import_graph_def(
           graph_def,
@@ -463,11 +463,11 @@ def create_bottleneck_file(bottleneck_path, image_lists, label_name, index,
                            decoded_image_tensor, resized_input_tensor,
                            bottleneck_tensor):
   """Create a single bottleneck file."""
-  tf.logging.info('Creating bottleneck at ' + bottleneck_path)
+  tf.compat.v1.logging.info('Creating bottleneck at ' + bottleneck_path)
   image_path = get_image_path(image_lists, label_name, index,
                               image_dir, category)
   if not gfile.Exists(image_path):
-    tf.logging.fatal('File does not exist %s', image_path)
+    tf.compat.v1.logging.fatal('File does not exist %s', image_path)
   image_data = gfile.FastGFile(image_path, 'rb').read()
   try:
     bottleneck_values = run_bottleneck_on_image(
@@ -527,7 +527,7 @@ def get_or_create_bottleneck(sess, image_lists, label_name, index, image_dir,
   try:
     bottleneck_values = [float(x) for x in bottleneck_string.split(',')]
   except ValueError:
-    tf.logging.warning('Invalid float found, recreating bottleneck')
+    tf.compat.v1.logging.warning('Invalid float found, recreating bottleneck')
     did_hit_error = True
   if did_hit_error:
     create_bottleneck_file(bottleneck_path, image_lists, label_name, index,
@@ -582,7 +582,7 @@ def cache_bottlenecks(sess, image_lists, image_dir, bottleneck_dir,
 
         how_many_bottlenecks += 1
         if how_many_bottlenecks % 100 == 0:
-          tf.logging.info(
+          tf.compat.v1.logging.info(
               str(how_many_bottlenecks) + ' bottleneck files created.')
 
 
@@ -689,7 +689,7 @@ def get_random_distorted_bottlenecks(
     image_path = get_image_path(image_lists, label_name, image_index, image_dir,
                                 category)
     if not gfile.Exists(image_path):
-      tf.logging.fatal('File does not exist %s', image_path)
+      tf.compat.v1.logging.fatal('File does not exist %s', image_path)
     jpeg_data = gfile.FastGFile(image_path, 'rb').read()
     # Note that we materialize the distorted_image_data as a numpy array before
     # sending running inference on the image. This involves 2 memory copies and
@@ -782,14 +782,14 @@ def add_input_distortions(flip_left_right, random_crop, random_scale,
     The jpeg input layer and the distorted result tensor.
   """
 
-  jpeg_data = tf.placeholder(tf.string, name='DistortJPGInput')
+  jpeg_data = tf.compat.v1.placeholder(tf.string, name='DistortJPGInput')
   decoded_image = tf.image.decode_jpeg(jpeg_data, channels=input_depth)
   decoded_image_as_float = tf.cast(decoded_image, dtype=tf.float32)
   decoded_image_4d = tf.expand_dims(decoded_image_as_float, 0)
   margin_scale = 1.0 + (random_crop / 100.0)
   resize_scale = 1.0 + (random_scale / 100.0)
   margin_scale_value = tf.constant(margin_scale)
-  resize_scale_value = tf.random_uniform(tensor_shape.scalar(),
+  resize_scale_value = tf.random.uniform(tensor_shape.scalar(),
                                          minval=1.0,
                                          maxval=resize_scale)
   scale_value = tf.multiply(margin_scale_value, resize_scale_value)
@@ -797,10 +797,10 @@ def add_input_distortions(flip_left_right, random_crop, random_scale,
   precrop_height = tf.multiply(scale_value, input_height)
   precrop_shape = tf.stack([precrop_height, precrop_width])
   precrop_shape_as_int = tf.cast(precrop_shape, dtype=tf.int32)
-  precropped_image = tf.image.resize_bilinear(decoded_image_4d,
-                                              precrop_shape_as_int)
-  precropped_image_3d = tf.squeeze(precropped_image, squeeze_dims=[0])
-  cropped_image = tf.random_crop(precropped_image_3d,
+  precropped_image = tf.image.resize(decoded_image_4d,
+                                              precrop_shape_as_int, method=tf.image.ResizeMethod.BILINEAR)
+  precropped_image_3d = tf.squeeze(precropped_image, axis=[0])
+  cropped_image = tf.image.random_crop(precropped_image_3d,
                                  [input_height, input_width, input_depth])
   if flip_left_right:
     flipped_image = tf.image.random_flip_left_right(cropped_image)
@@ -808,7 +808,7 @@ def add_input_distortions(flip_left_right, random_crop, random_scale,
     flipped_image = cropped_image
   brightness_min = 1.0 - (random_brightness / 100.0)
   brightness_max = 1.0 + (random_brightness / 100.0)
-  brightness_value = tf.random_uniform(tensor_shape.scalar(),
+  brightness_value = tf.random.uniform(tensor_shape.scalar(),
                                        minval=brightness_min,
                                        maxval=brightness_max)
   brightened_image = tf.multiply(flipped_image, brightness_value)
@@ -820,15 +820,15 @@ def add_input_distortions(flip_left_right, random_crop, random_scale,
 
 def variable_summaries(var):
   """Attach a lot of summaries to a Tensor (for TensorBoard visualization)."""
-  with tf.name_scope('summaries'):
-    mean = tf.reduce_mean(var)
-    tf.summary.scalar('mean', mean)
-    with tf.name_scope('stddev'):
-      stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
-    tf.summary.scalar('stddev', stddev)
-    tf.summary.scalar('max', tf.reduce_max(var))
-    tf.summary.scalar('min', tf.reduce_min(var))
-    tf.summary.histogram('histogram', var)
+  with tf.compat.v1.name_scope('summaries'):
+    mean = tf.reduce_mean(input_tensor=var)
+    tf.compat.v1.summary.scalar('mean', mean)
+    with tf.compat.v1.name_scope('stddev'):
+      stddev = tf.sqrt(tf.reduce_mean(input_tensor=tf.square(var - mean)))
+    tf.compat.v1.summary.scalar('stddev', stddev)
+    tf.compat.v1.summary.scalar('max', tf.reduce_max(input_tensor=var))
+    tf.compat.v1.summary.scalar('min', tf.reduce_min(input_tensor=var))
+    tf.compat.v1.summary.histogram('histogram', var)
 
 
 def add_final_training_ops(class_count, final_tensor_name, bottleneck_tensor,
@@ -855,43 +855,43 @@ def add_final_training_ops(class_count, final_tensor_name, bottleneck_tensor,
     The tensors for the training and cross entropy results, and tensors for the
     bottleneck input and ground truth input.
   """
-  with tf.name_scope('input'):
-    bottleneck_input = tf.placeholder_with_default(
+  with tf.compat.v1.name_scope('input'):
+    bottleneck_input = tf.compat.v1.placeholder_with_default(
         bottleneck_tensor,
         shape=[None, bottleneck_tensor_size],
         name='BottleneckInputPlaceholder')
 
-    ground_truth_input = tf.placeholder(
+    ground_truth_input = tf.compat.v1.placeholder(
         tf.int64, [None], name='GroundTruthInput')
 
   # Organizing the following ops as `final_training_ops` so they're easier
   # to see in TensorBoard
   layer_name = 'final_training_ops'
-  with tf.name_scope(layer_name):
-    with tf.name_scope('weights'):
-      initial_value = tf.truncated_normal(
+  with tf.compat.v1.name_scope(layer_name):
+    with tf.compat.v1.name_scope('weights'):
+      initial_value = tf.random.truncated_normal(
           [bottleneck_tensor_size, class_count], stddev=0.001)
       layer_weights = tf.Variable(initial_value, name='final_weights')
       if quantize_layer:
-        quantized_layer_weights = quant_ops.MovingAvgQuantize(
+        quantized_layer_weights = MovingAvgQuantize(
             layer_weights, is_training=True)
         variable_summaries(quantized_layer_weights)
 
       variable_summaries(layer_weights)
-    with tf.name_scope('biases'):
+    with tf.compat.v1.name_scope('biases'):
       layer_biases = tf.Variable(tf.zeros([class_count]), name='final_biases')
       if quantize_layer:
-        quantized_layer_biases = quant_ops.MovingAvgQuantize(
+        quantized_layer_biases = MovingAvgQuantize(
             layer_biases, is_training=True)
         variable_summaries(quantized_layer_biases)
 
       variable_summaries(layer_biases)
 
-    with tf.name_scope('Wx_plus_b'):
+    with tf.compat.v1.name_scope('Wx_plus_b'):
       if quantize_layer:
         logits = tf.matmul(bottleneck_input,
                            quantized_layer_weights) + quantized_layer_biases
-        logits = quant_ops.MovingAvgQuantize(
+        logits = MovingAvgQuantize(
             logits,
             init_min=-32.0,
             init_max=32.0,
@@ -899,23 +899,23 @@ def add_final_training_ops(class_count, final_tensor_name, bottleneck_tensor,
             num_bits=8,
             narrow_range=False,
             ema_decay=0.5)
-        tf.summary.histogram('pre_activations', logits)
+        tf.compat.v1.summary.histogram('pre_activations', logits)
       else:
         logits = tf.matmul(bottleneck_input, layer_weights) + layer_biases
-        tf.summary.histogram('pre_activations', logits)
+        tf.compat.v1.summary.histogram('pre_activations', logits)
 
   final_tensor = tf.nn.softmax(logits, name=final_tensor_name)
 
-  tf.summary.histogram('activations', final_tensor)
+  tf.compat.v1.summary.histogram('activations', final_tensor)
 
-  with tf.name_scope('cross_entropy'):
-    cross_entropy_mean = tf.losses.sparse_softmax_cross_entropy(
+  with tf.compat.v1.name_scope('cross_entropy'):
+    cross_entropy_mean = tf.compat.v1.losses.sparse_softmax_cross_entropy(
         labels=ground_truth_input, logits=logits)
 
-  tf.summary.scalar('cross_entropy', cross_entropy_mean)
+  tf.compat.v1.summary.scalar('cross_entropy', cross_entropy_mean)
 
-  with tf.name_scope('train'):
-    optimizer = tf.train.GradientDescentOptimizer(FLAGS.learning_rate)
+  with tf.compat.v1.name_scope('train'):
+    optimizer = tf.compat.v1.train.GradientDescentOptimizer(FLAGS.learning_rate)
     train_step = optimizer.minimize(cross_entropy_mean)
 
   return (train_step, cross_entropy_mean, bottleneck_input, ground_truth_input,
@@ -933,13 +933,13 @@ def add_evaluation_step(result_tensor, ground_truth_tensor):
   Returns:
     Tuple of (evaluation step, prediction).
   """
-  with tf.name_scope('accuracy'):
-    with tf.name_scope('correct_prediction'):
-      prediction = tf.argmax(result_tensor, 1)
+  with tf.compat.v1.name_scope('accuracy'):
+    with tf.compat.v1.name_scope('correct_prediction'):
+      prediction = tf.argmax(input=result_tensor, axis=1)
       correct_prediction = tf.equal(prediction, ground_truth_tensor)
-    with tf.name_scope('accuracy'):
-      evaluation_step = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-  tf.summary.scalar('accuracy', evaluation_step)
+    with tf.compat.v1.name_scope('accuracy'):
+      evaluation_step = tf.reduce_mean(input_tensor=tf.cast(correct_prediction, tf.float32))
+  tf.compat.v1.summary.scalar('accuracy', evaluation_step)
   return evaluation_step, prediction
 
 
@@ -954,9 +954,9 @@ def save_graph_to_file(sess, graph, graph_file_name):
 
 def prepare_file_system():
   # Setup the directory we'll write summaries to for TensorBoard
-  if tf.gfile.Exists(FLAGS.summaries_dir):
-    tf.gfile.DeleteRecursively(FLAGS.summaries_dir)
-  tf.gfile.MakeDirs(FLAGS.summaries_dir)
+  if tf.io.gfile.exists(FLAGS.summaries_dir):
+    tf.io.gfile.rmtree(FLAGS.summaries_dir)
+  tf.io.gfile.makedirs(FLAGS.summaries_dir)
   if FLAGS.intermediate_store_frequency > 0:
     ensure_dir_exists(FLAGS.intermediate_output_graphs_dir)
   return
@@ -997,13 +997,13 @@ def create_model_info(architecture):
   elif architecture.startswith('mobilenet_'):
     parts = architecture.split('_')
     if len(parts) != 3 and len(parts) != 4:
-      tf.logging.error("Couldn't understand architecture name '%s'",
+      tf.compat.v1.logging.error("Couldn't understand architecture name '%s'",
                        architecture)
       return None
     version_string = parts[1]
     if (version_string != '1.0' and version_string != '0.75' and
         version_string != '0.50' and version_string != '0.25'):
-      tf.logging.error(
+      tf.compat.v1.logging.error(
           """"The Mobilenet version should be '1.0', '0.75', '0.50', or '0.25',
   but found '%s' for architecture '%s'""",
           version_string, architecture)
@@ -1011,7 +1011,7 @@ def create_model_info(architecture):
     size_string = parts[2]
     if (size_string != '224' and size_string != '192' and
         size_string != '160' and size_string != '128'):
-      tf.logging.error(
+      tf.compat.v1.logging.error(
           """The Mobilenet input size should be '224', '192', '160', or '128',
  but found '%s' for architecture '%s'""",
           size_string, architecture)
@@ -1020,7 +1020,7 @@ def create_model_info(architecture):
       is_quantized = False
     else:
       if parts[3] != 'quantized':
-        tf.logging.error(
+        tf.compat.v1.logging.error(
             "Couldn't understand architecture suffix '%s' for '%s'", parts[3],
             architecture)
         return None
@@ -1051,7 +1051,7 @@ def create_model_info(architecture):
     input_mean = 127.5
     input_std = 127.5
   else:
-    tf.logging.error("Couldn't understand architecture name '%s'", architecture)
+    tf.compat.v1.logging.error("Couldn't understand architecture name '%s'", architecture)
     raise ValueError('Unknown architecture', architecture)
 
   return {
@@ -1084,14 +1084,14 @@ def add_jpeg_decoding(input_width, input_height, input_depth, input_mean,
     Tensors for the node to feed JPEG data into, and the output of the
       preprocessing steps.
   """
-  jpeg_data = tf.placeholder(tf.string, name='DecodeJPGInput')
+  jpeg_data = tf.compat.v1.placeholder(tf.string, name='DecodeJPGInput')
   decoded_image = tf.image.decode_jpeg(jpeg_data, channels=input_depth)
   decoded_image_as_float = tf.cast(decoded_image, dtype=tf.float32)
   decoded_image_4d = tf.expand_dims(decoded_image_as_float, 0)
   resize_shape = tf.stack([input_height, input_width])
   resize_shape_as_int = tf.cast(resize_shape, dtype=tf.int32)
-  resized_image = tf.image.resize_bilinear(decoded_image_4d,
-                                           resize_shape_as_int)
+  resized_image = tf.image.resize(decoded_image_4d,
+                                           resize_shape_as_int, method=tf.image.ResizeMethod.BILINEAR)
   offset_image = tf.subtract(resized_image, input_mean)
   mul_image = tf.multiply(offset_image, 1.0 / input_std)
   return jpeg_data, mul_image
@@ -1100,7 +1100,7 @@ def add_jpeg_decoding(input_width, input_height, input_depth, input_mean,
 def main(_):
   # Needed to make sure the logging output is visible.
   # See https://github.com/tensorflow/tensorflow/issues/3047
-  tf.logging.set_verbosity(tf.logging.INFO)
+  tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
 
   # Prepare necessary directories that can be used during training
   prepare_file_system()
@@ -1108,7 +1108,7 @@ def main(_):
   # Gather information about the model architecture we'll be using.
   model_info = create_model_info(FLAGS.architecture)
   if not model_info:
-    tf.logging.error('Did not recognize architecture flag')
+    tf.compat.v1.logging.error('Did not recognize architecture flag')
     return -1
 
   # Set up the pre-trained graph.
@@ -1121,10 +1121,10 @@ def main(_):
                                    FLAGS.validation_percentage)
   class_count = len(image_lists.keys())
   if class_count == 0:
-    tf.logging.error('No valid folders of images found at ' + FLAGS.image_dir)
+    tf.compat.v1.logging.error('No valid folders of images found at ' + FLAGS.image_dir)
     return -1
   if class_count == 1:
-    tf.logging.error('Only one valid folder of images found at ' +
+    tf.compat.v1.logging.error('Only one valid folder of images found at ' +
                      FLAGS.image_dir +
                      ' - multiple classes are needed for classification.')
     return -1
@@ -1134,7 +1134,7 @@ def main(_):
       FLAGS.flip_left_right, FLAGS.random_crop, FLAGS.random_scale,
       FLAGS.random_brightness)
 
-  with tf.Session(graph=graph) as sess:
+  with tf.compat.v1.Session(graph=graph) as sess:
     # Set up the image decoding sub-graph.
     jpeg_data_tensor, decoded_image_tensor = add_jpeg_decoding(
         model_info['input_width'], model_info['input_height'],
@@ -1168,15 +1168,15 @@ def main(_):
         final_tensor, ground_truth_input)
 
     # Merge all the summaries and write them out to the summaries_dir
-    merged = tf.summary.merge_all()
-    train_writer = tf.summary.FileWriter(FLAGS.summaries_dir + '/train',
+    merged = tf.compat.v1.summary.merge_all()
+    train_writer = tf.compat.v1.summary.FileWriter(FLAGS.summaries_dir + '/train',
                                          sess.graph)
 
-    validation_writer = tf.summary.FileWriter(
+    validation_writer = tf.compat.v1.summary.FileWriter(
         FLAGS.summaries_dir + '/validation')
 
     # Set up all our weights to their initial default values.
-    init = tf.global_variables_initializer()
+    init = tf.compat.v1.global_variables_initializer()
     sess.run(init)
 
     # Run the training for as many cycles as requested on the command line.
@@ -1211,9 +1211,9 @@ def main(_):
             [evaluation_step, cross_entropy],
             feed_dict={bottleneck_input: train_bottlenecks,
                        ground_truth_input: train_ground_truth})
-        tf.logging.info('%s: Step %d: Train accuracy = %.1f%%' %
+        tf.compat.v1.logging.info('%s: Step %d: Train accuracy = %.1f%%' %
                         (datetime.now(), i, train_accuracy * 100))
-        tf.logging.info('%s: Step %d: Cross entropy = %f' %
+        tf.compat.v1.logging.info('%s: Step %d: Cross entropy = %f' %
                         (datetime.now(), i, cross_entropy_value))
         validation_bottlenecks, validation_ground_truth, _ = (
             get_random_cached_bottlenecks(
@@ -1228,7 +1228,7 @@ def main(_):
             feed_dict={bottleneck_input: validation_bottlenecks,
                        ground_truth_input: validation_ground_truth})
         validation_writer.add_summary(validation_summary, i)
-        tf.logging.info('%s: Step %d: Validation accuracy = %.1f%% (N=%d)' %
+        tf.compat.v1.logging.info('%s: Step %d: Validation accuracy = %.1f%% (N=%d)' %
                         (datetime.now(), i, validation_accuracy * 100,
                          len(validation_bottlenecks)))
 
@@ -1239,7 +1239,7 @@ def main(_):
           and i > 0):
         intermediate_file_name = (FLAGS.intermediate_output_graphs_dir +
                                   'intermediate_' + str(i) + '.pb')
-        tf.logging.info('Save intermediate result to : ' +
+        tf.compat.v1.logging.info('Save intermediate result to : ' +
                         intermediate_file_name)
         save_graph_to_file(sess, graph, intermediate_file_name)
 
@@ -1255,14 +1255,14 @@ def main(_):
         [evaluation_step, prediction],
         feed_dict={bottleneck_input: test_bottlenecks,
                    ground_truth_input: test_ground_truth})
-    tf.logging.info('Final test accuracy = %.1f%% (N=%d)' %
+    tf.compat.v1.logging.info('Final test accuracy = %.1f%% (N=%d)' %
                     (test_accuracy * 100, len(test_bottlenecks)))
 
     if FLAGS.print_misclassified_test_images:
-      tf.logging.info('=== MISCLASSIFIED TEST IMAGES ===')
+      tf.compat.v1.logging.info('=== MISCLASSIFIED TEST IMAGES ===')
       for i, test_filename in enumerate(test_filenames):
         if predictions[i] != test_ground_truth[i]:
-          tf.logging.info('%70s  %s' %
+          tf.compat.v1.logging.info('%70s  %s' %
                           (test_filename,
                            list(image_lists.keys())[predictions[i]]))
 
@@ -1274,4 +1274,4 @@ def main(_):
 
 
 if __name__ == '__main__':
-  tf.app.run(main=main)
+  tf.compat.v1.app.run(main=main)
