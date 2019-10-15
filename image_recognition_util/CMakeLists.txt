@@ -21,6 +21,5 @@ if (CATKIN_ENABLE_TESTING)
       message(FATAL_ERROR "catkin_lint failed")
     endif()
 
-    find_package(rostest REQUIRED)
-    add_rostest(test/test_all.test)
+    catkin_add_nosetests(test/test_classification_score_matrix.py)
 endif()

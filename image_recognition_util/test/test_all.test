@@ -1,3 +1,0 @@
-<launch>
-    <test test-name="test_classification_score_matrix" pkg="image_recognition_util" type="test_classification_score_matrix.py" />
-</launch>
