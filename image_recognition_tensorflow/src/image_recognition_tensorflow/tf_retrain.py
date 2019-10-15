@@ -114,7 +114,7 @@ import numpy as np
 from six.moves import urllib
 import tensorflow as tf
 
-from tensorflow.contrib.quantize.python import quant_ops
+from image_recognition_tensorflow.MovingAvgQuantize import MovingAvgQuantize
 from tensorflow.python.framework import graph_util
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.platform import gfile
@@ -873,7 +873,7 @@ def add_final_training_ops(class_count, final_tensor_name, bottleneck_tensor,
           [bottleneck_tensor_size, class_count], stddev=0.001)
       layer_weights = tf.Variable(initial_value, name='final_weights')
       if quantize_layer:
-        quantized_layer_weights = quant_ops.MovingAvgQuantize(
+        quantized_layer_weights = MovingAvgQuantize(
             layer_weights, is_training=True)
         variable_summaries(quantized_layer_weights)
 
@@ -881,7 +881,7 @@ def add_final_training_ops(class_count, final_tensor_name, bottleneck_tensor,
     with tf.compat.v1.name_scope('biases'):
       layer_biases = tf.Variable(tf.zeros([class_count]), name='final_biases')
       if quantize_layer:
-        quantized_layer_biases = quant_ops.MovingAvgQuantize(
+        quantized_layer_biases = MovingAvgQuantize(
             layer_biases, is_training=True)
         variable_summaries(quantized_layer_biases)
 
@@ -891,7 +891,7 @@ def add_final_training_ops(class_count, final_tensor_name, bottleneck_tensor,
       if quantize_layer:
         logits = tf.matmul(bottleneck_input,
                            quantized_layer_weights) + quantized_layer_biases
-        logits = quant_ops.MovingAvgQuantize(
+        logits = MovingAvgQuantize(
             logits,
             init_min=-32.0,
             init_max=32.0,
