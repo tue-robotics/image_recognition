@@ -13,6 +13,7 @@
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>diagnostic_updater</exec_depend>
   <exec_depend>image_recognition_msgs</exec_depend>
+  <exec_depend>image_recognition_util</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
 
