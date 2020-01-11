@@ -1,11 +1,11 @@
 sudo: required
 language: generic
-dist: trusty
+dist: xenial
 
 matrix:
   include:
   - name: "Kinetic"
-    env: ROS_DISTRO=kinetic BEFORE_SCRIPT="pip install --upgrade pip enum34 pyasn1-modules && hash -r pip"
+    env: ROS_DISTRO=kinetic BEFORE_SCRIPT="pip install --upgrade pip && hash -r pip && pip install --upgrade enum34 pyasn1-modules tensorflow==2.0"
 
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
