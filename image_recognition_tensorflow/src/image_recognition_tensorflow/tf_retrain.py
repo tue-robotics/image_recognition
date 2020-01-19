@@ -184,8 +184,8 @@ tf.compat.v1.app.flags.DEFINE_string(
     'bottleneck_dir', '/tmp/bottleneck',
     """Path to cache bottleneck layer values as files.""")
 tf.compat.v1.app.flags.DEFINE_string('final_tensor_name', 'final_result',
-                           """The name of the output classification layer in"""
-                           """ the retrained graph.""")
+                                     """The name of the output classification layer in"""
+                                     """ the retrained graph.""")
 
 # Controls the distortions used during training.
 tf.compat.v1.app.flags.DEFINE_boolean(
@@ -346,7 +346,7 @@ def get_image_path(image_lists, label_name, index, image_dir, category):
   category_list = label_lists[category]
   if not category_list:
     tf.compat.v1.logging.fatal('Label %s has no images in the category %s.',
-                     label_name, category)
+                               label_name, category)
   mod_index = index % len(category_list)
   base_name = category_list[mod_index]
   sub_dir = label_lists['dir']
