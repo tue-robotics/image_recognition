@@ -447,7 +447,7 @@ def create_bottleneck_file(bottleneck_path, image_lists, label_name, index,
                               image_dir, category)
   if not gfile.Exists(image_path):
     tf.compat.v1.logging.fatal('File does not exist %s', image_path)
-  image_data = gfile.FastGFile(image_path, 'rb').read()
+  image_data = gfile.GFile(image_path, 'rb').read()
   try:
     bottleneck_values = run_bottleneck_on_image(
         sess, image_data, jpeg_data_tensor, decoded_image_tensor,
@@ -879,7 +879,7 @@ def add_final_retrain_ops(class_count, final_tensor_name, bottleneck_tensor,
     return None, None, bottleneck_input, ground_truth_input, final_tensor
 
   with tf.compat.v1.name_scope('cross_entropy'):
-    cross_entropy_mean = tf.losses.sparse_softmax_cross_entropy(
+    cross_entropy_mean = tf.compat.v1.losses.sparse_softmax_cross_entropy(
         labels=ground_truth_input, logits=logits)
 
   tf.compat.v1.summary.scalar('cross_entropy', cross_entropy_mean)
@@ -944,15 +944,15 @@ def run_final_eval(train_session, module_spec, class_count, image_lists,
           bottleneck_input: test_bottlenecks,
           ground_truth_input: test_ground_truth
       })
-  tf.logging.info('Final test accuracy = %.1f%% (N=%d)' %
-                  (test_accuracy * 100, len(test_bottlenecks)))
+  tf.compat.v1.logging.info('Final test accuracy = %.1f%% (N=%d)' %
+                            (test_accuracy * 100, len(test_bottlenecks)))
 
   if FLAGS.print_misclassified_test_images:
-    tf.logging.info('=== MISCLASSIFIED TEST IMAGES ===')
+    tf.compat.v1.logging.info('=== MISCLASSIFIED TEST IMAGES ===')
     for i, test_filename in enumerate(test_filenames):
       if predictions[i] != test_ground_truth[i]:
-        tf.logging.info('%70s  %s' % (test_filename,
-                                      list(image_lists.keys())[predictions[i]]))
+        tf.compat.v1.logging.info('%70s  %s' % (test_filename,
+                                                list(image_lists.keys())[predictions[i]]))
 
 
 def build_eval_session(module_spec, class_count):
@@ -970,7 +970,7 @@ def build_eval_session(module_spec, class_count):
   eval_graph, bottleneck_tensor, resized_input_tensor, wants_quantization = (
       create_module_graph(module_spec))
 
-  eval_sess = tf.Session(graph=eval_graph)
+  eval_sess = tf.compat.v1.Session(graph=eval_graph)
   with eval_graph.as_default():
     # Add the new layer for exporting.
     (_, _, bottleneck_input,
@@ -980,7 +980,7 @@ def build_eval_session(module_spec, class_count):
 
     # Now we need to restore the values from the training graph to the eval
     # graph.
-    tf.train.Saver().restore(eval_sess, CHECKPOINT_NAME)
+    tf.compat.v1.train.Saver().restore(eval_sess, CHECKPOINT_NAME)
 
     evaluation_step, prediction = add_evaluation_step(final_tensor,
                                                       ground_truth_input)
@@ -994,7 +994,7 @@ def save_graph_to_file(graph_file_name, module_spec, class_count):
   sess, _, _, _, _, _ = build_eval_session(module_spec, class_count)
   graph = sess.graph
 
-  output_graph_def = tf.graph_util.convert_variables_to_constants(
+  output_graph_def = tf.compat.v1.graph_util.convert_variables_to_constants(
       sess, graph.as_graph_def(), [FLAGS.final_tensor_name])
 
   with gfile.GFile(graph_file_name, 'wb') as f:
@@ -1048,12 +1048,12 @@ def export_model(module_spec, class_count, saved_model_dir):
   # The SavedModel should hold the eval graph.
   sess, in_image, _, _, _, _ = build_eval_session(module_spec, class_count)
   with sess.graph.as_default() as graph:
-    tf.saved_model.simple_save(
+    tf.compat.v1.saved_model.simple_save(
         sess,
         saved_model_dir,
         inputs={'image': in_image},
         outputs={'prediction': graph.get_tensor_by_name('final_result:0')},
-        legacy_init_op=tf.group(tf.tables_initializer(), name='legacy_init_op')
+        legacy_init_op=tf.group(tf.compat.v1.tables_initializer(), name='legacy_init_op')
     )
 
 
@@ -1102,7 +1102,7 @@ def main(_):
   with tf.compat.v1.Session(graph=graph) as sess:
     # Initialize all weights: for the module to their pretrained values,
     # and for the newly added retraining layer to random initial values.
-    init = tf.global_variables_initializer()
+    init = tf.compat.v1.global_variables_initializer()
     sess.run(init)
 
     # Set up the image decoding sub-graph.
@@ -1128,14 +1128,14 @@ def main(_):
     # Merge all the summaries and write them out to the summaries_dir
     merged = tf.compat.v1.summary.merge_all()
     train_writer = tf.compat.v1.summary.FileWriter(FLAGS.summaries_dir + '/train',
-                                         sess.graph)
+                                                   sess.graph)
 
     validation_writer = tf.compat.v1.summary.FileWriter(
         FLAGS.summaries_dir + '/validation')
 
     # Create a train saver that is used to restore values into an eval graph
     # when exporting models.
-    train_saver = tf.train.Saver()
+    train_saver = tf.compat.v1.train.Saver()
 
     # Run the training for as many cycles as requested on the command line.
     for i in range(FLAGS.how_many_training_steps):
@@ -1204,7 +1204,7 @@ def main(_):
         intermediate_file_name = (FLAGS.intermediate_output_graphs_dir +
                                   'intermediate_' + str(i) + '.pb')
         tf.compat.v1.logging.info('Save intermediate result to : ' +
-                        intermediate_file_name)
+                                  intermediate_file_name)
         save_graph_to_file(intermediate_file_name, module_spec,
                            class_count)
 
@@ -1219,9 +1219,9 @@ def main(_):
 
     # Write out the trained graph and labels with the weights stored as
     # constants.
-    tf.logging.info('Save final result to : ' + FLAGS.output_graph)
+    tf.compat.v1.logging.info('Save final result to : ' + FLAGS.output_graph)
     if wants_quantization:
-      tf.logging.info('The model is instrumented for quantization with TF-Lite')
+      tf.compat.v1.logging.info('The model is instrumented for quantization with TF-Lite')
     save_graph_to_file(FLAGS.output_graph, module_spec, class_count)
     with gfile.GFile(FLAGS.output_labels, 'w') as f:
       f.write('\n'.join(image_lists.keys()) + '\n')
