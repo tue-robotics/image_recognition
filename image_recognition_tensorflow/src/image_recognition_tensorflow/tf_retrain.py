@@ -132,11 +132,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_hub as hub
 
-from image_recognition_tensorflow.MovingAvgQuantize import MovingAvgQuantize
-from tensorflow.python.framework import graph_util
-from tensorflow.python.framework import tensor_shape
 from tensorflow.python.platform import gfile
-from tensorflow.python.util import compat
 
 
 FLAGS = tf.compat.v1.app.flags.FLAGS
