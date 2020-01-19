@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import unittest
-import rostest
 from image_recognition_util.classification_score_matrix import ClassificationScoreMatrix
 
 
@@ -20,7 +19,5 @@ class TestClassificationScoreMatrix(unittest.TestCase):
         self.assertRaises(ValueError, classification_score_matrix.add_classification, "apple", [1.0, 2.0, 3.0])
 
 
-PKG = 'image_recognition_util'
-NAME = 'test_classification_score_matrix'
 if __name__ == '__main__':
-    rostest.unitrun(PKG, NAME, TestClassificationScoreMatrix)
+    unittest.main()

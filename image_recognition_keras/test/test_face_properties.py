@@ -34,3 +34,7 @@ def test_face_properties():
         is_female = gender[0] > 0.5
         assert abs(age - age_gt) < 5
         assert is_female == is_female_gt
+
+
+if __name__ == "__main__":
+    test_face_properties()
