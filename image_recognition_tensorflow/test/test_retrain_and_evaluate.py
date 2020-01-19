@@ -14,7 +14,7 @@ def test_retrain_and_evaluate():
     if not os.path.exists(models_path):
         os.makedirs(models_path)
 
-    main(os.path.join(assets_path, "training"), models_path, models_path, defaults.steps, defaults.batch)
+    main(os.path.join(assets_path, "training"), models_path, defaults.steps, defaults.batch)
     accuracy = evaluate_classifier(os.path.join(models_path, "output_graph.pb"),
                                    os.path.join(models_path, "output_labels.txt"),
                                    os.path.join(assets_path, "verification"), "/tmp/result.csv")
