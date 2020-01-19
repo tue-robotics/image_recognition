@@ -397,7 +397,7 @@ def create_module_graph(module_spec):
   """
   height, width = hub.get_expected_image_size(module_spec)
   with tf.Graph().as_default() as graph:
-    resized_input_tensor = tf.placeholder(tf.float32, [None, height, width, 3])
+    resized_input_tensor = tf.compat.v1.placeholder(tf.float32, [None, height, width, 3])
     m = hub.Module(module_spec)
     bottleneck_tensor = m(resized_input_tensor)
     wants_quantization = any(node.op in FAKE_QUANT_OPS
