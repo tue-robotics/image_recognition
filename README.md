@@ -21,7 +21,7 @@ Package | Build status Xenial Kinetic x64 | Description
 
 ## Travis CI Build Status
 
-[![Build Status](https://travis-ci.org/tue-robotics/image_recognition.svg)](https://travis-ci.org/tue-robotics/image_recognition)
+[![Build Status](https://travis-ci.com/tue-robotics/image_recognition.svg)](https://travis-ci.com/tue-robotics/image_recognition)
 
 # How to
 
