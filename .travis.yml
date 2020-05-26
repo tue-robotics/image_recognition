@@ -1,8 +1,8 @@
-sudo: required
-language: generic
+os: linux
 dist: xenial
+language: generic
 
-matrix:
+jobs:
   include:
   - name: "Kinetic"
     env: ROS_DISTRO=kinetic BEFORE_SCRIPT="pip install --upgrade pip && hash -r pip && pip install --upgrade enum34 pyasn1-modules tensorflow==2.0"
