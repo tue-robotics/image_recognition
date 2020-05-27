@@ -2,13 +2,16 @@
 
 import logging
 import sys
+from packaging import version
 import numpy as np
-from keras.models import Model
-from keras.layers import Input, Activation, add, Dense, Flatten, Dropout
-from keras.layers.convolutional import Conv2D, AveragePooling2D
-from keras.layers.normalization import BatchNormalization
-from keras.regularizers import l2
-from keras import backend as K
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Activation, add, AveragePooling2D, BatchNormalization, Convolution2D, Dense, Dropout, Flatten, Input
+from tensorflow.keras.regularizers import l2
+from keras import __version__ as kv
+if version.parse(kv) < version.parse("2.2.5"):
+    from keras import backend as K
+else:
+    from keras.backend import common as K
 
 sys.setrecursionlimit(2 ** 20)
 np.random.seed(2 ** 10)
@@ -56,7 +59,7 @@ class WideResNet:
                         convs = BatchNormalization(axis=self._channel_axis)(net)
                         convs = Activation("relu")(convs)
 
-                    convs = Conv2D(n_bottleneck_plane, kernel_size=(v[0], v[1]),
+                    convs = Convolution2D(n_bottleneck_plane, kernel_size=(v[0], v[1]),
                                           strides=v[2],
                                           padding=v[3],
                                           kernel_initializer=self._weight_init,
@@ -67,7 +70,7 @@ class WideResNet:
                     convs = Activation("relu")(convs)
                     if self._dropout_probability > 0:
                         convs = Dropout(self._dropout_probability)(convs)
-                    convs = Conv2D(n_bottleneck_plane, kernel_size=(v[0], v[1]),
+                    convs = Convolution2D(n_bottleneck_plane, kernel_size=(v[0], v[1]),
                                           strides=v[2],
                                           padding=v[3],
                                           kernel_initializer=self._weight_init,
@@ -79,7 +82,7 @@ class WideResNet:
             #   corresponds to whether we are using the first block in each
             #   group; see _layer() ).
             if n_input_plane != n_output_plane:
-                shortcut = Conv2D(n_output_plane, kernel_size=(1, 1),
+                shortcut = Convolution2D(n_output_plane, kernel_size=(1, 1),
                                          strides=stride,
                                          padding="same",
                                          kernel_initializer=self._weight_init,
@@ -114,7 +117,7 @@ class WideResNet:
 
         n_stages = [16, 16 * self._k, 32 * self._k, 64 * self._k]
 
-        conv1 = Conv2D(filters=n_stages[0], kernel_size=(3, 3),
+        conv1 = Convolution2D(filters=n_stages[0], kernel_size=(3, 3),
                               strides=(1, 1),
                               padding="same",
                               kernel_initializer=self._weight_init,

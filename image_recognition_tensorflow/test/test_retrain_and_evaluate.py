@@ -19,3 +19,6 @@ def test_retrain_and_evaluate():
                                    os.path.join(models_path, "output_labels.txt"),
                                    os.path.join(assets_path, "verification"), "/tmp/result.csv")
     assert accuracy > 0.5
+
+if __name__ == "__main__":
+    test_retrain_and_evaluate()

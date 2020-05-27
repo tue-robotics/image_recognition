@@ -1,11 +1,13 @@
-sudo: required
+os: linux
+dist: bionic
 language: generic
-dist: trusty
 
-matrix:
+jobs:
   include:
-  - name: "Kinetic"
-    env: ROS_DISTRO=kinetic
+  - name: "kinetic"
+    env: ROS_DISTRO=kinetic BEFORE_SCRIPT="pip install --upgrade pip && hash -r pip && pip install --upgrade enum34 pyasn1-modules tensorflow==2.0"
+  - name: "melodic"
+    env: ROS_DISTRO=melodic BEFORE_SCRIPT="pip install --upgrade pip && hash -r pip && pip install --upgrade enum34 pyasn1-modules tensorflow==2.0"
 
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config

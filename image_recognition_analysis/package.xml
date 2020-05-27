@@ -13,11 +13,11 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>python-catkin-lint</build_depend>
-
   <exec_depend>image_recognition_util</exec_depend>
   <exec_depend>python-matplotlib</exec_depend>
   <exec_depend>python-numpy</exec_depend>
   <exec_depend>python-scipy</exec_depend>
   <exec_depend>python-sklearn</exec_depend>
+
+  <test_depend>python-catkin-lint</test_depend>
 </package>
