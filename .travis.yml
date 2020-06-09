@@ -4,7 +4,7 @@ language: generic
 
 env:
   global:
-    - BEFORE_INIT="apt-get install -y -q python-pip && pip install --upgrade pip && hash -r pip && pip install --upgrade enum34 pyasn1-modules tensorflow==2.1 --progress-bar=off"
+    - BEFORE_INIT="apt-get install -y -q python-pip && pip install --upgrade pip && hash -r pip && pip install --upgrade enum34 pyasn1-modules 'tensorflow>=2.1' --progress-bar=off"
 
 jobs:
   include:
