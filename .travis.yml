@@ -2,12 +2,16 @@ os: linux
 dist: bionic
 language: generic
 
+env:
+  global:
+    - BEFORE_INIT="apt-get install -y -q python-pip && pip install --upgrade pip --progress-bar off && hash -r pip && pip install --upgrade enum34 pyasn1-modules tensorflow==2.1 --progress-bar off"
+
 jobs:
   include:
-  - name: "kinetic"
-    env: ROS_DISTRO=kinetic BEFORE_INIT="apt-get install -y -q python-pip && pip install --upgrade pip --progress-bar off && hash -r pip && pip install --upgrade enum34 pyasn1-modules tensorflow==2.1 --progress-bar off"
-  - name: "melodic"
-    env: ROS_DISTRO=melodic BEFORE_INIT="apt-get install -y -q python-pip && pip install --upgrade pip --progress-bar off && hash -r pip && pip install --upgrade enum34 pyasn1-modules tensorflow==2.1 --progress-bar off"
+    - name: "kinetic"
+      env: ROS_DISTRO=kinetic
+    - name: "melodic"
+      env: ROS_DISTRO=melodic
 
 install:
   - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
