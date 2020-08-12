@@ -14,7 +14,8 @@ class OpenposeWrapper(object):
             sys.path.append(self._validate_dir(python_path))
 
         try:
-            from openpose import pyopenpose as op
+            from openpose import pyopenpose as op  # pylint: disable=import-outside-toplevel
+            globals()['op'] = op  # Make `op` available globally
         except ImportError as error:
             raise ImportError("{}, please add openpose to your python path using the constructor argument or extend the"
                               " PYTHONPATH environment variable".format(error))
@@ -45,7 +46,6 @@ class OpenposeWrapper(object):
 
         logging.info("Loading openpose with parameters: %s", parameters)
 
-        self._op = op
         self._openpose_wrapper = op.WrapperPython()
         self._openpose_wrapper.configure(parameters)
         self._openpose_wrapper.start()
@@ -58,13 +58,13 @@ class OpenposeWrapper(object):
         return dir_path if dir_path[-1] == "/" else dir_path + "/"
 
     def detect_poses(self, image):
-        datum = self._op.Datum()
+        # `op` added to globals in the constructor
+        datum = op.Datum()  # pylint: disable=undefined-variable # noqa: F821
         datum.cvInputData = image
         self._openpose_wrapper.emplaceAndPop([datum])
 
         keypoints = datum.poseKeypoints
         overlayed_image = datum.cvOutputData
-        # keypoints, overlayed_image = self._openpose.forward(image, True)
 
         recognitions = []
 
