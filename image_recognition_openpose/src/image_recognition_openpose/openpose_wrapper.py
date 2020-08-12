@@ -15,9 +15,9 @@ class OpenposeWrapper(object):
 
         try:
             from openpose import pyopenpose as op
-        except ImportError as e:
+        except ImportError as error:
             raise ImportError("{}, please add openpose to your python path using the constructor argument or extend the"
-                              " PYTHONPATH environment variable".format(e))
+                              " PYTHONPATH environment variable".format(error))
 
         if pose_model not in models:
             raise ValueError("Pose model not in {}".format(models))
@@ -46,9 +46,9 @@ class OpenposeWrapper(object):
         logging.info("Loading openpose with parameters: %s", parameters)
 
         self._op = op
-        self._opWrapper = op.WrapperPython()
-        self._opWrapper.configure(parameters)
-        self._opWrapper.start()
+        self._openpose_wrapper = op.WrapperPython()
+        self._openpose_wrapper.configure(parameters)
+        self._openpose_wrapper.start()
 
     @staticmethod
     def _validate_dir(dir_path):
@@ -60,7 +60,7 @@ class OpenposeWrapper(object):
     def detect_poses(self, image):
         datum = self._op.Datum()
         datum.cvInputData = image
-        self._opWrapper.emplaceAndPop([datum])
+        self._openpose_wrapper.emplaceAndPop([datum])
 
         keypoints = datum.poseKeypoints
         overlayed_image = datum.cvOutputData
