@@ -14,10 +14,11 @@ class OpenposeWrapper(object):
             sys.path.append(self._validate_dir(python_path))
 
         try:
-            import openpose
-        except ImportError as e:
+            from openpose import pyopenpose as op  # pylint: disable=import-outside-toplevel
+            globals()['op'] = op  # Make `op` available globally
+        except ImportError as error:
             raise ImportError("{}, please add openpose to your python path using the constructor argument or extend the"
-                              " PYTHONPATH environment variable".format(e))
+                              " PYTHONPATH environment variable".format(error))
 
         if pose_model not in models:
             raise ValueError("Pose model not in {}".format(models))
@@ -33,7 +34,7 @@ class OpenposeWrapper(object):
             "logging_level": 3,
             "render_threshold": 0.05,
             "disable_blending": False,
-            "default_model_folder": model_folder,
+            "model_folder": model_folder,
             "model_pose": str(pose_model),
             "net_resolution": str(net_input_size),
             "output_resolution": str(net_output_size),
@@ -45,7 +46,9 @@ class OpenposeWrapper(object):
 
         logging.info("Loading openpose with parameters: %s", parameters)
 
-        self._openpose = openpose.OpenPose(parameters)
+        self._openpose_wrapper = op.WrapperPython()
+        self._openpose_wrapper.configure(parameters)
+        self._openpose_wrapper.start()
 
     @staticmethod
     def _validate_dir(dir_path):
@@ -55,13 +58,18 @@ class OpenposeWrapper(object):
         return dir_path if dir_path[-1] == "/" else dir_path + "/"
 
     def detect_poses(self, image):
-        keypoints, overlayed_image = self._openpose.forward(image, True)
+        # `op` added to globals in the constructor
+        datum = op.Datum()  # pylint: disable=undefined-variable # noqa: F821
+        datum.cvInputData = image
+        self._openpose_wrapper.emplaceAndPop([datum])
+
+        keypoints = datum.poseKeypoints
+        overlayed_image = datum.cvOutputData
 
         recognitions = []
 
         if len(keypoints.shape) == 3:
             num_persons, num_bodyparts, _ = keypoints.shape
-
             for person_id in range(0, num_persons):
                 for body_part_id in range(0, num_bodyparts):
                     body_part = self._model["body_parts"][body_part_id]
