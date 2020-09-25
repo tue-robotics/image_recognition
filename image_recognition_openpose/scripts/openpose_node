@@ -145,6 +145,8 @@ class OpenposeNode:
                         rospy.logdebug("Connection to master is lost")
                         return 1  # This should result in a non-zero error code of the entire program
 
+        return 0
+
 
 if __name__ == '__main__':
     rospy.init_node("openpose")
