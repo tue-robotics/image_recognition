@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os
 from queue import Queue, Empty
+import socket
+import sys
 
 import diagnostic_updater
 import rospy
@@ -64,6 +66,8 @@ class OpenposeNode:
         if self._topic_publish_result_image or self._service_publish_result_image:
             self._result_image_publisher = rospy.Publisher("result_image", Image, queue_size=10)
 
+        self.last_master_check = rospy.get_time()
+
         rospy.loginfo("OpenposeNode initialized:")
         rospy.loginfo(" - model_folder=%s", model_folder)
         rospy.loginfo(" - pose_model=%s", pose_model)
@@ -118,7 +122,7 @@ class OpenposeNode:
         # Service response
         return recognitions
 
-    def spin(self):
+    def spin(self, check_master=False):
         """
         Empty input queues and fill output queues (see __init__ doc)
         """
@@ -132,6 +136,16 @@ class OpenposeNode:
                     self._service_output_q.put(self._get_recognitions(image_msg, save_images, publish_images))
                 else:
                     self._subscriber_output_q.put(self._get_recognitions(image_msg, save_images, publish_images))
+            finally:
+                if check_master and rospy.get_time() >= self.last_master_check + 1:
+                    self.last_master_check = rospy.get_time()
+                    try:
+                        rospy.get_master().getPid()
+                    except socket.error:
+                        rospy.logdebug("Connection to master is lost")
+                        return 1  # This should result in a non-zero error code of the entire program
+
+        return 0
 
 
 if __name__ == '__main__':
@@ -155,12 +169,14 @@ if __name__ == '__main__':
             os.path.expanduser(rospy.get_param("~save_images_folder", "/tmp/openpose"))
         )
 
+        check_master = rospy.get_param("~check_master", False)
+
         updater = diagnostic_updater.Updater()
         updater.setHardwareID("none")
         updater.add(diagnostic_updater.Heartbeat())
         rospy.Timer(rospy.Duration(1), lambda event: updater.force_update())
 
-        node.spin()
+        sys.exit(node.spin(check_master))
     except Exception as e:
         rospy.logfatal(e)
         raise
