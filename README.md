@@ -1,4 +1,7 @@
 # TU/e Robotics image_recognition
+
+![CI](https://github.com/tue-robotics/image_recognition/workflows/CI/badge.svg)
+
 Packages for image recognition - Robocup TU/e Robotics
 
 ## Package status & Description
