@@ -8,7 +8,7 @@ on:
 
 jobs:
   industrial_ci:
-    name: Industrial CI - ${{ github.event_name })
+    name: Industrial CI - ${{ github.event_name }}
     strategy:
       matrix:
         env:
