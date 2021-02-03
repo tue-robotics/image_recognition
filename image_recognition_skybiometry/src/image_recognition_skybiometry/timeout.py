@@ -1,4 +1,4 @@
-import multiprocessing
+from multiprocessing import Process, Queue
 import time
 import sys
 
@@ -13,7 +13,7 @@ def _target(queue, function, *args, **kwargs):
     """
     try:
         queue.put((True, function(*args, **kwargs)))
-    except:
+    except Exception:
         queue.put((False, sys.exc_info()[1]))
 
 
@@ -33,8 +33,8 @@ class Timeout:
         self.__name__ = function.__name__
         self.__doc__ = function.__doc__
         self.__timeout = time.time()
-        self.__process = multiprocessing.Process()
-        self.__queue = multiprocessing.Queue()
+        self.__process = Process()
+        self.__queue = Queue()
 
     def __call__(self, *args, **kwargs):
         """Execute the embedded function object asynchronously.
@@ -44,11 +44,9 @@ class Timeout:
         True, the "value" property may then be checked for returned data.
         """
         self.__limit = kwargs.pop('timeout', self.__limit)
-        self.__queue = multiprocessing.Queue(1)
+        self.__queue = Queue(1)
         args = (self.__queue, self.__function) + args
-        self.__process = multiprocessing.Process(target=_target,
-                                                 args=args,
-                                                 kwargs=kwargs)
+        self.__process = Process(target=_target, args=args, kwargs=kwargs)
         self.__process.daemon = True
         self.__process.start()
         self.__timeout = self.__limit + time.time()

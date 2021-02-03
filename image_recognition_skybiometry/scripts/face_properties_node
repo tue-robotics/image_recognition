@@ -13,7 +13,7 @@ import sys
 
 
 class SkybiometryFaceProperties:
-    def __init__(self, key, secret, timeout, save_images_folder):
+    def __init__(self, key, secret, namespace, timeout, save_images_folder):
         """
         ROS node that wraps the Skybiometry face property API
         :param key: The authorization key of the Skybiometry API
@@ -23,7 +23,7 @@ class SkybiometryFaceProperties:
         """
         self._bridge = CvBridge()
         self._properties_srv = rospy.Service('get_face_properties', GetFaceProperties, self._get_face_properties_srv)
-        self._skybiometry = Skybiometry(key, secret)
+        self._skybiometry = Skybiometry(key, secret, namespace)
         self._api_timeout = timeout
 
         if save_images_folder:
@@ -36,6 +36,7 @@ class SkybiometryFaceProperties:
         rospy.loginfo("SkybiometryFaceProperties initialized:")
         rospy.loginfo(" - api_key=%s", key)
         rospy.loginfo(" - api_secret=%s", secret)
+        rospy.loginfo(" - namespace=%s", namespace)
         rospy.loginfo(" - api_timeout=%s", timeout)
         rospy.loginfo(" - save_images_folder=%s", save_images_folder)
 
@@ -81,6 +82,7 @@ if __name__ == '__main__':
     try:
         api_key = rospy.get_param("~api_key", "69efefc20c7f42d8af1f2646ce6742ec")
         api_secret = rospy.get_param("~api_secret", "5fab420ca6cf4ff28e7780efcffadb6c")
+        namespace = rospy.get_param("~namespace", "techunited")
         api_timeout = rospy.get_param("~api_timeout", 10)
         save_images = rospy.get_param("~save_images", True)
 
@@ -91,7 +93,8 @@ if __name__ == '__main__':
         rospy.logerr("Parameter %s not found" % e)
         sys.exit(1)
 
-    image_recognition_skybiometry = SkybiometryFaceProperties(api_key, api_secret, api_timeout, save_images_folder)
+    image_recognition_skybiometry = SkybiometryFaceProperties(api_key, api_secret, namespace, api_timeout,
+                                                              save_images_folder)
 
     updater = diagnostic_updater.Updater()
     updater.setHardwareID("none")
