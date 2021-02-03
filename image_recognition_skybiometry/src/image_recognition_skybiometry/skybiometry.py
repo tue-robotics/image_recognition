@@ -36,13 +36,22 @@ class SkyFaceProperties:
 
 
 class Skybiometry:
-    def __init__(self, api_key, api_secret):
+    def __init__(self, api_key, api_secret, namespace):
         """
         Python wrapper for the Skybiometry API
         :param api_key: The authorization key of the Skybiometry API
         :param api_secret: The secret of the Skybiometry API
+        :parm namespace: Namespace to use
         """
         self._face_client = FaceClient(api_key, api_secret)
+        response = self._face_client.account_namespaces()
+        if response["status"] != "success":
+            raise ValueError("Could not retrieve namespaces for given API key and secret")
+        account_namespaces = [ns["name"] for ns in response["namespaces"]]
+        if namespace not in account_namespaces:
+            raise ValueError("Provided namespace {} not in account_namespaces: {}".format(namespace,
+                                                                                          account_namespaces))
+        self._namespace = namespace
 
     def _external_request_with_timeout(self, buffers, timeout):
         """
@@ -52,7 +61,7 @@ class Skybiometry:
         :return: query result
         """
         timeout_function = Timeout(self._face_client.faces_recognize, timeout)
-        return timeout_function(buffers)
+        return timeout_function(uids="operator", buffers_=buffers, namespace=self._namespace)
 
     def get_face_properties(self, images, timeout):
         """
@@ -68,7 +77,7 @@ class Skybiometry:
         except Exception as e:
             raise Exception("Skybiometry API call failed:", e)
 
-        if not "photos" in response:
+        if "photos" not in response:
             raise Exception("Skybiometry API call, 'photos' not found in response:", response)
 
         photos = response["photos"]
