@@ -6,12 +6,10 @@ import diagnostic_updater
 from image_recognition_msgs.srv import GetFaceProperties
 from image_recognition_msgs.msg import FaceProperties
 from image_recognition_util import image_writer
-from image_recognition_skybiometry import Skybiometry, SkyFaceProperties
+from image_recognition_skybiometry import Skybiometry
 
 import os
 import sys
-import cv2
-import datetime
 
 
 class SkybiometryFaceProperties:
@@ -76,6 +74,7 @@ class SkybiometryFaceProperties:
         # Service response
         return {"properties_array": face_properties_array}
 
+
 if __name__ == '__main__':
     rospy.init_node("face_properties")
 
@@ -92,10 +91,7 @@ if __name__ == '__main__':
         rospy.logerr("Parameter %s not found" % e)
         sys.exit(1)
 
-    image_recognition_openface = SkybiometryFaceProperties(api_key,
-                                             api_secret,
-                                             api_timeout,
-                                             save_images_folder)
+    image_recognition_skybiometry = SkybiometryFaceProperties(api_key, api_secret, api_timeout, save_images_folder)
 
     updater = diagnostic_updater.Updater()
     updater.setHardwareID("none")
