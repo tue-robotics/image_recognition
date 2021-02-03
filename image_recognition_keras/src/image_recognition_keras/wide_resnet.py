@@ -95,7 +95,6 @@ class WideResNet:
 
         return f
 
-
     # "Stacking Residual Units on the same stage"
     def _layer(self, block, n_input_plane, n_output_plane, count, stride):
         def f(net):
