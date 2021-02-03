@@ -60,6 +60,7 @@ class SkybiometryFaceProperties:
         for sky_face_properties in sky_face_properties_array:
             face_properties_array.append(FaceProperties(
                 gender=FaceProperties.MALE if sky_face_properties.gender.value == "male" else FaceProperties.FEMALE,
+                gender_confidence=sky_face_properties.gender.confidence,
                 age=int(sky_face_properties.age_est.value)
             ))
 
