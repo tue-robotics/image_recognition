@@ -145,6 +145,8 @@ class AnnotationPlugin(Plugin):
         :param srv_name: Name of the service
         """
         if self._srv:
+            if srv_name == self._srv.resolved_name:
+                return
             self._srv.close()
 
         if srv_name in rosservice.get_service_list():
@@ -213,7 +215,14 @@ class AnnotationPlugin(Plugin):
         """
         Callback when the configuration button is clicked
         """
-        topic_name, ok = QInputDialog.getItem(self._widget, "Select topic name", "Topic name", rostopic.find_by_type('sensor_msgs/Image'))
+        image_topics = sorted(rostopic.find_by_type('sensor_msgs/Image'))
+        try:
+            topic_index = image_topics.index(self._sub.resolved_name)
+        except (AttributeError, ValueError):
+            topic_index = 0
+
+        topic_name, ok = QInputDialog.getItem(self._widget, "Select topic name", "Topic name",
+                                              image_topics, topic_index)
         if ok:
             self._create_subscriber(topic_name)
 
@@ -225,7 +234,13 @@ class AnnotationPlugin(Plugin):
             except:
                 pass
 
-        srv_name, ok = QInputDialog.getItem(self._widget, "Select service name", "Service name", available_rosservices)
+        try:
+            srv_index = available_rosservices.index(self._srv.resolved_name)
+        except (AttributeError, ValueError):
+            srv_index = 0
+
+        srv_name, ok = QInputDialog.getItem(self._widget, "Select service name", "Service name", available_rosservices,
+                                            srv_index)
         if ok:
             self._create_service_client(srv_name)
 
@@ -235,7 +250,10 @@ class AnnotationPlugin(Plugin):
         :param topic_name: The topic_name
         """
         if self._sub:
+            if topic_name == self._sub.resolved_name:
+                return
             self._sub.unregister()
+
         self._sub = rospy.Subscriber(topic_name, Image, self._image_callback)
         rospy.loginfo("Listening to %s -- spinning .." % self._sub.name)
         self._widget.setWindowTitle("Label plugin, listening to (%s)" % self._sub.name)
@@ -255,7 +273,9 @@ class AnnotationPlugin(Plugin):
         instance_settings.set_value("output_directory", self.output_directory)
         instance_settings.set_value("labels", self.labels)
         if self._sub:
-            instance_settings.set_value("topic_name", self._sub.name)
+            instance_settings.set_value("topic_name", self._sub.resolved_name)
+        if self._srv:
+            instance_settings.set_value("service_name", self._srv.resolved_name)
 
     def restore_settings(self, plugin_settings, instance_settings):
         """
