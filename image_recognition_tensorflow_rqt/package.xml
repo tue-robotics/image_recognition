@@ -14,7 +14,8 @@
   <exec_depend>rqt_gui</exec_depend>
   <exec_depend>rqt_gui_py</exec_depend>
 
-  <test_depend>python-catkin-lint</test_depend>
+  <test_depend condition="$ROS_PYTHON_VERSION == 2">python-catkin-lint</test_depend>
+  <test_depend condition="$ROS_PYTHON_VERSION == 3">python3-catkin-lint</test_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
