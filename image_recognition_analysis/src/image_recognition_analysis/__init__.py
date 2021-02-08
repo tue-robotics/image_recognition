@@ -1,1 +1,1 @@
-import plots
+from . import plots

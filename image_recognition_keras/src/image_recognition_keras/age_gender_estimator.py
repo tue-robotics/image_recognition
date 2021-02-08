@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os.path
 
-from wide_resnet import WideResNet
+from .wide_resnet import WideResNet
 
 
 class AgeGenderEstimator(object):

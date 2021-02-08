@@ -333,7 +333,7 @@ class FaceClient(object):
 
         # Local file is provided, use multi-part form
         if files or buffers:
-            from multipart import Multipart
+            from .multipart import Multipart
             form = Multipart()
 
             for key, value in iteritems(data):
