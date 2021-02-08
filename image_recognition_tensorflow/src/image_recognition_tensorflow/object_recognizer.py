@@ -73,7 +73,7 @@ class ObjectRecognizer(object):
 
     @staticmethod
     def _read_labels(labels_path):
-        with open(labels_path, 'rb') as f:
+        with open(labels_path, 'r') as f:
             labels = [label for label in f.read().split("\n") if label]  # Skip empty lines
         if not labels:
             raise ValueError("Empty labels, will not be able to map predictions to labels")
