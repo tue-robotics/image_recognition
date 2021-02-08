@@ -1,4 +1,4 @@
-#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
 #include <vector>
 
 #include <image_recognition_msgs/Recognitions.h>
