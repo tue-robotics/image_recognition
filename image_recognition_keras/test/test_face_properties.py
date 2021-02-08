@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import os
 import re
-import urllib
+from future.moves.urllib.request import urlretrieve
 
 import cv2
 import rospkg
@@ -17,7 +17,7 @@ def test_face_properties():
         http_path = "https://github.com/tue-robotics/image_recognition/releases/download/" \
                     "image_recognition_keras_face_properties_weights.28-3.73/" \
                     "image_recognition_keras_face_properties_weights.28-3.73.hdf5"
-        urllib.urlretrieve(http_path, local_path)
+        urlretrieve(http_path, local_path)
         print("Downloaded weights to {}".format(local_path))
 
     def age_is_female_from_asset_name(asset_name):
