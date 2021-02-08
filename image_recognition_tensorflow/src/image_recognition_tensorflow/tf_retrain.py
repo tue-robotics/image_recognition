@@ -435,7 +435,12 @@ def maybe_download_and_extract(data_url):
                         float(count * block_size) / float(total_size) * 100.0))
       sys.stdout.flush()
 
-    filepath, _ = urllib.request.urlretrieve(data_url, filepath, _progress)
+    if not os.environ.get('CI', False):
+        reporthook = _progress
+    else:
+        reporthook = None
+
+    filepath, _ = urllib.request.urlretrieve(data_url, filepath, reporthook)
     print()
     statinfo = os.stat(filepath)
     #tf.logging.info('Successfully downloaded', filename, statinfo.st_size, 'bytes.')
