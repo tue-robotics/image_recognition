@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import numpy as np
 import cv2
 import os
@@ -129,7 +131,7 @@ class FaceRecognizer:
             try:
                 recognition_representation = self._get_representation(recognition.image)
             except Exception as e:
-                print "Could not get representation of face image but detector found one: %s" % str(e)
+                print("Could not get representation of face image but detector found one: %s" % str(e))
 
             rospy.logdebug('recognition_representation: %s', recognition_representation)
             # If we have a representation, update with use of the l2 distance w.r.t. the face dict
