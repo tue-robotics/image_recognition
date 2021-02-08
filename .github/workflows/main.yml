@@ -10,6 +10,7 @@ jobs:
   industrial_ci:
     name: Industrial CI - ${{ github.event_name }}
     strategy:
+      fail-fast: false
       matrix:
         env:
           - ROS_DISTRO: melodic
