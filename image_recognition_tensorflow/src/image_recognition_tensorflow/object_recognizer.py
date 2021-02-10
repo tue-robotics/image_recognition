@@ -32,7 +32,9 @@ class ObjectRecognizer(object):
             _ = tf.import_graph_def(graph_def, name='')
             tf.compat.v1.get_default_graph().finalize()  # Make the graph read-only, safe to use from any thread
 
-        self.session = tf.compat.v1.Session(graph=tf.compat.v1.get_default_graph())
+        config = tf.compat.v1.ConfigProto()
+        config.gpu_options.allow_growth = True
+        self.session = tf.compat.v1.Session(graph=tf.compat.v1.get_default_graph(), config=config)
 
         # This is only done to 'statically' check that the given tensor actually exists.
         # Not really statically but directly at startup, not when you need a first recognition
