@@ -68,8 +68,8 @@ class TrainPlugin(Plugin):
         # Start tensorboard op startup
         self.tensorboard_sub = subprocess.Popen(["tensorboard", "--logdir", "/tmp/retrain_logs"])
 
-        self._label = QLabel("Tensorboard live at <a href=\"http://127.0.1.1:6006/\">http://127.0.1.1:6006</a>")
-        self._label.setOpenExternalLinks(True);
+        self._label = QLabel("Tensorboard live at <a href=\"http://localhost:6006/\">http://localhost:6006</a>")
+        self._label.setOpenExternalLinks(True)
         layout.addWidget(self._label, 4, 2)
 
     def _set_images_directory(self, path):
