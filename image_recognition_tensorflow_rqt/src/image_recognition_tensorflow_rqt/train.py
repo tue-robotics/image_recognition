@@ -4,7 +4,7 @@ from python_qt_binding.QtWidgets import *
 from python_qt_binding.QtGui import * 
 from python_qt_binding.QtCore import *
 
-from image_recognition_tensorflow import retrain, utils
+from image_recognition_tensorflow import retrain
 import subprocess
 
 
@@ -110,12 +110,9 @@ class TrainPlugin(Plugin):
         """
         The train method that does the actual training of the neural net
         """
-        model_dir = "/tmp/inception"
-        utils.maybe_download_and_extract("http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz",
-                                         "/tmp/inception")
 
         try:
-            retrain.main(self.images_directory, model_dir, self.output_directory,
+            retrain.main(self.images_directory, "/tmp/inception", self.output_directory, architecture="inception_v3",
                          steps=self.steps, batch=self.batch)
             dialog("Retrain succes", "Succesfully retrained the top layers! Check Tensorboard for the results!")
             self._train_button.setDisabled(True)
