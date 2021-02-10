@@ -17,6 +17,8 @@
   <exec_depend>diagnostic_updater</exec_depend>
   <exec_depend>image_recognition_msgs</exec_depend>
   <exec_depend>image_recognition_util</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-opencv</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-opencv</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
 
