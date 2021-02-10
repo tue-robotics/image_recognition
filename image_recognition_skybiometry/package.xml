@@ -21,6 +21,7 @@
   <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-future</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-opencv</exec_depend>
   <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-opencv</exec_depend>
+  <exec_depend>python-requests</exec_depend>
   <exec_depend>rospy</exec_depend>
 
   <test_depend condition="$ROS_PYTHON_VERSION == 2">python-catkin-lint</test_depend>
