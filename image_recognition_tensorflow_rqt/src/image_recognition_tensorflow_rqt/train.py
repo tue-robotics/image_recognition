@@ -5,10 +5,7 @@ from python_qt_binding.QtGui import *
 from python_qt_binding.QtCore import *
 
 from image_recognition_tensorflow import retrain, utils
-import webbrowser
 import subprocess
-import time
-import signal
 
 
 def dialog(title, text, icon=QMessageBox.Information):
@@ -135,7 +132,7 @@ class TrainPlugin(Plugin):
         # Update batch if ok
         self.batch = batch if ok else self.batch
 
-        steps, ok = QInputDialog.getInt(self._widget, "Set steps size", "Step size", self.steps    )
+        steps, ok = QInputDialog.getInt(self._widget, "Set steps size", "Step size", self.steps)
 
         # Update batch if ok
         self.steps = steps if ok else self.steps
@@ -147,7 +144,6 @@ class TrainPlugin(Plugin):
         Shutdown callback
         """
         self.tensorboard_sub.kill()
-        pass
 
     def save_settings(self, plugin_settings, instance_settings):
         """
