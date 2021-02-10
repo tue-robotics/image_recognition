@@ -1,5 +1,5 @@
-from .face_client import FaceClient
 import cv2
+from .face_client import FaceClient
 from .timeout import Timeout
 
 
@@ -70,7 +70,8 @@ class Skybiometry:
         :param timeout: Request timeout
         :return: The SkyFaces with their properties
         """
-        buffers = [cv2.imencode('.jpg', image)[1].tostring() for image in images]
+
+        buffers = ["".join(chr(int(c)) for c in cv2.imencode('.jpg', image)[1]) for image in images]
 
         try:
             response = self._external_request_with_timeout(buffers, timeout)
@@ -89,7 +90,7 @@ class Skybiometry:
         for photo in photos:
             attrs = photo["tags"][0]["attributes"]
             fp = SkyFaceProperties()
-            for name, attr in attrs.iteritems():
+            for name, attr in attrs.items():
                 if hasattr(fp, name):
                     setattr(fp, name, Attribute(attr["value"], attr["confidence"] / 100.0))
             fps.append(fp)

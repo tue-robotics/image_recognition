@@ -71,10 +71,9 @@ class Part(object):
         @return: Lines of this part.
         @rtype: list
         '''
-        lines = []
-        lines.append('--' + Part.BOUNDARY)
+        lines = ['--' + Part.BOUNDARY]
         for (key, val) in self._headers.items():
-            lines.append(str('%s: %s' % (key, val)))
+            lines.append('%s: %s' % (key, val))
         lines.append('')
         lines.append(self._body)
         return lines
