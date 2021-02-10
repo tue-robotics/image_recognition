@@ -1,4 +1,4 @@
-'''
+"""
 Classes for using multipart form data from Python, which does not (at the
 time of writing) support this directly.
 
@@ -6,17 +6,17 @@ To use this, make an instance of Multipart and add parts to it via the factory
 methods field and file.  When you are done, get the content via the get method.
 
 @author: Stacy Prowell (http://stacyprowell.com)
-'''
+"""
 
 import mimetypes
 
 
 class Part(object):
-    '''
+    """
     Class holding a single part of the form.  You should never need to use
     this class directly; instead, use the factory methods in Multipart:
     field and file.
-    '''
+    """
 
     # The boundary to use.  This is shamelessly taken from the standard.
     BOUNDARY = '----------AaB03x'
@@ -28,7 +28,7 @@ class Part(object):
     DEFAULT_CONTENT_TYPE = 'application/octet-stream'
 
     def __init__(self, name, filename, body, headers):
-        '''
+        """
         Make a new part.  The part will have the given headers added initially.
 
         @param name: The part name.
@@ -41,14 +41,14 @@ class Part(object):
         @param headers: Additional headers, or overrides, for this part.
                         You can override Content-Type here.
         @type headers: dict
-        '''
+        """
         self._headers = headers.copy()
         self._name = name
         self._filename = filename
         self._body = body
         # We respect any content type passed in, but otherwise set it here.
         # We set the content disposition now, overwriting any prior value.
-        if self._filename == None:
+        if self._filename is None:
             self._headers[Part.CONTENT_DISPOSITION] = \
                 ('form-data; name="%s"' % self._name)
             self._headers.setdefault(Part.CONTENT_TYPE,
@@ -63,14 +63,14 @@ class Part(object):
         return
 
     def get(self):
-        '''
+        """
         Convert the part into a list of lines for output.  This includes
         the boundary lines, part header lines, and the part itself.  A
         blank line is included between the header and the body.
 
         @return: Lines of this part.
         @rtype: list
-        '''
+        """
         lines = ['--' + Part.BOUNDARY]
         for (key, val) in self._headers.items():
             lines.append('%s: %s' % (key, val))
@@ -80,7 +80,7 @@ class Part(object):
 
 
 class Multipart(object):
-    '''
+    """
     Encapsulate multipart form data.  To use this, make an instance and then
     add parts to it via the two methods (field and file).  When done, you can
     get the result via the get method.
@@ -93,14 +93,14 @@ class Multipart(object):
 
     @return: content type, body
     @rtype: tuple
-    '''
+    """
 
     def __init__(self):
         self.parts = []
         return
 
-    def field(self, name, value, headers={}):
-        '''
+    def field(self, name, value, headers=None):
+        """
         Create and append a field part.  This kind of part has a field name
         and value.
 
@@ -110,39 +110,45 @@ class Multipart(object):
         @type value: str
         @param headers: Headers to set in addition to disposition.
         @type headers: dict
-        '''
+        """
+        if headers is None:
+            headers = {}
         self.parts.append(Part(name, None, value, headers))
         return
 
-    def file(self, name, filename, value, headers={}):
-        '''
+    def file(self, name, filename, value, headers=None):
+        """
         Create and append a file part.  THis kind of part has a field name,
         a filename, and a value.
 
         @param name: The field name.
         @type name: str
+        @param filename: The file name
+        @type filename: str
         @param value: The field value.
         @type value: str
         @param headers: Headers to set in addition to disposition.
         @type headers: dict
-        '''
+        """
+        if headers is None:
+            headers = {}
         self.parts.append(Part(name, filename, value, headers))
         return
 
     def get(self):
-        '''
+        """
         Get the multipart form data.  This returns the content type, which
         specifies the boundary marker, and also returns the body containing
         all parts and bondary markers.
 
         @return: content type, body
         @rtype: tuple
-        '''
-        all = []
+        """
+        all_parts = []
         for part in self.parts:
-            all += part.get()
-        all.append('--' + Part.BOUNDARY + '--')
-        all.append('')
+            all_parts += part.get()
+        all_parts.append('--' + Part.BOUNDARY + '--')
+        all_parts.append('')
         # We have to return the content type, since it specifies the boundary.
         content_type = 'multipart/form-data; boundary=%s' % Part.BOUNDARY
-        return content_type, Part.CRLF.join(all)
+        return content_type, Part.CRLF.join(all_parts)
