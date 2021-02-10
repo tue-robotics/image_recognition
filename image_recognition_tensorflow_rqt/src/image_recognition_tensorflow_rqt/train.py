@@ -112,13 +112,14 @@ class TrainPlugin(Plugin):
         """
 
         try:
+            self._train_button.setDisabled(True)
             retrain.main(self.images_directory, "/tmp/inception", self.output_directory, architecture="inception_v3",
                          steps=self.steps, batch=self.batch)
             dialog("Retrain succes", "Succesfully retrained the top layers! Check Tensorboard for the results!")
-            self._train_button.setDisabled(True)
             self._train_button.setText("Training done :)")
         except Exception as e:
             dialog("Retrain failed", "Something went wrong during retraining, '%s'" % str(e), QMessageBox.Warning)
+            self._train_button.setEnabled(True)
 
     def trigger_configuration(self):
         """
@@ -135,6 +136,7 @@ class TrainPlugin(Plugin):
         self.steps = steps if ok else self.steps
 
         self._update_configuration_title()
+        self._train_button.setEnabled(True)
 
     def shutdown_plugin(self):
         """
