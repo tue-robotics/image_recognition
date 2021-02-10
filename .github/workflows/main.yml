@@ -1,30 +1,36 @@
 name: CI
 
-on:
-  push:
-  pull_request:
-  schedule:
-    - cron: '0 0 * * 2'
+on: [push, pull_request]
 
 jobs:
-  industrial_ci:
-    name: Industrial CI - ${{ github.event_name }}
-    strategy:
-      matrix:
-        env:
-          - {ROS_DISTRO: melodic, ROS_REPO: main}
-    env:
-      ADDITIONAL_DEBS: "python-pip"
-      BEFORE_INSTALL_TARGET_DEPENDENCIES: "pip install --upgrade pip && hash -r pip && pip install --upgrade --progress-bar=off enum34 pyasn1-modules 'tensorflow>=2.1' 'keras<2.4'"
-      CCACHE_DIR: /home/runner/.ccache # Directory for ccache (and how we enable ccache in industrial_ci)
+  matrix:
+    name: Determine modified packages
     runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.modified-packages.outputs.packages }}
     steps:
       - uses: actions/checkout@v2
-      # This step will fetch/store the directory used by ccache before/after the ci run
-      - uses: actions/cache@v2
         with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}
-      # Run industrial_ci
-      - uses: 'ros-industrial/industrial_ci@master'
-        env: ${{ matrix.env }}
+          fetch-depth: 300
+      - name: Commit Range
+        id: commit-range
+        uses: tue-robotics/tue-env/ci/commit-range@master
+      - name: Modified packages
+        id: modified-packages
+        uses: tue-robotics/tue-env/ci/modified-packages@master
+        with:
+          commit-range: ${{ steps.commit-range.outputs.commit-range }}
+          ignored-packages: image_recognition image_recognition_jetson
+  tue-ci:
+    name: TUe CI - ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    needs: matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.matrix.outputs.packages) }}
+    steps:
+      - name: TUe CI
+        uses: tue-robotics/tue-env/ci/main@master
+        with:
+          package: ${{ matrix.package }}
