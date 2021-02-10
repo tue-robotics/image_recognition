@@ -34,6 +34,7 @@ class ObjectRecognizer(object):
 
         config = tf.compat.v1.ConfigProto()
         config.gpu_options.allow_growth = True
+        config.gpu_options.per_process_gpu_memory_fraction = 1.0
         self.session = tf.compat.v1.Session(graph=tf.compat.v1.get_default_graph(), config=config)
 
         # This is only done to 'statically' check that the given tensor actually exists.
