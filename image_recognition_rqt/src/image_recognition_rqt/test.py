@@ -21,6 +21,7 @@ class TestPlugin(Plugin):
     def __init__(self, context):
         """
         TestPlugin class to evaluate the image_recognition_msgs interfaces
+
         :param context: QT context, aka parent
         """
         super(TestPlugin, self).__init__(context)
@@ -57,6 +58,7 @@ class TestPlugin(Plugin):
     def recognize_srv_call(self, roi_image):
         """
         Method that calls the Recognize.srv
+
         :param roi_image: Selected roi_image by the user
         """
         try:
@@ -83,6 +85,7 @@ class TestPlugin(Plugin):
     def get_face_properties_srv_call(self, roi_image):
         """
         Method that calls the GetFaceProperties.srv
+
         :param roi_image: Selected roi_image by the user
         """
         try:
@@ -102,6 +105,7 @@ class TestPlugin(Plugin):
     def image_roi_callback(self, roi_image):
         """
         Callback triggered when the user has drawn an ROI on the image
+
         :param roi_image: The opencv image in the ROI
         """
         if self._srv is None:
@@ -119,6 +123,7 @@ class TestPlugin(Plugin):
     def _image_callback(self, msg):
         """
         Sensor_msgs/Image callback
+
         :param msg: The image message
         """
         try:
@@ -165,6 +170,7 @@ class TestPlugin(Plugin):
     def _create_subscriber(self, topic_name):
         """
         Method that creates a subscriber to a sensor_msgs/Image topic
+
         :param topic_name: The topic_name
         """
         if self._sub:
@@ -179,6 +185,7 @@ class TestPlugin(Plugin):
     def _create_service_client(self, srv_name):
         """
         Method that creates a client service proxy to call either the GetFaceProperties.srv or the Recognize.srv
+
         :param srv_name:
         """
         if self._srv:
@@ -199,6 +206,7 @@ class TestPlugin(Plugin):
     def save_settings(self, plugin_settings, instance_settings):
         """
         Callback function on shutdown to store the local plugin variables
+
         :param plugin_settings: Plugin settings
         :param instance_settings: Settings of this instance
         """
@@ -210,6 +218,7 @@ class TestPlugin(Plugin):
     def restore_settings(self, plugin_settings, instance_settings):
         """
         Callback function fired on load of the plugin that allows to restore saved variables
+
         :param plugin_settings: Plugin settings
         :param instance_settings: Settings of this instance
         """

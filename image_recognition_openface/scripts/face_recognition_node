@@ -20,6 +20,7 @@ class OpenfaceROS:
                  service_save_images, topic_publish_result_image, service_publish_result_image):
         """
         OpenfaceROS class that wraps the FaceRecognizer in a ROS node
+
         :param align_path: dlib face align path
         :param net_path: openface neural net path
         :param save_images_folder: path where to store the images
@@ -65,6 +66,7 @@ class OpenfaceROS:
         # Convert to opencv image
         """
         Annotate service callback that trains the face of the user
+
         :param req: Face annotation request
         :return: Empty
         """
@@ -92,6 +94,7 @@ class OpenfaceROS:
     def _clear_srv(self, req):
         """
         Service to clear the trained faces
+
         :param req: Empty
         :return: Empty
         """
@@ -102,6 +105,7 @@ class OpenfaceROS:
         # Convert to opencv image
         """
         Recognize service callback
+
         :param req: The input image
         :return: Recognitions
         """

@@ -37,6 +37,7 @@ class WideResnetFaceProperties:
     def _get_face_properties_srv(self, req):
         """
         Callback when the GetFaceProperties service is called
+
         :param req: Input images
         :return: properties
         """

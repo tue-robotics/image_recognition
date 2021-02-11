@@ -12,6 +12,7 @@ def evaluate_classifier(graph_path, labels_path, annotated_dir, output,
     """
     Evaluate a given classifier against a directory of annotated images.
     The script will output a .csv that can be evaluated.
+
     :param graph_path: Path to graph.pb
     :param labels_path: Path to labels.txt
     :param annotated_dir: Directory path where the annotated images are stored, to be verified

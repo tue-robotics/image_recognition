@@ -8,6 +8,7 @@ from sklearn.metrics import roc_curve, confusion_matrix
 def plot_confusion_matrix(labels, classifications_ground_truth, classifications_predicted_label):
     """
     Plot the confusion matrix of a given classification result
+
     :param labels: Input labels
     :param classifications_ground_truth: Ground truth labels
     :param classifications_predicted_label: Predicted labels
@@ -39,6 +40,7 @@ def plot_false_positive_true_positive_rates(labels, classifications_ground_truth
                                             classifications_scores):
     """
     Plot the false positive true positive rates per label
+
     :param labels: Input labels
     :param classifications_ground_truth_as_score_matrix: Zero score matrix with ones on the ground truth
     :param classifications_scores: The classification scores per label

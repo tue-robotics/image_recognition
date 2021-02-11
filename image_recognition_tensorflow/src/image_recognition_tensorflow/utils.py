@@ -5,7 +5,9 @@ import tarfile
 
 
 def maybe_download_and_extract(data_url, model_dir):
-    """Download and extract model tar file."""
+    """
+    Download and extract model tar file
+    """
     dest_directory = model_dir
     if not os.path.exists(dest_directory):
         os.makedirs(dest_directory)

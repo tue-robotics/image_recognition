@@ -11,6 +11,7 @@ import subprocess
 def dialog(title, text, icon=QMessageBox.Information):
     """
     Helper to pop-up a dialog
+
     :param title: Title of the dialog
     :param text: Dialog text
     :param icon: Information / Warning / Error icon
@@ -31,6 +32,7 @@ class TrainPlugin(Plugin):
     def __init__(self, context):
         """
         RQT plugin for training a tensorflow graph
+
         :param context: parent qt widget passed by RQT
         """
         super(TrainPlugin, self).__init__(context)
@@ -75,6 +77,7 @@ class TrainPlugin(Plugin):
     def _set_images_directory(self, path):
         """
         Set the image directory
+
         :param path: image dir
         """
         if not path:
@@ -92,6 +95,7 @@ class TrainPlugin(Plugin):
     def _set_output_directory(self, path):
         """
         Set the output directory
+
         :param path: the path
         """
         if not path:
@@ -147,6 +151,7 @@ class TrainPlugin(Plugin):
     def save_settings(self, plugin_settings, instance_settings):
         """
         Save settings on shutdown
+
         :param plugin_settings: Plugin settings
         :param instance_settings: Settings instance
         """
@@ -164,6 +169,7 @@ class TrainPlugin(Plugin):
     def restore_settings(self, plugin_settings, instance_settings):
         """
         Restore settings on startup
+
         :param plugin_settings: Plugin settings
         :param instance_settings: Settings instance
         """

@@ -17,6 +17,7 @@ def _get_roi_image(bgr_image, detection, factor_x, factor_y):
     # Get the roi
     """
     Get the image roi and the roi of a face detection
+
     :param bgr_image: Input image
     :param detection: Dlib detection
     :param factor_x: scale-up factor x
@@ -47,6 +48,7 @@ def _get_roi_image(bgr_image, detection, factor_x, factor_y):
 def _get_min_l2_distance(vector_list_a, vector_b):
     """
     Calculate the minimal l2 distance of a vector list w.r.t. an other vector
+
     :param vector_list_a: Vector list
     :param vector_b: Vector
     :return: Minimal l2 distance
@@ -74,6 +76,7 @@ class L2Distance:
     def __init__(self, distance, label):
         """
         L2 Distance that holds a l2 distance and an associated label
+
         :param distance: the l2 distance
         :param label: the label
         """
@@ -88,6 +91,7 @@ class RecognizedFace:
     def __init__(self, detection, image, factor_x=0.1, factor_y=0.2):
         """
         A Recognized face in an imaeg
+
         :param detection: The actual detection from dlib
         :param image: The original image
         :param factor_x: Upscale factor x
@@ -111,6 +115,7 @@ class FaceRecognizer:
         # Init align and net
         """
         Dlib / Openface Face recognizer
+
         :param align_path: Dlib align path
         :param net_path: Openface neural network path
         """
@@ -122,6 +127,7 @@ class FaceRecognizer:
     def update_with_categorical_distribution(self, recognition):
         """
         Update the recognition with a categorical distribution of the trained faces
+
         :param recognition: Input recognition
         :return: Output recognition with an updated categorical distribution
         """
@@ -147,6 +153,7 @@ class FaceRecognizer:
     def _get_representation(self, bgr_image):
         """
         Gets the vector of a face in the image
+
         :param bgr_image: The input image
         :return: The vector representation
         """
@@ -165,6 +172,7 @@ class FaceRecognizer:
     def recognize(self, image):
         """
         Method that tries to find faces in the specified image
+
         :param image: The input image
         :return: Returns the FaceRecognitions
         """
@@ -179,6 +187,7 @@ class FaceRecognizer:
     def _get_trained_face_index(self, label):
         """
         Returns the index of the trained face
+
         :param label: label of the trained face
         :return: the index of the face in the self._trained faces list
         """
@@ -190,6 +199,7 @@ class FaceRecognizer:
     def train(self, image, name):
         """
         Adds a face to the trained faces, creates a vector representation and adds this
+
         :param image: Input image
         :param name: The label of the face
         """

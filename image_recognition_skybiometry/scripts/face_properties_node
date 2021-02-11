@@ -16,6 +16,7 @@ class SkybiometryFaceProperties:
     def __init__(self, key, secret, namespace, timeout, save_images_folder):
         """
         ROS node that wraps the Skybiometry face property API
+
         :param key: The authorization key of the Skybiometry API
         :param secret: The secret of the Skybiometry API
         :param timeout: Max time of the request, in order internet fails
@@ -43,6 +44,7 @@ class SkybiometryFaceProperties:
     def _get_face_properties_srv(self, req):
         """
         Callback when the GetFaceProperties service is called
+
         :param req: Input image
         :return: properties
         """
