@@ -10,7 +10,6 @@
 # License: BSD
 
 import os.path
-import warnings
 import requests
 
 try:
@@ -58,7 +57,7 @@ class FaceClient(object):
                                      'fb_session_id': session_id,
                                      'fb_oauth_token': oauth_token}
 
-    ### Recognition engine methods ###
+    # Recognition engine methods
     def faces_detect(self, urls=None, file_=None, buffer_=None, aggressive=False):
         """
         Returns tags for detected faces in one or more photos, with geometric
@@ -77,7 +76,7 @@ class FaceClient(object):
         if file_:
             # Check if the file exists
             if not hasattr(file_, 'read') and not os.path.exists(file_):
-                raise IOError('File %s does not exist' % (file_))
+                raise IOError('File %s does not exist' % file_)
 
             files.append(file_)
         elif buffer_:
@@ -171,8 +170,8 @@ class FaceClient(object):
         response = self.send_request('faces/train', data)
         return response
 
-    ### Methods for managing face tags ###
-    def tags_get(self, uids=None, urls=None, pids=None, order='recent', limit=5, together=False, filter=None,
+    # Methods for managing face tags
+    def tags_get(self, uids=None, urls=None, pids=None, order='recent', limit=5, together=False, filters=None,
                  namespace=None):
         """
         Returns saved tags in one or more photos, or for the specified
@@ -189,7 +188,7 @@ class FaceClient(object):
 
         data = {'together': 'true' if together else 'false', 'limit': limit}
         self.__append_user_auth_data(data, facebook_uids, twitter_uids)
-        self.__append_optional_arguments(data, uids=uids, urls=urls, pids=pids, filter=filter, namespace=namespace)
+        self.__append_optional_arguments(data, uids=uids, urls=urls, pids=pids, filter=filters, namespace=namespace)
 
         response = self.send_request('tags/get', data)
         return response
@@ -252,7 +251,7 @@ class FaceClient(object):
         response = self.send_request('tags/remove', data)
         return response
 
-    ### Account management methods ###
+    # Account management methods
     def account_limits(self):
         """
         Returns current rate limits for the account represented by the passed
@@ -301,7 +300,7 @@ class FaceClient(object):
             raise AttributeError('You need to set Twitter credentials to ' +
                                  'perform action on Twitter users')
 
-        return (facebook_uids, twitter_uids)
+        return facebook_uids, twitter_uids
 
     def __append_user_auth_data(self, data, facebook_uids, twitter_uids):
         if facebook_uids:
@@ -311,14 +310,14 @@ class FaceClient(object):
                                        self.facebook_credentials['fb_oauth_token'])})
 
         if twitter_uids:
-            data.update({'user_auth':
-                             ('twitter_oauth_user:%s,twitter_oauth_secret:%s,'
-                              'twitter_oauth_token:%s' %
-                              (self.twitter_credentials['twitter_oauth_user'],
-                               self.twitter_credentials['twitter_oauth_secret'],
-                               self.twitter_credentials['twitter_oauth_token']))})
+            data.update({'user_auth': ('twitter_oauth_user:%s,twitter_oauth_secret:%s,'
+                                       'twitter_oauth_token:%s' %
+                                       (self.twitter_credentials['twitter_oauth_user'],
+                                        self.twitter_credentials['twitter_oauth_secret'],
+                                        self.twitter_credentials['twitter_oauth_token']))})
 
-    def __append_optional_arguments(self, data, **kwargs):
+    @staticmethod
+    def __append_optional_arguments(data, **kwargs):
         for key, value in iteritems(kwargs):
             if value:
                 data.update({key: value})
@@ -333,7 +332,7 @@ class FaceClient(object):
 
         # Local file is provided, use multi-part form
         if files or buffers:
-            from multipart import Multipart
+            from .multipart import Multipart
             form = Multipart()
 
             for key, value in iteritems(data):

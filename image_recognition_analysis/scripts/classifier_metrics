@@ -3,6 +3,8 @@
 """Evaluate a given classifier against a directory of annotated images.
 The script will show some metric about precision/recall, average precision etc. """
 
+from __future__ import print_function
+
 import argparse
 
 import matplotlib.pyplot as plt
@@ -23,9 +25,9 @@ csm = ClassificationScoreMatrix.from_file(args.input)
 
 accuracy = accuracy_score(csm.classifications_ground_truth, csm.classifications_predicted_label)
 
-print ">> # Classifications: {}".format(len(csm.classifications_ground_truth))
-print ">> Labels: {}".format(csm.labels)
-print ">> Accuracy: {acc:.3f}".format(acc=accuracy)
+print(">> # Classifications: {}".format(len(csm.classifications_ground_truth)))
+print(">> Labels: {}".format(csm.labels))
+print(">> Accuracy: {acc:.3f}".format(acc=accuracy))
 
 plot_false_positive_true_positive_rates(csm.labels,
                                         csm.classifications_ground_truth_as_score_matrix,

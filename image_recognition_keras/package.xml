@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>image_recognition_keras</name>
   <version>0.0.5</version>
   <description>The image_recognition_keras package</description>
@@ -10,15 +10,22 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <buildtool_depend condition="$ROS_PYTHON_VERSION == 2">python-setuptools</buildtool_depend>
+  <buildtool_depend condition="$ROS_PYTHON_VERSION == 3">python3-setuptools</buildtool_depend>
+
   <exec_depend>diagnostic_updater</exec_depend>
   <exec_depend>image_recognition_msgs</exec_depend>
   <exec_depend>image_recognition_util</exec_depend>
   <exec_depend>python-keras-pip</exec_depend>
-  <exec_depend>python-numpy</exec_depend>
-  <exec_depend>python-opencv</exec_depend>
-  <exec_depend>python-packaging</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-numpy</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-numpy</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-opencv</exec_depend>
+  <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-opencv</exec_depend>
   <exec_depend>python-tensorflow-pip</exec_depend>
   <exec_depend>rospy</exec_depend>
 
-  <test_depend>python-catkin-lint</test_depend>
+  <test_depend condition="$ROS_PYTHON_VERSION == 2">python-catkin-lint</test_depend>
+  <test_depend condition="$ROS_PYTHON_VERSION == 3">python3-catkin-lint</test_depend>
+  <test_depend condition="$ROS_PYTHON_VERSION == 2">python-future</test_depend>
+  <test_depend condition="$ROS_PYTHON_VERSION == 3">python3-future</test_depend>
 </package>

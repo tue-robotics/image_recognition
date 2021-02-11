@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import cv2
 import os
 import fnmatch
@@ -19,6 +21,6 @@ def read_annotated(dir_path, patterns=["*.jpg", "*.png", "*.jpeg"]):
                         filename = os.path.join(root, basename)
                         image = cv2.imread(filename)
                         if image is None:
-                            print ">> Ignore empty image {f}".format(f=filename)
+                            print(">> Ignore empty image {}".format(filename))
                         else:
                             yield label, image, filename

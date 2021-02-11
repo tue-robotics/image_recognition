@@ -34,6 +34,7 @@ class ObjectRecognizer(object):
 
         config = tf.compat.v1.ConfigProto()
         config.gpu_options.allow_growth = True
+        config.gpu_options.per_process_gpu_memory_fraction = 1.0
         self.session = tf.compat.v1.Session(graph=tf.compat.v1.get_default_graph(), config=config)
 
         # This is only done to 'statically' check that the given tensor actually exists.
@@ -75,7 +76,7 @@ class ObjectRecognizer(object):
 
     @staticmethod
     def _read_labels(labels_path):
-        with open(labels_path, 'rb') as f:
+        with open(labels_path, 'r') as f:
             labels = [label for label in f.read().split("\n") if label]  # Skip empty lines
         if not labels:
             raise ValueError("Empty labels, will not be able to map predictions to labels")

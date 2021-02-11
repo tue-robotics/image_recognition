@@ -2,16 +2,11 @@
 
 import logging
 import sys
-from packaging import version
 import numpy as np
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Activation, add, AveragePooling2D, BatchNormalization, Convolution2D, Dense, Dropout, Flatten, Input
 from tensorflow.keras.regularizers import l2
-from keras import __version__ as kv
-if version.parse(kv) < version.parse("2.2.5"):
-    from keras import backend as K
-else:
-    from keras.backend import common as K
+from tensorflow.keras.backend import image_data_format
 
 sys.setrecursionlimit(2 ** 20)
 np.random.seed(2 ** 10)
@@ -26,12 +21,12 @@ class WideResNet:
         self._use_bias = False
         self._weight_init = "he_normal"
 
-        if K.image_dim_ordering() == "th":
-            logging.debug("image_dim_ordering = 'th'")
+        if image_data_format() == "channels_first":
+            logging.debug("image_data_format = 'channels_first'")
             self._channel_axis = 1
             self._input_shape = (3, image_size, image_size)
         else:
-            logging.debug("image_dim_ordering = 'tf'")
+            logging.debug("image_data_format = 'channels_last'")
             self._channel_axis = -1
             self._input_shape = (image_size, image_size, 3)
 

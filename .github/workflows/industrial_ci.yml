@@ -8,14 +8,18 @@ on:
 
 jobs:
   industrial_ci:
-    name: Industrial CI - ${{ github.event_name }}
+    name: Industrial CI (${{ matrix.env.ROS_DISTRO }}) - ${{ github.event_name }}
     strategy:
+      fail-fast: false
       matrix:
         env:
-          - {ROS_DISTRO: melodic, ROS_REPO: main}
+          - ROS_DISTRO: melodic
+            ROS_REPO: main
+            BEFORE_INSTALL_TARGET_DEPENDENCIES: "pip install --upgrade pip && hash -r pip && pip install --upgrade --progress-bar=off enum34 pyasn1-modules 'tensorflow>=2.1' 'keras<2.4'"
+            ADDITIONAL_DEBS: python-pip
+          - ROS_DISTRO: noetic
+            ROS_REPO: main
     env:
-      ADDITIONAL_DEBS: "python-pip"
-      BEFORE_INSTALL_TARGET_DEPENDENCIES: "pip install --upgrade pip && hash -r pip && pip install --upgrade --progress-bar=off enum34 pyasn1-modules 'tensorflow>=2.1' 'keras<2.4'"
       CCACHE_DIR: /home/runner/.ccache # Directory for ccache (and how we enable ccache in industrial_ci)
     runs-on: ubuntu-latest
     steps:

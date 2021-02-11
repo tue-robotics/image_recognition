@@ -1,1 +1,1 @@
-from skybiometry import Skybiometry, SkyFaceProperties
+from .skybiometry import Skybiometry, SkyFaceProperties
