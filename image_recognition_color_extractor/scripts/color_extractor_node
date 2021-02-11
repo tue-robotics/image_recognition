@@ -9,9 +9,9 @@ from sensor_msgs.msg import RegionOfInterest
 
 
 class ColorExtractorNode:
-    def __init__(self, total_colors):
+    def __init__(self, total_colors=3, dominant_range=10):
         self._bridge = CvBridge()
-        self._color_extractor = ColorExtractor(total_colors)
+        self._color_extractor = ColorExtractor(total_colors, dominant_range)
         self._extract_color_srv = rospy.Service('extract_color', Recognize, self._extract_color_srv)
 
     def _extract_color_srv(self, req):
@@ -36,7 +36,7 @@ class ColorExtractorNode:
 if __name__ == "__main__":
     rospy.init_node('color_extractor')
     try:
-        ColorExtractorNode(rospy.get_param('~total_colors', 3))
+        ColorExtractorNode(rospy.get_param('~total_colors', 3), rospy.get_param('~dominant_range', 10))
         rospy.spin()
     except Exception as e:
         rospy.logfatal("Exception: %s" % e)
