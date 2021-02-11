@@ -61,7 +61,7 @@ class ClassificationScoreMatrix(object):
         with open(csv_filename, 'r') as f:
             reader = csv.reader(f)
 
-            header_row = reader.next()
+            header_row = next(reader)
             classification_score_matrix = ClassificationScoreMatrix(header_row[1:])  # First column is the ground truth
 
             for row in reader:
