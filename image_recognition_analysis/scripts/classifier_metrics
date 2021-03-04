@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-"""Evaluate a given classifier against a directory of annotated images.
-The script will show some metric about precision/recall, average precision etc. """
+"""
+Evaluate a given classifier against a directory of annotated images.
+The script will show some metric about precision/recall, average precision etc.
+"""
 
 from __future__ import print_function
 

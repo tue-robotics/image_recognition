@@ -46,6 +46,7 @@ class ObjectRecognizer(object):
     def classify(self, np_image):
         """
         Classify an image into one of the labels at the label_path
+
         :param np_image a numpy array representing the image to be classified.
             This is assumed to be segmented/cropped already!
         :returns prediction scores for each label (ordered)

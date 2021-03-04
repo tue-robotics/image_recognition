@@ -9,11 +9,14 @@ from image_recognition_color_extractor import ColorExtractor
 
 # Assign description to the help doc
 parser = argparse.ArgumentParser(description='Get dominant colors from image')
-parser.add_argument('image', type=argparse.FileType('r'), help='Image')
-parser.add_argument('--total_colors', default=3, type=int, help='Total colors')
+parser.add_argument('image', type=argparse.FileType('r'), nargs='+', help='Image')
+parser.add_argument('--total-colors', default=3, type=int, help='Total colors')
+parser.add_argument('--dominant-range', default=10, type=int, help='Dominant range')
 
 args = parser.parse_args()
 
-colors = ColorExtractor(args.total_colors).recognize(cv2.imread(args.image.name))
-
-print("Colors:", colors)
+color_extractor = ColorExtractor(args.total_colors, args.dominant_range)
+for image in args.image:
+    print(image.name)
+    colors = color_extractor.recognize(cv2.imread(image.name))
+    print('Colors:', colors)

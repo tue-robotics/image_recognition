@@ -1,3 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env python
 
-rqt -s image_recognition_rqt.folder_image_publisher.FolderImagePublisherPlugin
+from rqt_gui.main import Main
+import sys
+
+plugin = "image_recognition_rqt.folder_image_publisher.FolderImagePublisherPlugin"
+main = Main(filename=plugin)
+sys.exit(main.main(sys.argv, standalone=plugin))
+

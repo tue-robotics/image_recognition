@@ -26,6 +26,7 @@ class AgeGenderEstimator(object):
     def estimate(self, np_images):
         """
         Estimate the age and gender of the face on the image
+
         :param np_images a numpy array of BGR images of faces of which the gender and the age has to be estimated
             This is assumed to be segmented/cropped already!
         :returns List of estimated age and gender score ([female, male]) tuples

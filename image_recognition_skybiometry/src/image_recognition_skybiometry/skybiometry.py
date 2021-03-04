@@ -7,6 +7,7 @@ class Attribute:
     def __init__(self, value=0, confidence=0):
         """
         Face Attribute class
+
         :param value: The value of the attribute
         :param confidence: Confidence level
         """
@@ -39,6 +40,7 @@ class Skybiometry:
     def __init__(self, api_key, api_secret, namespace):
         """
         Python wrapper for the Skybiometry API
+
         :param api_key: The authorization key of the Skybiometry API
         :param api_secret: The secret of the Skybiometry API
         :parm namespace: Namespace to use
@@ -56,6 +58,7 @@ class Skybiometry:
     def _external_request_with_timeout(self, buffers, timeout):
         """
         The actual request with a timeout
+
         :param buffers: Image buffers
         :param timeout: specified timeout
         :return: query result
@@ -66,6 +69,7 @@ class Skybiometry:
     def get_face_properties(self, images, timeout):
         """
         Returns a SkyFace detections list based on a list of images
+
         :param images: List of input images (Faces)
         :param timeout: Request timeout
         :return: The SkyFaces with their properties

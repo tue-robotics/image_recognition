@@ -22,6 +22,7 @@ import re
 def _sanitize(label):
     """
     Sanitize string, only allow \w regex chars
+
     :param label: Input that needs to be sanitized
     :return: The sanatized string
     """
@@ -33,6 +34,7 @@ class ManualPlugin(Plugin):
     def __init__(self, context):
         """
         ManualPlugin class that performs a manual recognition based on a request
+
         :param context: QT context, aka parent
         """
         super(ManualPlugin, self).__init__(context)
@@ -92,6 +94,7 @@ class ManualPlugin(Plugin):
     def _set_labels(self, labels):
         """
         Sets the labels
+
         :param labels: label string array
         """
         if not labels:
@@ -107,6 +110,7 @@ class ManualPlugin(Plugin):
     def recognize_srv_callback(self, req):
         """
         Method callback for the Recognize.srv
+
         :param req: The service request
         """
         self._response.recognitions = []
@@ -135,6 +139,7 @@ class ManualPlugin(Plugin):
     def image_roi_callback(self, roi_image):
         """
         Callback triggered when the user has drawn an ROI on the image
+
         :param roi_image: The opencv image in the ROI
         """
         if not self.labels:
@@ -151,6 +156,7 @@ class ManualPlugin(Plugin):
     def _stage_recognition(self, roi, label):
         """
         Stage a manual recognition
+
         :param roi: ROI
         :param label: The label
         """
@@ -173,6 +179,7 @@ class ManualPlugin(Plugin):
     def _create_service_server(self, srv_name):
         """
         Method that creates a service server for a Recognize.srv
+
         :param srv_name:
         """
         if self._srv:
@@ -192,6 +199,7 @@ class ManualPlugin(Plugin):
     def save_settings(self, plugin_settings, instance_settings):
         """
         Callback function on shutdown to store the local plugin variables
+
         :param plugin_settings: Plugin settings
         :param instance_settings: Settings of this instance
         """
@@ -202,6 +210,7 @@ class ManualPlugin(Plugin):
     def restore_settings(self, plugin_settings, instance_settings):
         """
         Callback function fired on load of the plugin that allows to restore saved variables
+
         :param plugin_settings: Plugin settings
         :param instance_settings: Settings of this instance
         """

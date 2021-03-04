@@ -22,8 +22,11 @@ from image_recognition_tensorflow.object_recognizer import ObjectRecognizer
 class TensorflowObjectRecognition:
     """ Performs object recognition using Tensorflow neural networks """
     def __init__(self, recognizer, save_images_folder):
-        """ Constructor
-        :param recognizer: an object recognition object with a .classify-method, taking a numpy image and returning a list of (class, prob) tuples
+        """
+        Constructor
+
+        :param recognizer: an object recognition object with a .classify-method, taking a numpy image and returning a
+        list of (class, prob) tuples
         :param save_images_folder: Where to store images for debugging or data collection
         """
 
@@ -39,9 +42,11 @@ class TensorflowObjectRecognition:
         rospy.loginfo(" - Labels: {}".format(self._recognizer.labels))
 
     def _recognize_srv_callback(self, req):
-        """ Callback function for the recognize. It saves the image on a temporary location and sets _do_recognition
+        """
+        Callback function for the recognize. It saves the image on a temporary location and sets _do_recognition
         to True. Subsequently, it waits until the image has been processed (i.e., until _do_recognition is False again)
         and then returns the result
+
         :param req: image_recognition_msgs.srv.RecognizeRequest
         :return: image_recognition_msgs.srv.RecognizeResponse
         """
@@ -88,7 +93,6 @@ class TensorflowObjectRecognition:
 
 
 if __name__ == '__main__':
-
     # Start ROS node
     rospy.init_node('image_recognition_tensorflow')
 

@@ -4,16 +4,14 @@ from python_qt_binding.QtWidgets import *
 from python_qt_binding.QtGui import * 
 from python_qt_binding.QtCore import *
 
-from image_recognition_tensorflow import retrain, utils
-import webbrowser
+from image_recognition_tensorflow import retrain
 import subprocess
-import time
-import signal
 
 
 def dialog(title, text, icon=QMessageBox.Information):
     """
     Helper to pop-up a dialog
+
     :param title: Title of the dialog
     :param text: Dialog text
     :param icon: Information / Warning / Error icon
@@ -34,6 +32,7 @@ class TrainPlugin(Plugin):
     def __init__(self, context):
         """
         RQT plugin for training a tensorflow graph
+
         :param context: parent qt widget passed by RQT
         """
         super(TrainPlugin, self).__init__(context)
@@ -71,13 +70,14 @@ class TrainPlugin(Plugin):
         # Start tensorboard op startup
         self.tensorboard_sub = subprocess.Popen(["tensorboard", "--logdir", "/tmp/retrain_logs"])
 
-        self._label = QLabel("Tensorboard live at <a href=\"http://127.0.1.1:6006/\">http://127.0.1.1:6006</a>")
-        self._label.setOpenExternalLinks(True);
+        self._label = QLabel("Tensorboard live at <a href=\"http://localhost:6006/\">http://localhost:6006</a>")
+        self._label.setOpenExternalLinks(True)
         layout.addWidget(self._label, 4, 2)
 
     def _set_images_directory(self, path):
         """
         Set the image directory
+
         :param path: image dir
         """
         if not path:
@@ -95,6 +95,7 @@ class TrainPlugin(Plugin):
     def _set_output_directory(self, path):
         """
         Set the output directory
+
         :param path: the path
         """
         if not path:
@@ -113,18 +114,16 @@ class TrainPlugin(Plugin):
         """
         The train method that does the actual training of the neural net
         """
-        model_dir = "/tmp/inception"
-        utils.maybe_download_and_extract("http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz",
-                                         "/tmp/inception")
 
         try:
-            retrain.main(self.images_directory, model_dir, self.output_directory,
+            self._train_button.setDisabled(True)
+            retrain.main(self.images_directory, "/tmp/inception", self.output_directory, architecture="inception_v3",
                          steps=self.steps, batch=self.batch)
             dialog("Retrain succes", "Succesfully retrained the top layers! Check Tensorboard for the results!")
-            self._train_button.setDisabled(True)
             self._train_button.setText("Training done :)")
         except Exception as e:
             dialog("Retrain failed", "Something went wrong during retraining, '%s'" % str(e), QMessageBox.Warning)
+            self._train_button.setEnabled(True)
 
     def trigger_configuration(self):
         """
@@ -135,23 +134,24 @@ class TrainPlugin(Plugin):
         # Update batch if ok
         self.batch = batch if ok else self.batch
 
-        steps, ok = QInputDialog.getInt(self._widget, "Set steps size", "Step size", self.steps    )
+        steps, ok = QInputDialog.getInt(self._widget, "Set steps size", "Step size", self.steps)
 
         # Update batch if ok
         self.steps = steps if ok else self.steps
 
         self._update_configuration_title()
+        self._train_button.setEnabled(True)
 
     def shutdown_plugin(self):
         """
         Shutdown callback
         """
         self.tensorboard_sub.kill()
-        pass
 
     def save_settings(self, plugin_settings, instance_settings):
         """
         Save settings on shutdown
+
         :param plugin_settings: Plugin settings
         :param instance_settings: Settings instance
         """
@@ -169,6 +169,7 @@ class TrainPlugin(Plugin):
     def restore_settings(self, plugin_settings, instance_settings):
         """
         Restore settings on startup
+
         :param plugin_settings: Plugin settings
         :param instance_settings: Settings instance
         """

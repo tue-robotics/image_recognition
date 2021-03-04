@@ -1,0 +1,30 @@
+[submodule "image_recognition_analysis/docs"]
+	path = image_recognition_analysis/docs
+	url = https://github.com/tue-robotics/tue_documentation_python.git
+[submodule "image_recognition_color_extractor/docs"]
+	path = image_recognition_color_extractor/docs
+	url = https://github.com/tue-robotics/tue_documentation_python.git
+[submodule "image_recognition_keras/docs"]
+	path = image_recognition_keras/docs
+	url = https://github.com/tue-robotics/tue_documentation_python.git
+[submodule "image_recognition_openface/docs"]
+	path = image_recognition_openface/docs
+	url = https://github.com/tue-robotics/tue_documentation_python.git
+[submodule "image_recognition_openpose/docs"]
+	path = image_recognition_openpose/docs
+	url = https://github.com/tue-robotics/tue_documentation_python.git
+[submodule "image_recognition_rqt/docs"]
+	path = image_recognition_rqt/docs
+	url = https://github.com/tue-robotics/tue_documentation_python.git
+[submodule "image_recognition_skybiometry/docs"]
+	path = image_recognition_skybiometry/docs
+	url = https://github.com/tue-robotics/tue_documentation_python.git
+[submodule "image_recognition_tensorflow/docs"]
+	path = image_recognition_tensorflow/docs
+	url = https://github.com/tue-robotics/tue_documentation_python.git
+[submodule "image_recognition_tensorflow_rqt/docs"]
+	path = image_recognition_tensorflow_rqt/docs
+	url = https://github.com/tue-robotics/tue_documentation_python.git
+[submodule "image_recognition_util/docs"]
+	path = image_recognition_util/docs
+	url = https://github.com/tue-robotics/tue_documentation_python.git

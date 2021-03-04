@@ -7,6 +7,7 @@ import cv2
 def _convert_cv_to_qt_image(cv_image):
     """
     Method to convert an opencv image to a QT image
+
     :param cv_image: The opencv image
     :return: The QT Image
     """
@@ -21,6 +22,7 @@ def _convert_cv_to_qt_image(cv_image):
 def _get_roi_from_rect(rect):
     """
     Returns the ROI from a rectangle, the rectangle can have the top and bottom flipped
+
     :param rect: Rect to get roi from
     :return: x, y, width, height of ROI
     """
@@ -37,6 +39,7 @@ class ImageWidget(QWidget):
     def __init__(self, parent, image_roi_callback, clear_on_click=False):
         """
         Image widget that allows drawing rectangles and firing a image_roi_callback
+
         :param parent: The parent QT Widget
         :param image_roi_callback: The callback function when a ROI is drawn
         """
@@ -55,6 +58,7 @@ class ImageWidget(QWidget):
     def paintEvent(self, event):
         """
         Called every tick, paint event of QT
+
         :param event: Paint event of QT
         """
         painter = QPainter()
@@ -83,6 +87,7 @@ class ImageWidget(QWidget):
     def set_image(self, image):
         """
         Sets an opencv image to the widget
+
         :param image: The opencv image
         """
         self._cv_image = image
@@ -92,6 +97,7 @@ class ImageWidget(QWidget):
     def add_detection(self, x, y, width, height, label):
         """
         Adds a detection to the image
+
         :param x: ROI_X
         :param y: ROI_Y
         :param width: ROI_WIDTH
@@ -110,7 +116,8 @@ class ImageWidget(QWidget):
 
     def mousePressEvent(self, event):
         """
-        Mouspress callback
+        Mousepress callback
+
         :param event: mouse event
         """
         # Check if we clicked on the img
@@ -124,6 +131,7 @@ class ImageWidget(QWidget):
     def mouseMoveEvent(self, event):
         """
         Mousemove event
+
         :param event: mouse event
         """
         if not self.dragging:
@@ -136,6 +144,7 @@ class ImageWidget(QWidget):
     def mouseReleaseEvent(self, event):
         """
         Mouse release event
+
         :param event: mouse event
         """
         if not self.dragging:

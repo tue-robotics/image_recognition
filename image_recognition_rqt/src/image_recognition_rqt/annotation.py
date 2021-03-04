@@ -10,8 +10,6 @@ from python_qt_binding.QtCore import *
 
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
-import cv2
-import datetime
 import re
 import rosservice
 
@@ -28,6 +26,7 @@ _SUPPORTED_SERVICES = ["image_recognition_msgs/Annotate"]
 def _sanitize(label):
     """
     Sanitize string, only allow \w regex chars
+
     :param label: Input that needs to be sanitized
     :return: The sanatized string
     """
@@ -39,6 +38,7 @@ class AnnotationPlugin(Plugin):
     def __init__(self, context):
         """
         Annotation plugin to create data sets or test the Annotate.srv service
+
         :param context: Parent QT widget
         """
         super(AnnotationPlugin, self).__init__(context)
@@ -94,6 +94,7 @@ class AnnotationPlugin(Plugin):
     def image_roi_callback(self, roi_image):
         """
         Callback from the image widget when the user has selected a ROI
+
         :param roi_image: The opencv image of the ROI
         """
         if not self.labels:
@@ -119,6 +120,7 @@ class AnnotationPlugin(Plugin):
     def annotate(self, roi_image):
         """
         Create an annotation
+
         :param roi_image: The image we want to annotate
         """
         self.annotate_srv(roi_image)
@@ -142,6 +144,7 @@ class AnnotationPlugin(Plugin):
     def _create_service_client(self, srv_name):
         """
         Create a service client proxy
+
         :param srv_name: Name of the service
         """
         if self._srv:
@@ -156,6 +159,7 @@ class AnnotationPlugin(Plugin):
     def store_image(self, roi_image):
         """
         Store the image
+
         :param roi_image: Image we would like to store
         """
         if roi_image is not None and self.label is not None and self.output_directory is not None:
@@ -170,6 +174,7 @@ class AnnotationPlugin(Plugin):
     def _set_output_directory(self, path):
         """
         Sets the output directory
+
         :param path: The path of the directory
         """
         if not path:
@@ -267,6 +272,7 @@ class AnnotationPlugin(Plugin):
     def save_settings(self, plugin_settings, instance_settings):
         """
         Callback function on shutdown to store the local plugin variables
+
         :param plugin_settings: Plugin settings
         :param instance_settings: Settings of this instance
         """
@@ -280,6 +286,7 @@ class AnnotationPlugin(Plugin):
     def restore_settings(self, plugin_settings, instance_settings):
         """
         Callback function fired on load of the plugin that allows to restore saved variables
+
         :param plugin_settings: Plugin settings
         :param instance_settings: Settings of this instance
         """

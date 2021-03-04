@@ -1,3 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env python
 
-rqt -s image_recognition_rqt.annotation.AnnotationPlugin
+from rqt_gui.main import Main
+import sys
+
+plugin = "image_recognition_rqt.annotation.AnnotationPlugin"
+main = Main(filename=plugin)
+sys.exit(main.main(sys.argv, standalone=plugin))

@@ -21,6 +21,7 @@ class OpenposeNode:
                  service_publish_result_image, save_images_folder):
         """
         Openpose node that wraps the openpose functionality and exposes service and subscriber interfaces
+
         :param model_folder: Where to look for the models
         :param pose_model: What model to use
         :param net_input_size: What net input resolution we would like to use

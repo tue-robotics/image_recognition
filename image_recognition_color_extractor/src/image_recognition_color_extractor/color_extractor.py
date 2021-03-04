@@ -5,10 +5,28 @@ from sklearn.cluster import KMeans
 
 
 class ColorExtractor(object):
-    def __init__(self, total_colors):
+    def __init__(self, total_colors=3, dominant_range=10):
+        """
+        Constructor
+
+        :param total_colors: Number of colors an image is split into
+        :type total_colors: int
+        :param dominant_range: range of percentage points relative to the most dominant color. All other colors in this
+        range are also returned.
+        :type dominant_range: int
+        """
         self._total_colors = total_colors
+        self._dominant_range = dominant_range
 
     def recognize(self, img):
+        """
+        Extract the most dominant color(s)
+
+        :param img: image to analyse
+        :type img: cv2.image
+        :return: List of tuples of color label and percentage (0-100)
+        :rtype: list[tuple]
+        """
         dominant_colors = list()
 
         height, width, dim = img.shape
@@ -23,7 +41,7 @@ class ColorExtractor(object):
 
         sort_ix = np.argsort(counts_l)
         factor_counts = 100.0 / sum(counts_l)
-        percentages = [factor_counts * counts_l[sort_ix[2]], factor_counts * counts_l[sort_ix[1]]]
+        percentages = [factor_counts * counts_l[ix] for ix in reversed(sort_ix)]
         colors = list()
         sort_ix = sort_ix[::-1]
 
@@ -63,9 +81,12 @@ class ColorExtractor(object):
             else:
                 colors.append('red')
 
-        dominant_colors.append(colors[0])
+        dominant_colors.append((colors[0], percentages[0]))
 
-        if percentages[0] - percentages[1] < 10 and colors[0] != colors[1]:
-            dominant_colors.append(colors[1])
+        for color, percentage in zip(colors[1:], percentages[1:]):
+            if percentages[0] - percentage > self._dominant_range:
+                break  # Percentage are ordered, so when out of range, rest is also out of range
+            if colors[0] != color:
+                dominant_colors.append((color, percentage))
 
         return dominant_colors

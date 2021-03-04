@@ -18,6 +18,7 @@ import cv2
 def find_files(directory, patterns):
     """
     Find files that match one of the patterns in a directory. We return an iterator that provides a file path string
+
     :param directory: Directory to index
     :param patterns: Patterns list, e.g. ['*.jpg', '*.png']
     """
@@ -78,6 +79,7 @@ class FolderImagePublisherPlugin(Plugin):
     def _index_image_files(self, directory):
         """
         Index all images in the specified directory
+
         :param directory: Directory to index
         """
         self._files = collections.deque([f for f in find_files(directory, ['*.jpeg', '*.jpg', '*.png'])])
@@ -94,6 +96,7 @@ class FolderImagePublisherPlugin(Plugin):
     def _rotate_and_publish(self, rotate_arg):
         """
         Rotate the files deque and publish an image over the topic
+
         :param rotate_arg: Rotate steps and direction
         """
         self._files.rotate(rotate_arg)
