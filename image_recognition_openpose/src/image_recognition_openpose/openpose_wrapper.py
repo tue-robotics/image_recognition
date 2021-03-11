@@ -61,7 +61,7 @@ class OpenposeWrapper(object):
         # `op` added to globals in the constructor
         datum = op.Datum()  # pylint: disable=undefined-variable # noqa: F821
         datum.cvInputData = image
-        self._openpose_wrapper.emplaceAndPop([datum])
+        self._openpose_wrapper.emplaceAndPop(op.VectorDatum([datum]))
 
         keypoints = datum.poseKeypoints
         overlayed_image = datum.cvOutputData
