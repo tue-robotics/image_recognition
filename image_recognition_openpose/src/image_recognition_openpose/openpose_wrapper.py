@@ -68,7 +68,7 @@ class OpenposeWrapper(object):
 
         recognitions = []
 
-        if len(keypoints.shape) == 3:
+        if keypoints is not None and len(keypoints.shape) == 3:  # If no detections, keypoints will be None
             num_persons, num_bodyparts, _ = keypoints.shape
             for person_id in range(0, num_persons):
                 for body_part_id in range(0, num_bodyparts):
