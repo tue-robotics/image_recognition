@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
     try:
         node = OpenposeNode(
-            rospy.get_param("~model_folder", default=os.path.expanduser('~/openpose/models')),
+            rospy.get_param("~model_folder", default=os.path.expanduser('~/src/openpose/models')),
             rospy.get_param("~pose_model", "BODY_25"),
             rospy.get_param("~net_input_size", "-1x368"),
             rospy.get_param("~net_output_size", "-1x-1"),
