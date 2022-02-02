@@ -3,6 +3,10 @@
 import logging
 import sys
 import numpy as np
+
+import tensorflow as tf
+from tensorflow.compat.v1.keras.backend import set_session
+
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Activation, add, AveragePooling2D, BatchNormalization, Convolution2D, Dense, Dropout, Flatten, Input
 from tensorflow.keras.regularizers import l2
@@ -10,6 +14,12 @@ from tensorflow.keras.backend import image_data_format
 
 sys.setrecursionlimit(2 ** 20)
 np.random.seed(2 ** 10)
+
+config = tf.compat.v1.ConfigProto()
+config.gpu_options.allow_growth = True
+config.log_device_placement = True
+sess = tf.compat.v1.Session(config=config)
+set_session(sess)
 
 
 class WideResNet:
