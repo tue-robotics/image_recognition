@@ -27,7 +27,7 @@ class PytorchFaceProperties:
         else:
             self._save_images_folder = None
 
-        rospy.loginfo("WideResnetFaceProperties node initialized:")
+        rospy.loginfo("PytorchFaceProperties node initialized:")
         rospy.loginfo(" - weights_file_path=%s", weights_file_path)
         rospy.loginfo(" - img_size=%s", img_size)
         rospy.loginfo(" - depth=%s", depth)
@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
         save_images_folder = None
         if save_images:
-            save_images_folder = rospy.get_param("~save_images_folder", "/tmp/image_recognition_keras")
+            save_images_folder = rospy.get_param("~save_images_folder", "/tmp/image_recognition_pytorch")
     except KeyError as e:
         rospy.logerr("Parameter %s not found" % e)
         sys.exit(1)
