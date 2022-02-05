@@ -2,10 +2,10 @@ import rospy
 import rosservice
 import rostopic
 from cv_bridge import CvBridge, CvBridgeError
-from dialogs import option_dialog, warning_dialog, info_dialog
+from .dialogs import option_dialog, warning_dialog, info_dialog
 from image_recognition_msgs.msg import CategoryProbability, FaceProperties
 from image_recognition_msgs.srv import GetFaceProperties, Recognize
-from image_widget import ImageWidget
+from .image_widget import ImageWidget
 from python_qt_binding.QtCore import *
 from python_qt_binding.QtGui import *
 from python_qt_binding.QtWidgets import *
