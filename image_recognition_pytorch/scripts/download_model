@@ -6,7 +6,7 @@ import urllib.request
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--model_path', default=os.path.expanduser('~/pytorch/models'))
+parser.add_argument('--model_path', default=os.path.expanduser('~/data/pytorch_models'))
 args = parser.parse_args()
 
 os.system('mkdir -p {}'.format(args.model_path))
