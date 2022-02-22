@@ -8,11 +8,11 @@ GENDER_DICT = {0: 'male', 1: 'female'}
 
 
 class AgeGenderEstimator(object):
-    def __init__(self, weights_file_path, img_size=64, depth=16, width=8):
+    def __init__(self, weights_file_path, img_size=64, depth=16, width=8, use_gpu=False):
         """
         Estimate the age and gender of the incoming image
 
-        :param weights_file_path: path to a pre-trained keras network
+        :param weights_file_path: path to a pre-trained network in onnx format
         """
         weights_file_path = os.path.expanduser(weights_file_path)
 
@@ -24,6 +24,7 @@ class AgeGenderEstimator(object):
         self._img_size = img_size
         self._depth = depth
         self._width = width
+        self._use_gpu = use_gpu
 
     def estimate(self, np_images):
         """
@@ -36,7 +37,18 @@ class AgeGenderEstimator(object):
 
         # Model should be constructed in same thread as the inference
         if self._model is None:
-            self._model = onnxruntime.InferenceSession(self._weights_file_path)
+            providers = ['CPUExecutionProvider']
+            if self._use_gpu:
+                providers.append(
+                    ('CUDAExecutionProvider', {
+                        'device_id': 0,
+                        'arena_extend_strategy': 'kNextPowerOfTwo',
+                        'gpu_mem_limit': 2 * 1024 * 1024 * 1024,
+                        'cudnn_conv_algo_search': 'EXHAUSTIVE',
+                        'do_copy_in_default_stream': True,
+                    })),
+
+            self._model = onnxruntime.InferenceSession(self._weights_file_path, providers=providers)
 
         results = []
         for np_image in np_images:
