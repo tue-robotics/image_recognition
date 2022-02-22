@@ -13,8 +13,8 @@ from cv_bridge import CvBridge, CvBridgeError
 import re
 import rosservice
 
-from image_widget import ImageWidget
-from dialogs import option_dialog, warning_dialog
+from .image_widget import ImageWidget
+from .dialogs import option_dialog, warning_dialog
 
 from image_recognition_msgs.msg import Annotation
 from image_recognition_util import image_writer
