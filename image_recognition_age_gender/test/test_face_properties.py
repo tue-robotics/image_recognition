@@ -11,7 +11,7 @@ from image_recognition_age_gender.age_gender_estimator import AgeGenderEstimator
 
 
 def test_face_properties():
-    local_path = os.path.join(os.path.expanduser('~/data/pytorch_models'), "best-epoch47-0.9314.onnx")
+    local_path = "/tmp/best-epoch47-0.9314.onnx"
 
     if not os.path.exists(local_path):
         http_path = "https://github.com/Nebula4869/PyTorch-gender-age-estimation/raw/" \
