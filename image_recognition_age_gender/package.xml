@@ -3,9 +3,9 @@
   href="http://download.ros.org/schema/package_format3.xsd"
   schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>image_recognition_pytorch</name>
+  <name>image_recognition_age_gender</name>
   <version>0.0.1</version>
-  <description>The image_recognition_pytorch package</description>
+  <description>The image_recognition_age_gender package</description>
 
   <maintainer email="loy.vanbeek@gmail.com">Loy van Beek</maintainer>
 
@@ -20,8 +20,8 @@
   <exec_depend>image_recognition_util</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-opencv</exec_depend>
-  <exec_depend>python3-onnxruntime-pip</exec_depend>
-  <exec_depend>python3-pytorch-pip</exec_depend>
+  <exec_depend>python3-onnxruntime-gpu-pip</exec_depend>
+  <exec_depend>python-pytorch-pip</exec_depend>
   <exec_depend>rospy</exec_depend>
 
   <test_depend>python3-catkin-lint</test_depend>

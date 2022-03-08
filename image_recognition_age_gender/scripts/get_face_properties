@@ -1,7 +1,6 @@
-#!/usr/bin/env python
-from __future__ import print_function
+#!/usr/bin/env python3
 import argparse
-from image_recognition_pytorch.age_gender_estimator import AgeGenderEstimator
+from image_recognition_age_gender.age_gender_estimator import AgeGenderEstimator
 import cv2
 import os
 

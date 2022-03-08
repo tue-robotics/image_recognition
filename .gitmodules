@@ -28,6 +28,6 @@
 [submodule "image_recognition_util/docs"]
 	path = image_recognition_util/docs
 	url = https://github.com/tue-robotics/tue_documentation_python.git
-[submodule "image_recognition_pytorch/docs"]
-	path = image_recognition_pytorch/docs
+[submodule "image_recognition_age_gender/docs"]
+	path = image_recognition_age_gender/docs
 	url = https://github.com/tue-robotics/tue_documentation_python.git
