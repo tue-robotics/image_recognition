@@ -31,8 +31,8 @@ def test_face_properties():
     for (_, (age_gt, is_female_gt)), (age, gender) in zip(images_gt, estimations):
         age = int(age)
         is_female = gender[0] > 0.5
-        assert abs(age - age_gt) < 5
-        assert is_female == is_female_gt
+        assert abs(age - age_gt) < 5, "age={}, age_gt={}".format(age, age_gt)
+        assert is_female == is_female_gt, 'is_female={}, is_female_gt={}'.format(is_female, is_female_gt)
 
 
 if __name__ == "__main__":
