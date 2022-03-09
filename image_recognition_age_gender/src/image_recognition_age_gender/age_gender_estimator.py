@@ -13,6 +13,7 @@ class AgeGenderEstimator(object):
         Estimate the age and gender of the incoming image
 
         :param weights_file_path: path to a pre-trained network in onnx format
+        :param use_gpu: Use GPU or CPU
         """
         weights_file_path = os.path.expanduser(weights_file_path)
 
