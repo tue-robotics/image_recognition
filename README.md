@@ -24,10 +24,6 @@ Package | Build status Xenial Kinetic x64 | Description
 [image_recognition_tensorflow_rqt](https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_tensorflow_rqt) | [![Build Status](http://build.ros.org/job/Ksrc_uX__image_recognition_tensorflow_rqt__ubuntu_xenial__source/1//badge/icon)](http://build.ros.org/job/Ksrc_uX__image_recognition_tensorflow_rqt__ubuntu_xenial__source/1/) | RQT tools for retraining a Tensorflow neural network.
 [image_recognition_util](https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_util) | [![Build Status](http://build.ros.org/job/Ksrc_uX__image_recognition_util__ubuntu_xenial__source/1//badge/icon)](http://build.ros.org/job/Ksrc_uX__image_recognition_util__ubuntu_xenial__source/1/) | Utils shared among image recognition packages
 
-## Travis CI Build Status
-
-[![Build Status](https://travis-ci.com/tue-robotics/image_recognition.svg)](https://travis-ci.com/tue-robotics/image_recognition)
-
 # How to
 
 ## Object recognition
