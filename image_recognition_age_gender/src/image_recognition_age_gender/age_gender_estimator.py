@@ -8,7 +8,7 @@ GENDER_DICT = {0: 'male', 1: 'female'}
 
 
 class AgeGenderEstimator(object):
-    def __init__(self, weights_file_path, img_size=64, depth=16, width=8, use_gpu=False):
+    def __init__(self, weights_file_path, use_gpu=False):
         """
         Estimate the age and gender of the incoming image
 
@@ -21,9 +21,6 @@ class AgeGenderEstimator(object):
 
         self._model = None
         self._weights_file_path = weights_file_path
-        self._img_size = img_size
-        self._depth = depth
-        self._width = width
         self._use_gpu = use_gpu
 
     def estimate(self, np_images):
