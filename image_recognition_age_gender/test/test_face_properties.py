@@ -28,7 +28,7 @@ def test_face_properties():
     images_gt = [(cv2.imread(os.path.join(assets_path, asset)), age_is_female_from_asset_name(asset))
                  for asset in os.listdir(assets_path)]
 
-    estimations = AgeGenderEstimator(local_path, 64).estimate([image for image, _ in images_gt])
+    estimations = AgeGenderEstimator(local_path, 64).estimate(image for image, _ in images_gt)
     for (_, (age_gt, is_female_gt)), (age, gender) in zip(images_gt, estimations):
         age = int(age)
         is_female = gender[0] > 0.5
