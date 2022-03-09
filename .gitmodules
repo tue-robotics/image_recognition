@@ -1,11 +1,11 @@
+[submodule "image_recognition_age_gender/docs"]
+	path = image_recognition_age_gender/docs
+	url = https://github.com/tue-robotics/tue_documentation_python.git
 [submodule "image_recognition_analysis/docs"]
 	path = image_recognition_analysis/docs
 	url = https://github.com/tue-robotics/tue_documentation_python.git
 [submodule "image_recognition_color_extractor/docs"]
 	path = image_recognition_color_extractor/docs
-	url = https://github.com/tue-robotics/tue_documentation_python.git
-[submodule "image_recognition_keras/docs"]
-	path = image_recognition_keras/docs
 	url = https://github.com/tue-robotics/tue_documentation_python.git
 [submodule "image_recognition_openface/docs"]
 	path = image_recognition_openface/docs

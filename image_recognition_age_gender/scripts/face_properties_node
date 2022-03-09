@@ -1,24 +1,24 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 import sys
 
 import diagnostic_updater
 import rospy
 from cv_bridge import CvBridge, CvBridgeError
-from image_recognition_keras.age_gender_estimator import AgeGenderEstimator
+from image_recognition_age_gender.age_gender_estimator import AgeGenderEstimator
 from image_recognition_msgs.msg import FaceProperties
 from image_recognition_msgs.srv import GetFaceProperties
 from image_recognition_util import image_writer
 
 
-class WideResnetFaceProperties:
-    def __init__(self, weights_file_path, img_size, depth, width, save_images_folder):
+class FacePropertiesNode:
+    def __init__(self, weights_file_path, img_size, depth, width, save_images_folder, use_gpu):
         """
-        ROS node that wraps the Wide Resnet age gender estimator
+        ROS node that wraps the PyTorch age gender estimator
         """
         self._bridge = CvBridge()
         self._properties_srv = rospy.Service('get_face_properties', GetFaceProperties, self._get_face_properties_srv)
-        self._estimator = AgeGenderEstimator(weights_file_path, img_size, depth, width)
+        self._estimator = AgeGenderEstimator(weights_file_path, img_size, depth, width, use_gpu)
 
         if save_images_folder:
             self._save_images_folder = os.path.expanduser(save_images_folder)
@@ -27,12 +27,13 @@ class WideResnetFaceProperties:
         else:
             self._save_images_folder = None
 
-        rospy.loginfo("WideResnetFaceProperties node initialized:")
+        rospy.loginfo("PytorchFaceProperties node initialized:")
         rospy.loginfo(" - weights_file_path=%s", weights_file_path)
         rospy.loginfo(" - img_size=%s", img_size)
         rospy.loginfo(" - depth=%s", depth)
         rospy.loginfo(" - width=%s", width)
         rospy.loginfo(" - save_images_folder=%s", save_images_folder)
+        rospy.loginfo(" - use_gpu=%s", use_gpu)
 
     def _get_face_properties_srv(self, req):
         """
@@ -78,22 +79,23 @@ if __name__ == '__main__':
     rospy.init_node("face_properties")
 
     try:
-        default_weights_path = os.path.expanduser('~/keras/models/face_properties_weights.28-3.73.hdf5')
+        default_weights_path = os.path.expanduser('~/data/pytorch_models/best-epoch47-0.9314.onnx')
         weights_file_path = rospy.get_param("~weights_file_path", default_weights_path)
         img_size = rospy.get_param("~image_size", 64)
         depth = rospy.get_param("~depth", 16)
         width = rospy.get_param("~width", 8)
         save_images = rospy.get_param("~save_images", True)
+        use_gpu = rospy.get_param("~use_gpu", False)
 
         save_images_folder = None
         if save_images:
-            save_images_folder = rospy.get_param("~save_images_folder", "/tmp/image_recognition_keras")
+            save_images_folder = rospy.get_param("~save_images_folder", "/tmp/image_recognition_pytorch")
     except KeyError as e:
         rospy.logerr("Parameter %s not found" % e)
         sys.exit(1)
 
     try:
-        WideResnetFaceProperties(weights_file_path, img_size, depth, width, save_images_folder)
+        FacePropertiesNode(weights_file_path, img_size, depth, width, save_images_folder, use_gpu)
         updater = diagnostic_updater.Updater()
         updater.setHardwareID("none")
         updater.add(diagnostic_updater.Heartbeat())

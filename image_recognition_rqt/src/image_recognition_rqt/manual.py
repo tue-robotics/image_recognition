@@ -12,8 +12,8 @@ from sensor_msgs.msg import RegionOfInterest
 from cv_bridge import CvBridge, CvBridgeError
 from image_recognition_msgs.msg import CategoryProbability, Recognition
 
-from image_widget import ImageWidget
-from dialogs import option_dialog, warning_dialog
+from .image_widget import ImageWidget
+from .dialogs import option_dialog, warning_dialog
 
 from image_recognition_msgs.srv import Recognize, RecognizeResponse
 import re

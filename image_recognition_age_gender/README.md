@@ -1,6 +1,6 @@
-# Keras image recognition
+# Image recognition pytorch
 
-Image recognition with use of Keras.
+Image recognition (age and gender estimation of a face) with use of PyTorch.
 
 ## Installation
 
@@ -8,9 +8,9 @@ See https://github.com/tue-robotics/image_recognition for installation instructi
 
 ## ROS Node (face_properties_node)
 
-Age and gender estimation with use of WideResNet from https://github.com/yu4u/age-gender-estimation. You can download the pre-trained model here: https://github.com/tue-robotics/image_recognition/releases/download/image_recognition_keras_face_properties_weights.28-3.73/image_recognition_keras_face_properties_weights.28-3.73.hdf5
+Age and gender estimation
 ```
-rosrun image_recognition_keras face_properties_node _weights_file_path:=[path_to_model]
+rosrun image_recognition_pytorch face_properties_node _weights_file_path:=[path_to_model]
 ```
 
 Run the image_recognition_rqt test gui (https://github.com/tue-robotics/image_recognition_rqt)
@@ -40,7 +40,7 @@ optional arguments:
 Get the classification result of an input image:
 
 ```
-rosrun image_recognition_keras get_face_properties `rospack find image_recognition_keras`/doc/face.png
+rosrun image_recognition_pytorch get_face_properties `rospack find image_recognition_pytorch`/doc/face.png
 ```
 
 ![Example](doc/face.png)
@@ -48,11 +48,3 @@ rosrun image_recognition_keras get_face_properties `rospack find image_recogniti
 Output:
 
     [(50.5418073660112, array([0.5845756 , 0.41542447], dtype=float32))]
-
-## Troubleshooting
-
-```
-An error occurred: softmax() got an unexpected keyword argument 'axis'
-```
-
-Make sure you have tensorflow version >= 1.5.

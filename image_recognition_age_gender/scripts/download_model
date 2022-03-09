@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+import os
+import urllib.request
+
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--model_path', default=os.path.expanduser('~/data/pytorch_models'))
+args = parser.parse_args()
+
+os.system('mkdir -p {}'.format(args.model_path))
+local_path = os.path.join(args.model_path, 'best-epoch47-0.9314.onnx')
+
+if not os.path.exists(local_path):
+    # TODO: Clone this for us
+    http_path = "https://github.com/Nebula4869/PyTorch-gender-age-estimation/raw/" \
+                "038331d26fc1fbf24d00365d0eb9d0e5e828dda6/models-2020-11-20-14-37/best-epoch47-0.9314.onnx"
+    print("Downloading model to {} ...".format(local_path))
+    urllib.request.urlretrieve(http_path, local_path)
+    print("Model downloaded: {}".format(local_path))
+else:
+    print("Model already downloaded: {}".format(local_path))

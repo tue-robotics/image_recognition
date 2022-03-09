@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(image_recognition_keras)
+project(image_recognition_age_gender)
 
 find_package(catkin REQUIRED)
 
