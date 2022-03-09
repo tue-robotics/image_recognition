@@ -12,13 +12,13 @@ from image_recognition_util import image_writer
 
 
 class FacePropertiesNode:
-    def __init__(self, weights_file_path, img_size, depth, width, save_images_folder, use_gpu):
+    def __init__(self, weights_file_path, img_size, save_images_folder, use_gpu):
         """
         ROS node that wraps the PyTorch age gender estimator
         """
         self._bridge = CvBridge()
         self._properties_srv = rospy.Service('get_face_properties', GetFaceProperties, self._get_face_properties_srv)
-        self._estimator = AgeGenderEstimator(weights_file_path, img_size, depth, width, use_gpu)
+        self._estimator = AgeGenderEstimator(weights_file_path, img_size, use_gpu)
 
         if save_images_folder:
             self._save_images_folder = os.path.expanduser(save_images_folder)
@@ -30,8 +30,6 @@ class FacePropertiesNode:
         rospy.loginfo("PytorchFaceProperties node initialized:")
         rospy.loginfo(" - weights_file_path=%s", weights_file_path)
         rospy.loginfo(" - img_size=%s", img_size)
-        rospy.loginfo(" - depth=%s", depth)
-        rospy.loginfo(" - width=%s", width)
         rospy.loginfo(" - save_images_folder=%s", save_images_folder)
         rospy.loginfo(" - use_gpu=%s", use_gpu)
 
@@ -82,8 +80,6 @@ if __name__ == '__main__':
         default_weights_path = os.path.expanduser('~/data/pytorch_models/best-epoch47-0.9314.onnx')
         weights_file_path = rospy.get_param("~weights_file_path", default_weights_path)
         img_size = rospy.get_param("~image_size", 64)
-        depth = rospy.get_param("~depth", 16)
-        width = rospy.get_param("~width", 8)
         save_images = rospy.get_param("~save_images", True)
         use_gpu = rospy.get_param("~use_gpu", False)
 
