@@ -4,12 +4,14 @@ from __future__ import print_function
 import os
 import re
 from future.moves.urllib.request import urlretrieve
+import unittest
 
 import cv2
 import rospkg
 from image_recognition_age_gender.age_gender_estimator import AgeGenderEstimator
 
 
+@unittest.skip
 def test_face_properties():
     local_path = "/tmp/best-epoch47-0.9314.onnx"
 
