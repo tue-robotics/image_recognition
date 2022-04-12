@@ -38,5 +38,4 @@ def test_face_properties():
 
 
 if __name__ == "__main__":
-    pass
-    # test_face_properties()
+    test_face_properties()
