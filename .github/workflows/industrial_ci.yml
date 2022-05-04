@@ -17,6 +17,7 @@ jobs:
             ROS_REPO: main
     env:
       CCACHE_DIR: /home/runner/.ccache # Directory for ccache (and how we enable ccache in industrial_ci)
+      UPSTREAM_WORKSPACE: 'github:tue-robotics/catkin_lint_cmake#master'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
