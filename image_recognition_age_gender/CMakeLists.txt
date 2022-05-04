@@ -8,6 +8,7 @@ catkin_python_setup()
 catkin_package()
 
 install(PROGRAMS
+  scripts/download_model
   scripts/face_properties_node
   scripts/get_face_properties
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
