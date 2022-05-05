@@ -8,18 +8,15 @@ catkin_python_setup()
 catkin_package()
 
 install(PROGRAMS
+  scripts/download_model
   scripts/face_properties_node
   scripts/get_face_properties
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-if (CATKIN_ENABLE_TESTING)
-    # Test catkin lint
-    find_program(CATKIN_LINT catkin_lint REQUIRED)
-    execute_process(COMMAND "${CATKIN_LINT}" "-q" "-W2" "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE lint_result)
-    if(NOT ${lint_result} EQUAL 0)
-      message(FATAL_ERROR "catkin_lint failed")
-    endif()
+if(CATKIN_ENABLE_TESTING)
+  find_package(catkin_lint_cmake REQUIRED)
+  catkin_add_catkin_lint_test()
 
-    catkin_add_nosetests(test)
+  catkin_add_nosetests(test)
 endif()

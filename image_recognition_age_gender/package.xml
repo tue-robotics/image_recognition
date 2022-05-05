@@ -24,7 +24,7 @@
   <exec_depend>python-pytorch-pip</exec_depend>
   <exec_depend>rospy</exec_depend>
 
-  <test_depend>python3-catkin-lint</test_depend>
+  <test_depend>catkin_lint_cmake</test_depend>
   <test_depend>python3-future</test_depend>
   <test_depend>python3-rospkg</test_depend>
 

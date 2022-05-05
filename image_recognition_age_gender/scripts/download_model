@@ -5,16 +5,22 @@ import urllib.request
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--model_path', default=os.path.expanduser('~/data/pytorch_models'))
+parser.add_argument(
+    "--model_path", default=os.path.expanduser("~/data/pytorch_models"), help="Destination folder of the model"
+)
+parser.add_argument(
+    "--model_url",
+    default="https://github.com/Nebula4869/PyTorch-gender-age-estimation/raw/038331d26fc1fbf24d00365d0eb9d0e5e828dda6/"
+    "models-2020-11-20-14-37/best-epoch47-0.9314.onnx",
+    help="Url of the model",
+)
 args = parser.parse_args()
 
-os.system('mkdir -p {}'.format(args.model_path))
-local_path = os.path.join(args.model_path, 'best-epoch47-0.9314.onnx')
+os.makedirs(args.model_path, exist_ok=True)
+local_path = os.path.join(args.model_path, "best-epoch47-0.9314.onnx")
 
 if not os.path.exists(local_path):
-    # TODO: Clone this for us
-    http_path = "https://github.com/Nebula4869/PyTorch-gender-age-estimation/raw/" \
-                "038331d26fc1fbf24d00365d0eb9d0e5e828dda6/models-2020-11-20-14-37/best-epoch47-0.9314.onnx"
+    http_path = args.model_url
     print("Downloading model to {} ...".format(local_path))
     urllib.request.urlretrieve(http_path, local_path)
     print("Model downloaded: {}".format(local_path))
