@@ -1,7 +1,7 @@
 # TU/e Robotics image_recognition
 
-[![CI](https://github.com/tue-robotics/image_recognition/workflows/CI/badge.svg)](https://github.com/tue-robotics/image_recognition/actions?query=workflow%3ACI)
-[![Industrial CI](https://github.com/tue-robotics/image_recognition/workflows/Industrial%20CI/badge.svg)](https://github.com/tue-robotics/image_recognition/actions?query=workflow%3A%22Industrial+CI%22)
+[![CI](https://github.com/tue-robotics/image_recognition/actions/workflows/main.yml/badge.svg)](https://github.com/tue-robotics/image_recognition/actions/workflows/main.yml)
+[![Industrial CI](https://github.com/tue-robotics/image_recognition/actions/workflows/industrial_ci.yml/badge.svg)](https://github.com/tue-robotics/image_recognition/actions/workflows/industrial_ci.yml)
 
 Packages for image recognition - Robocup TU/e Robotics
 
