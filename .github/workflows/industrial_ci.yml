@@ -19,7 +19,7 @@ jobs:
         env:
           - ROS_DISTRO: noetic
             ROS_REPO: main
-            BEFORE_INSTALL_TARGET_DEPENDENCIES: "pip3 install --upgrade pip && hash -r pip3 && pip3 install --upgrade --progress-bar=off 'scipy>=1.5'"
+            BEFORE_INSTALL_TARGET_DEPENDENCIES: "pip3 install --upgrade --progress-bar=off pip && hash -r pip3 && pip3 install --upgrade --progress-bar=off 'scipy>=1.5'"
             ADDITIONAL_DEBS: python3-pip
     env:
       ${{ matrix.env }}
