@@ -5,6 +5,10 @@ on:
   pull_request:
   schedule:
     - cron: '0 0 * * 2'
+    
+env:
+  CCACHE_DIR: ${{ github.workspace }}/.ccache # Directory for ccache (and how we enable ccache in industrial_ci)
+  UPSTREAM_WORKSPACE: 'github:tue-robotics/catkin_lint_cmake#master'
 
 jobs:
   industrial_ci:
@@ -15,9 +19,10 @@ jobs:
         env:
           - ROS_DISTRO: noetic
             ROS_REPO: main
+            BEFORE_INSTALL_TARGET_DEPENDENCIES: "pip3 install --upgrade --progress-bar=off pip && hash -r pip3 && pip3 install --upgrade --progress-bar=off 'scipy>=1.5'"
+            ADDITIONAL_DEBS: python3-pip
     env:
-      CCACHE_DIR: /home/runner/.ccache # Directory for ccache (and how we enable ccache in industrial_ci)
-      UPSTREAM_WORKSPACE: 'github:tue-robotics/catkin_lint_cmake#master'
+      ${{ matrix.env }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -25,7 +30,10 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}
+          key: ${{ runner.os }}-ccache-${{ env.ROS_DISTRO }}-${{ env.ROS_REPO }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-${{ env.ROS_DISTRO }}-${{ env.ROS_REPO }}-
+            ${{ runner.os }}-ccache-${{ env.ROS_DISTRO }}-
+            ${{ runner.os }}-ccache-
       # Run industrial_ci
       - uses: 'ros-industrial/industrial_ci@master'
-        env: ${{ matrix.env }}
