@@ -7,11 +7,11 @@ catkin_python_setup()
 
 catkin_package()
 
-install(PROGRAMS
-  scripts/footwear_node
-  scripts/get_footwear
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+#install(PROGRAMS
+  #scripts/footwear_node
+  #scripts/get_footwear
+  #DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#)
 
 if(CATKIN_ENABLE_TESTING)
   find_package(catkin_lint_cmake REQUIRED)
