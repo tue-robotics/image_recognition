@@ -15,6 +15,7 @@
   <exec_depend>image_recognition_age_gender</exec_depend>
   <exec_depend>image_recognition_analysis</exec_depend>
   <exec_depend>image_recognition_color_extractor</exec_depend>
+  <exec_depend>image_recognition_footwear</exec_depend>
   <exec_depend>image_recognition_msgs</exec_depend>
   <exec_depend>image_recognition_openface</exec_depend>
   <exec_depend>image_recognition_openpose</exec_depend>

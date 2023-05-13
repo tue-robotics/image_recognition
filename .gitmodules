@@ -7,6 +7,10 @@
 [submodule "image_recognition_color_extractor/docs"]
 	path = image_recognition_color_extractor/docs
 	url = https://github.com/tue-robotics/tue_documentation_python.git
+[submodule "image_recognition_footwear/docs"]
+	path = image_recognition_footwear/docs
+	url = https://github.com/tue-robotics/tue_documentation_python.git
+	branch = master
 [submodule "image_recognition_openface/docs"]
 	path = image_recognition_openface/docs
 	url = https://github.com/tue-robotics/tue_documentation_python.git
