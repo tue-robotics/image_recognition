@@ -20,6 +20,7 @@
   <exec_depend>image_recognition_msgs</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-opencv</exec_depend>
+  <exec_depend>python3-segment-anything-pip</exec_depend>
   <exec_depend>rospy</exec_depend>
 
   <test_depend>catkin_lint_cmake</test_depend>
