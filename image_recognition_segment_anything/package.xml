@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-model
+  href="http://download.ros.org/schema/package_format3.xsd"
+  schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>image_recognition_segment_anything</name>
+  <version>0.0.5</version>
+  <description>The image_recognition_segment_anything package</description>
+
+  <author email="todo@todo.nl">Max van Vroonhoven</author>
+  <maintainer email="todo@todo.nl">Max van Vroonhoven</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <buildtool_depend>python3-setuptools</buildtool_depend>
+
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>image_recognition_msgs</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-opencv</exec_depend>
+  <exec_depend>rospy</exec_depend>
+
+  <test_depend>catkin_lint_cmake</test_depend>
+
+  <doc_depend>python3-sphinx</doc_depend>
+  <doc_depend>python-sphinx-autoapi-pip</doc_depend>
+  <doc_depend>python-sphinx-rtd-theme-pip</doc_depend>
+  <doc_depend>python3-yaml</doc_depend>
+
+  <export>
+    <rosdoc config="rosdoc.yaml" />
+  </export>
+</package>
