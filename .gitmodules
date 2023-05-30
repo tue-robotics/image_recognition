@@ -10,7 +10,6 @@
 [submodule "image_recognition_footwear/docs"]
 	path = image_recognition_footwear/docs
 	url = https://github.com/tue-robotics/tue_documentation_python.git
-	branch = master
 [submodule "image_recognition_openface/docs"]
 	path = image_recognition_openface/docs
 	url = https://github.com/tue-robotics/tue_documentation_python.git
@@ -19,6 +18,9 @@
 	url = https://github.com/tue-robotics/tue_documentation_python.git
 [submodule "image_recognition_rqt/docs"]
 	path = image_recognition_rqt/docs
+	url = https://github.com/tue-robotics/tue_documentation_python.git
+[submodule "image_recognition_segment_anything/docs"]
+	path = image_recognition_segment_anything/docs
 	url = https://github.com/tue-robotics/tue_documentation_python.git
 [submodule "image_recognition_skybiometry/docs"]
 	path = image_recognition_skybiometry/docs
