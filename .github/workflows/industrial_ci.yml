@@ -5,6 +5,7 @@ on:
   pull_request:
   schedule:
     - cron: '0 0 * * 2'
+  workflow_dispatch:
     
 env:
   CCACHE_DIR: ${{ github.workspace }}/.ccache # Directory for ccache (and how we enable ccache in industrial_ci)
