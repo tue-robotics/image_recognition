@@ -31,10 +31,9 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ${{ runner.os }}-ccache-${{ env.ROS_DISTRO }}-${{ env.ROS_REPO }}-${{ github.run_id }}
+          key: ccache-${{ env.ROS_DISTRO }}-${{ env.ROS_REPO }}-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-ccache-${{ env.ROS_DISTRO }}-${{ env.ROS_REPO }}-
-            ${{ runner.os }}-ccache-${{ env.ROS_DISTRO }}-
-            ${{ runner.os }}-ccache-
+            ccache-${{ env.ROS_DISTRO }}-${{ env.ROS_REPO }}-
+            ccache-${{ env.ROS_DISTRO }}-
       # Run industrial_ci
       - uses: 'ros-industrial/industrial_ci@master'
