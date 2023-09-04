@@ -26,7 +26,7 @@ jobs:
       ${{ matrix.env }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # This step will fetch/store the directory used by ccache before/after the ci run
       - uses: actions/cache@v3
         with:
