@@ -9,7 +9,7 @@ jobs:
     outputs:
       packages: ${{ steps.modified-packages.outputs.packages }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 300
       - name: Commit Range
