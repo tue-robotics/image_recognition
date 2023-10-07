@@ -81,6 +81,7 @@ class TensorflowObjectRecognition:
             best_label = sorted_predictions[0][0]
             best_prob = sorted_predictions[0][1]
 
+            rospy.loginfo("The predications are: {}".format(predictions))
             rospy.loginfo("Best recognition result: {} with probability: {}".format(best_label, best_prob))
 
             # Write unverified annotated image
