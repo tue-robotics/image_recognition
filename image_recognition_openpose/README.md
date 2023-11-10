@@ -63,7 +63,7 @@ optional arguments:
   --pose_model POSE_MODEL
                         What pose model to use (default: BODY_25)
   --net_input_size NET_INPUT_SIZE
-                        Net input size (default: -1x368)
+                        Net input size (default: -1x128)
   --net_output_size NET_OUTPUT_SIZE
                         Net output size (default: -1x-1)
   --num_scales NUM_SCALES
@@ -87,6 +87,7 @@ Run the image_recognition_openpose node in one terminal, e.g.:
 
 ```bash
 rosrun image_recognition_openpose openpose_node
+(my comment) rospack find image_recognition_openpose`/doc/example.jpg
 ```
 
 Next step is starting the image_recognition_Rqt test gui (https://github.com/tue-robotics/image_recognition_rqt)
@@ -98,3 +99,10 @@ Configure the service you want to call with the gear-wheel in the top-right corn
 ![Test](doc/openpose.png)
 
 You will see that the result of the detection will prompt in a dialog combo box. Also the detections will be drawn on the image. The ROS node also published the result image, you can easily view this image using `rqt_image_view`.
+
+
+Run YOLOv8 using your camera from openpose_node:
+- start roscore
+- run: rosrun cv_camera cv_camera_node (to activate the camera node)
+- run: rosrun image_recognition_openpose openpose_node image:=/cv_camera/image_raw (activate openpose_node and also set the image coming from the camera node)
+- run: rqt (to visual inspect the topic)

@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 import os
-from queue import Queue, Empty
 import socket
 import sys
+from queue import Empty, Queue
 
 import diagnostic_updater
 import rospy
+import yolo_wrapper
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 
@@ -37,9 +38,9 @@ class OpenposeNode:
         :param service_publish_result_image: Whether we woule like to publish the result images of a service request
         :param save_images_folder: Where to store the images
         """
-        self._openpose_wrapper = OpenposeWrapper(model_folder, pose_model, net_input_size, net_output_size, num_scales,
-                                                 scale_gap, num_gpu_start, overlay_alpha, python_path)
 
+        self.yolo = yolo_wrapper.Yolo_wrapper()
+        
         # We need this q construction because openpose python is not thread safe and the rospy client side library
         # uses a thread per pub/sub and service. Since the openpose wrapper is created in the main thread, we have
         # to communicate our openpose requests (inputs) to the main thread where the request is processed by the
@@ -110,8 +111,8 @@ class OpenposeNode:
             rospy.logerr("Could not convert to opencv image: %s" % str(e))
             return []
 
-        recognitions, result_image = self._openpose_wrapper.detect_poses(bgr_image)
-
+        #recognitions, result_image = self._openpose_wrapper.detect_poses(bgr_image)
+        recognitions, result_image = self.yolo.pose_yolo(bgr_image)
         # Write images
         if save_images:
             image_writer.write_raw(self._save_images_folder, bgr_image)
