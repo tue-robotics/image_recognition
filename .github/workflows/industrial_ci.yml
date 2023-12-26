@@ -9,6 +9,7 @@ on:
     
 env:
   CCACHE_DIR: ${{ github.workspace }}/.ccache # Directory for ccache (and how we enable ccache in industrial_ci)
+  TARGET_WORKSPACE: '. -image_recognition/image_recognition -image_recognition/image_recognition_skybiometry'
   UPSTREAM_WORKSPACE: 'github:tue-robotics/catkin_lint_cmake#master'
 
 jobs:
