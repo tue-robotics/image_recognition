@@ -29,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       # This step will fetch/store the directory used by ccache before/after the ci run
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ env.ROS_DISTRO }}-${{ env.ROS_REPO }}-${{ github.run_id }}
