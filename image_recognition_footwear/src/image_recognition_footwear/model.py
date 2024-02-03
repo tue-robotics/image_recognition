@@ -1,8 +1,9 @@
 import torch
 import torch.nn as nn
+
+
 class Model(nn.Module):
-    def __init__(self, in_channels, channel_1, channel_2, channel_3, \
-                 node_1, node_2, num_classes):
+    def __init__(self, in_channels, channel_1, channel_2, channel_3, node_1, node_2, num_classes):
         super().__init__()
         ####### Convolutional layers ######
         self.conv1 = nn.Sequential(
@@ -39,11 +40,9 @@ class Model(nn.Module):
             nn.Linear(channel_3, node_1),
             nn.BatchNorm1d(node_1),
             nn.Dropout(p=0.5),
-
             nn.Linear(node_1, node_2),
             nn.BatchNorm1d(node_2),
-
-            nn.Linear(node_2, num_classes)
+            nn.Linear(node_2, num_classes),
         )
 
     def forward(self, x):

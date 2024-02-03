@@ -11,6 +11,7 @@ from image_recognition_footwear.model import Model
 from image_recognition_footwear.process_data import heroPreprocess, detection_RGB
 import torch
 
+
 @unittest.skip
 def test_footwear():
     local_path = "~/data/pytorch_models/footwearModel.pth"
@@ -22,11 +23,13 @@ def test_footwear():
         binary_str = re.search("(\w+)_shoe", asset_name).groups()
         return binary_str == "yes"
 
-    assets_path = os.path.join(rospkg.RosPack().get_path("image_recognition_footwear"), 'test/assets')
-    images_gt = [(Image.open(os.path.join(assets_path, asset)), is_there_footwear_from_asset_name(asset))
-                 for asset in os.listdir(assets_path)]
+    assets_path = os.path.join(rospkg.RosPack().get_path("image_recognition_footwear"), "test/assets")
+    images_gt = [
+        (Image.open(os.path.join(assets_path, asset)), is_there_footwear_from_asset_name(asset))
+        for asset in os.listdir(assets_path)
+    ]
 
-    device = torch.device('cuda')
+    device = torch.device("cuda")
     model = Model(in_channel=3, channel_1=128, channel_2=256, channel_3=512, node_1=1024, node_2=1024, num_classes=2)
     model.load_state_dict(torch.load(local_path))
     model.to(device=device)
