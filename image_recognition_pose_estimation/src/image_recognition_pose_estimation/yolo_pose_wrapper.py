@@ -10,7 +10,8 @@ from sensor_msgs.msg import RegionOfInterest
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
 
-YOLO_POSE_PATTERN = re.compile(r"^yolov8[nsmlx]-pose(-p6)?.pt$")
+
+YOLO_POSE_PATTERN = re.compile(r"^yolov8(?:([nsml])|(x))-pose(?(2)-p6|)?.pt$")
 
 
 class YoloPoseWrapper:
