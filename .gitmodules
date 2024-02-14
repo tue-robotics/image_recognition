@@ -34,3 +34,7 @@
 [submodule "image_recognition_util/docs"]
 	path = image_recognition_util/docs
 	url = https://github.com/tue-robotics/tue_documentation_python.git
+[submodule "image_recognition_pose_estimation/docs"]
+	path = image_recognition_pose_estimation/docs
+	url = https://github.com/tue-robotics/tue_documentation_python.git
+	branch = master
