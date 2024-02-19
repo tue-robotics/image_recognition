@@ -13,8 +13,8 @@ from std_srvs.srv import Empty
 from image_recognition_msgs.msg import Recognition, Recognitions, CategoryProbability, CategoricalDistribution
 from image_recognition_msgs.srv import Recognize, Annotate
 from image_recognition_util import image_writer
-
-
+sys.path.append('/home/iason/ros/noetic/repos/github.com/tue-robotics/image_recognition/image_recognition_openface/src/image_recognition_openface')
+from facenet_recognition import Facenet_recognition
 class OpenfaceROS:
     def __init__(self, align_path, net_path, save_images_folder, topic_save_images,
                  service_save_images, topic_publish_result_image, service_publish_result_image):
@@ -31,7 +31,10 @@ class OpenfaceROS:
         """
 
         # Openface ROS
-        self._face_recognizer = FaceRecognizer(align_path, net_path)
+        self._face_recognizer = Facenet_recognition()
+        print('ououou')
+        #self._face_recognizer = FaceRecognizer(align_path, net_path)
+        print('ououou')
         self._save_images_folder = save_images_folder
         self._topic_save_images = topic_save_images
         self._service_save_images = service_save_images
@@ -117,44 +120,50 @@ class OpenfaceROS:
         # Write raw image
         if save_images:
             image_writer.write_raw(self._save_images_folder, bgr_image)
-
-        # Call openface
-        face_recognitions = self._face_recognizer.recognize(bgr_image)
-
-        # Fill recognitions
-        recognitions = []
-
-        rospy.loginfo("Face recognitions: %s", face_recognitions)
-
+        
         images = []
         labels = []
-        for face_recognition in face_recognitions:
-
+        # Call openface
+        face_recognitions = self._face_recognizer.face_detection(bgr_image)
+        dist, face_labelling = self._face_recognizer.detection_recognition(bgr_image ,images, labels, self._save_images_folder,train = True)
+        # Fill recognitions
+        recognitions = []
+        
+        rospy.loginfo("Face recognitions: %s", face_recognitions)
+        
+        i = 0 
+        for fr in face_recognitions:
+            import math
+            face_recognition = [math.floor(xi) for xi in fr]
             if save_images:
-                label = face_recognition.l2_distances[0].label if len(
-                    face_recognition.l2_distances) > 0 else "face_unknown"
+                label = face_labelling[i]
                 roi_image = bgr_image[
-                            face_recognition.roi.y_offset:face_recognition.roi.y_offset + face_recognition.roi.height,
-                            face_recognition.roi.x_offset:face_recognition.roi.x_offset + face_recognition.roi.width]
+                            face_recognition[2]:face_recognition[3],
+                            face_recognition[0]:face_recognition[1]]
                 image_writer.write_annotated(self._save_images_folder, roi_image, label, False)
-
+                rospy.loginfo('bbbb')
                 images.append(roi_image)
                 labels.append(label)
-
+            label = face_labelling[i]
+            disti = dist[i]
+            print(dist, disti, 'DISSSSS')
             recognitions.append(Recognition(
                 categorical_distribution=CategoricalDistribution(
                     unknown_probability=0.0,  # TODO: When is it unknown?
-                    probabilities=[CategoryProbability(label=l2.label, probability=1.0 / l2.distance)
-                                   for l2 in face_recognition.l2_distances]
+                    probabilities=[CategoryProbability(label=label, probability=1.0 / (disti+0.001))
+                                   for l2 in face_recognition]
                 ),
                 roi=RegionOfInterest(
-                    x_offset=face_recognition.roi.x_offset,
-                    y_offset=face_recognition.roi.y_offset,
-                    width=face_recognition.roi.width,
-                    height=face_recognition.roi.height
+                    x_offset=face_recognition[0],
+                    y_offset=face_recognition[1],
+                    width=face_recognition[2] - face_recognition[0],
+                    height=face_recognition[3] - face_recognition[1] 
                 )
             ))
-
+            i = i+1
+            print(face_recognition)
+        
+            
         annotated_original_image = image_writer.get_annotated_cv_image(bgr_image, recognitions)
         if save_images:
             image_writer.write_estimations(self._save_images_folder, images, labels, annotated_original_image,
@@ -167,12 +176,13 @@ class OpenfaceROS:
         return recognitions
 
     def _image_callback(self, image_msg):
-        try:
-            recognitions = self._get_recognitions(image_msg, save_images=self._topic_save_images,
+        #UNCOMMENT THOSE LINES NOW ITS COMMENTED FOR DEBUGGING
+        #try:
+        recognitions = self._get_recognitions(image_msg, save_images=self._topic_save_images,
                                                   publish_images=self._topic_publish_result_image)
-        except Exception as e:
-            rospy.logerr(str(e))
-            return
+        #except Exception as e:
+            #rospy.logerr(str(e))
+            #return
 
         self._recognitions_publisher.publish(Recognitions(
             header=image_msg.header,
@@ -192,7 +202,6 @@ class OpenfaceROS:
 
 if __name__ == '__main__':
     rospy.init_node("face_recognition")
-
     try:
         dlib_shape_predictor_path = os.path.expanduser(
             rospy.get_param("~align_path", "~/openface/models/dlib/shape_predictor_68_face_landmarks.dat"))
@@ -214,7 +223,7 @@ if __name__ == '__main__':
     except KeyError as e:
         rospy.logerr("Parameter %s not found" % e)
         sys.exit(1)
-
+    
     image_recognition_openface = OpenfaceROS(dlib_shape_predictor_path, openface_neural_network_path,
                                              save_images_folder, topic_save_images, service_save_images,
                                              topic_publish_result_image,
