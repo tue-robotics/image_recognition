@@ -1,17 +1,54 @@
-import logging
-import os
 import re
-import sys
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
-from image_recognition_msgs.msg import CategoricalDistribution, CategoryProbability, Recognition
+from image_recognition_msgs.msg import (CategoricalDistribution,
+                                        CategoryProbability, Recognition)
 from sensor_msgs.msg import RegionOfInterest
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
 
+# Yolo pose keypoint labels
+# 0: nose
+# 1: left-eye
+# 2: right-eye
+# 3: left-ear
+# 4: right-ear
+# 5: left-shoulder
+# 6: right-shoulder
+# 7: left-elbow
+# 8: right-elbow
+# 9: left-wrist
+# 10: right-wrist
+# 11: left-hip
+# 12: right-hip
+# 13: left-knee
+# 14: right-knee
+# 15: left-ankle
+# 16: right-ankle
 
-YOLO_POSE_PATTERN = re.compile(r"^yolov8(?:([nsml])|(x))-pose(?(2)-p6|)?.pt$")
+YOLO_POSE_KEYPOINT_LABELS = [
+    "nose",
+    "left-eye",
+    "right-eye",
+    "left-ear",
+    "right-ear",
+    "left-shoulder",
+    "right-shoulder",
+    "left-elbow",
+    "right-elbow",
+    "left-wrist",
+    "right-wrist",
+    "left-hip",
+    "right-hip",
+    "left-knee",
+    "right-knee",
+    "left-ankle",
+    "right-ankle",
+]
+
+
+YOLO_POSE_PATTERN = re.compile(r"^.*yolov8(?:([nsml])|(x))-pose(?(2)-p6|)?.pt$")
 
 
 class YoloPoseWrapper:
@@ -21,26 +58,34 @@ class YoloPoseWrapper:
 
         self._model = YOLO(model=model_name, task="pose", verbose=verbose)
 
-    def detect_poses(self, image: np.ndarray):
+    def detect_poses(self, image: np.ndarray, conf: float = 0.25) -> Tuple[List[Recognition], np.ndarray]:
         # Detect poses
-        results: List[Results] = self._model.__call__(image)
-        recognitions = []
+        # This is a wrapper of predict, but we might want to use track
+        results: List[Results] = self._model(image, conf=conf)  # Accepts a list
 
-        if keypoints is not None and len(keypoints.shape) == 3:  # If no detections, keypoints will be None
-            num_persons, num_bodyparts, _ = keypoints.shape
-            for person_id in range(0, num_persons):
-                for body_part_id in range(0, num_bodyparts):
-                    body_part = self._model["body_parts"][body_part_id]
-                    x, y, probability = keypoints[person_id][body_part_id]
-                    if probability > 0:
-                        recognitions.append(
-                            Recognition(
-                                group_id=person_id,
-                                roi=RegionOfInterest(width=1, height=1, x_offset=int(x), y_offset=int(y)),
-                                categorical_distribution=CategoricalDistribution(
-                                    probabilities=[CategoryProbability(label=body_part, probability=float(probability))]
-                                ),
-                            )
+        if not results:
+            return [], image
+
+        recognitions = []
+        result = results[0]  # Only using
+        overlayed_image = result.plot(boxes=False)
+
+        for i, person in enumerate(result.keypoints.cpu().numpy()):
+            for j, (x, y, pred_conf) in enumerate(person.data[0]):
+                if pred_conf > 0 and x > 0 and y > 0:
+                    recognitions.append(
+                        Recognition(
+                            group_id=i,
+                            roi=RegionOfInterest(width=1, height=1, x_offset=int(x), y_offset=int(y)),
+                            categorical_distribution=CategoricalDistribution(
+                                probabilities=[
+                                    CategoryProbability(
+                                        label=YOLO_POSE_KEYPOINT_LABELS[j],
+                                        probability=float(conf),
+                                    )
+                                ]
+                            ),
                         )
+                    )
 
         return recognitions, overlayed_image
