@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 from typing import List, Tuple
 
 import numpy as np
@@ -48,13 +49,19 @@ YOLO_POSE_KEYPOINT_LABELS = [
 ]
 
 
-YOLO_POSE_PATTERN = re.compile(r"^.*yolov8(?:([nsml])|(x))-pose(?(2)-p6|)?.pt$")
+YOLO_POSE_PATTERN = re.compile(r"^yolov8(?:([nsml])|(x))-pose(?(2)-p6|)?.pt$")
 
 
 class YoloPoseWrapper:
     def __init__(self, model_name: str = "yolov8n-pose.pt", verbose: bool = False):
-        if not YOLO_POSE_PATTERN.match(model_name):
+        # Validate model name
+        model_name_path = Path(model_name)
+        model_basename = model_name_path.name
+        if not YOLO_POSE_PATTERN.match(model_basename):
             raise ValueError(f"Model name '{model_name}' does not match pattern '{YOLO_POSE_PATTERN.pattern}'")
+
+        if len(model_name_path.parts) == 1:
+            model_name = str(Path.home() / "data" / "pytorch_models" / model_name)
 
         self._model = YOLO(model=model_name, task="pose", verbose=verbose)
 

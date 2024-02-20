@@ -40,7 +40,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Detect poses in an image", formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    parser.add_argument("--pose_model", help="What pose model to use", default="~/data/pytorch_models/yolov8n-pose.pt")
+    parser.add_argument("--pose_model", help="What pose model to use", default="yolov8n-pose.pt")
     parser.add_argument("--conf", help="Minimal confidence level for detection", default=0.25, type=float)
     parser.add_argument(
         "--verbose",
