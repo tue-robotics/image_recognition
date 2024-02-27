@@ -10,8 +10,7 @@ from std_srvs.srv import Empty
 from image_recognition_msgs.msg import Recognition, Recognitions, CategoryProbability, CategoricalDistribution
 from image_recognition_msgs.srv import Recognize, Annotate
 from image_recognition_util import image_writer
-sys.path.append('/home/iason/ros/noetic/repos/github.com/tue-robotics/image_recognition/image_recognition_openface/src/image_recognition_openface')
-from facenet_recognition import Facenet_recognition
+from image_recognition_openface.facenet_recognition import Facenet_recognition
 
 
 class OpenfaceROS:
