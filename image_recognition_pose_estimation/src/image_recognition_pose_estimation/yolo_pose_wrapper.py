@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import List, Tuple
 
 import numpy as np
-from image_recognition_msgs.msg import (CategoricalDistribution,
-                                        CategoryProbability, Recognition)
+import torch
+from image_recognition_msgs.msg import CategoricalDistribution, CategoryProbability, Recognition
 from sensor_msgs.msg import RegionOfInterest
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
@@ -51,9 +51,32 @@ YOLO_POSE_KEYPOINT_LABELS = [
 
 YOLO_POSE_PATTERN = re.compile(r"^yolov8(?:([nsml])|(x))-pose(?(2)-p6|)?.pt$")
 
+ALLOWED_DEVICE_TYPES = ["cpu", "cuda"]
+
 
 class YoloPoseWrapper:
-    def __init__(self, model_name: str = "yolov8n-pose.pt", verbose: bool = False):
+    def __init__(self, model_name: str = "yolov8n-pose.pt", device: str = "cuda:0", verbose: bool = False):
+        try:
+            device_type, device_id = device.split(":")
+        except ValueError:
+            if device == "cpu":
+                device_type = "cpu"
+                device_id = 0
+            else:
+                raise
+        if device_type not in ALLOWED_DEVICE_TYPES:
+            raise ValueError(f"Device type '{device_type}' not in {ALLOWED_DEVICE_TYPES}")
+
+        if device_type == "cuda":
+            if not torch.cuda.is_available():
+                raise ValueError("CUDA is not available")
+            if device_id >= torch.cuda.device_count():
+                raise ValueError(
+                    f"cuda:{device_id} is not available, only {torch.cuda.device_count()} devices available"
+                )
+
+        device = torch.device(device_type, device_id)
+
         # Validate model name
         model_name_path = Path(model_name)
         model_basename = model_name_path.name
@@ -63,7 +86,7 @@ class YoloPoseWrapper:
         if len(model_name_path.parts) == 1:
             model_name = str(Path.home() / "data" / "pytorch_models" / model_name)
 
-        self._model = YOLO(model=model_name, task="pose", verbose=verbose)
+        self._model = YOLO(model=model_name, task="pose", verbose=verbose).to(device)
 
     def detect_poses(self, image: np.ndarray, conf: float = 0.25) -> Tuple[List[Recognition], np.ndarray]:
         # Detect poses
