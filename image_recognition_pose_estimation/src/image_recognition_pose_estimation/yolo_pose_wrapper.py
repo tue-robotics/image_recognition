@@ -112,7 +112,7 @@ class YoloPoseWrapper:
                                 probabilities=[
                                     CategoryProbability(
                                         label=YOLO_POSE_KEYPOINT_LABELS[j],
-                                        probability=float(conf),
+                                        probability=float(pred_conf),
                                     )
                                 ]
                             ),
