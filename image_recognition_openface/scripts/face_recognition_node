@@ -120,13 +120,14 @@ class OpenfaceROS:
 
         images = []
         labels = []
+        labels = ["jason", "kona"]
         # Call openface
         face_recognitions = self._face_recognizer.face_detection(bgr_image)
-        dist, face_labelling = self._face_recognizer.detection_recognition(bgr_image, images, labels, self._save_images_folder, train = True)
+        dist, face_labelling = self._face_recognizer.detection_recognition(bgr_image, labels, train = True)
         # Fill recognitions
         recognitions = []
 
-        rospy.loginfo("Face recognitions: %s", face_recognitions)
+        #rospy.loginfo("Face recognitions: %s", face_recognitions)
 
         i = 0
         for fr in face_recognitions:
