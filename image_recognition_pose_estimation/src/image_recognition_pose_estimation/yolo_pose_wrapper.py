@@ -64,6 +64,7 @@ class YoloPoseWrapper:
                 device_id = 0
             else:
                 raise
+        device_id = int(device_id)
         if device_type not in ALLOWED_DEVICE_TYPES:
             raise ValueError(f"Device type '{device_type}' not in {ALLOWED_DEVICE_TYPES}")
 
