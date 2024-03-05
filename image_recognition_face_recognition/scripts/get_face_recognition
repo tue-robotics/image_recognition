@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+import argparse
+
+import cv2
+from image_recognition_msgs.msg import Recognition
+from image_recognition_openface.face_recognizer import FaceRecognizer
+# Assign description to the help doc
+from sensor_msgs.msg import RegionOfInterest
+
+from image_recognition_util import image_writer
+
+parser = argparse.ArgumentParser(description='Get face recognitions')
+
+# Add arguments
+parser.add_argument('image', type=str, help='Image')
+parser.add_argument('-k', '--align_path', type=str, help='DLib Align path', required=False,
+                    default="~/openface/models/dlib/shape_predictor_68_face_landmarks.dat")
+parser.add_argument('-s', '--net_path', type=str, help='Openface neural network path', required=False,
+                    default='~/openface/models/openface/nn4.small2.v1.t7')
+parser.add_argument('-d', '--db', type=argparse.FileType('r'), help='Load already trained faces db from file')
+parser.add_argument(
+    '-v', '--verbose', help="Increase output verbosity", action="store_true")
+args = parser.parse_args()
+
+# Read the image
+img = cv2.imread(args.image)
+
+# Create openface interface
+face_recognizer = FaceRecognizer(args.align_path, args.net_path)
+
+if args.db:
+    face_recognizer.restore_trained_faces(args.db)
+
+recognized_faces = face_recognizer.recognize(img)
+print(recognized_faces)
+annotated_original_image = image_writer.get_annotated_cv_image(img, [Recognition(
+    roi=RegionOfInterest(
+        x_offset=f.roi.x_offset,
+        y_offset=f.roi.y_offset,
+        width=f.roi.width,
+        height=f.roi.height
+    )
+) for f in recognized_faces])
+cv2.imshow("result", annotated_original_image)
+cv2.waitKey()
