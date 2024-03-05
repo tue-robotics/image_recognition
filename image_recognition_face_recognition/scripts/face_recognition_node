@@ -15,7 +15,7 @@ from image_recognition_msgs.msg import (
 )
 from image_recognition_msgs.srv import Recognize, Annotate
 from image_recognition_util import image_writer
-from image_recognition_openface.facenet_recognition import Facenet_recognition
+from image_recognition_face_recognition.facenet_recognition import Facenet_recognition
 
 
 class OpenfaceROS:
