@@ -9,6 +9,7 @@ catkin_package()
 
 install(PROGRAMS
   scripts/detect_poses
+  scripts/pose_estimation_node
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
