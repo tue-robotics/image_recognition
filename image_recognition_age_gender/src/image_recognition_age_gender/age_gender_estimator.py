@@ -8,11 +8,13 @@ GENDER_DICT = {0: 'male', 1: 'female'}
 
 
 class AgeGenderEstimator(object):
-    def __init__(self, weights_file_path, img_size=64, depth=16, width=8, use_gpu=False):
+    def __init__(self, weights_file_path, img_size=64, use_gpu=False):
         """
         Estimate the age and gender of the incoming image
 
         :param weights_file_path: path to a pre-trained network in onnx format
+        :param img_size: Images are resized to a square image of (img_size X img_size)
+        :param use_gpu: Use GPU or CPU
         """
         weights_file_path = os.path.expanduser(weights_file_path)
 
@@ -22,8 +24,6 @@ class AgeGenderEstimator(object):
         self._model = None
         self._weights_file_path = weights_file_path
         self._img_size = img_size
-        self._depth = depth
-        self._width = width
         self._use_gpu = use_gpu
 
     def estimate(self, np_images):
@@ -52,7 +52,7 @@ class AgeGenderEstimator(object):
 
         results = []
         for np_image in np_images:
-            inputs = np.transpose(cv2.resize(np_image, (64, 64)), (2, 0, 1))
+            inputs = np.transpose(cv2.resize(np_image, (self._img_size, self._img_size)), (2, 0, 1))
             inputs = np.expand_dims(inputs, 0).astype(np.float32) / 255.
             predictions = self._model.run(['output'], input_feed={'input': inputs})[0][0]
             #           age              p(male)          p(female)
