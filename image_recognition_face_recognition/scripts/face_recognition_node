@@ -43,7 +43,6 @@ class OpenfaceROS:
 
         # Openface ROS
         self._face_recognizer = Facenet_recognition()
-        # self._face_recognizer = FaceRecognizer(align_path, net_path)
         self._save_images_folder = save_images_folder
         self._topic_save_images = topic_save_images
         self._service_save_images = service_save_images
@@ -134,22 +133,25 @@ class OpenfaceROS:
 
         images = []
         labels = []
+        # Added this line for testing with some labels
         labels = ["jason", "kona"]
-        # Call openface
+        
+        # Call facebet neural network in two stages
         face_recognitions = self._face_recognizer.face_detection(bgr_image)
-        dist, face_labelling = self._face_recognizer.detection_recognition(bgr_image, labels, train=True)
+        distance, labels_pred = self._face_recognizer.detection_recognition(bgr_image, labels, train=True)
+        
         # Fill recognitions
         recognitions = []
 
         # rospy.loginfo("Face recognitions: %s", face_recognitions)
 
-        i = 0
+        label_idx = 0
         for fr in face_recognitions:
             import math
-
+            
             face_recognition = [math.floor(xi) for xi in fr]
             if save_images:
-                label = face_labelling[i]
+                label = labels_pred[label_idx]
                 roi_image = bgr_image[
                     face_recognition[2]: face_recognition[3],
                     face_recognition[0]: face_recognition[1],
@@ -157,14 +159,15 @@ class OpenfaceROS:
                 image_writer.write_annotated(self._save_images_folder, roi_image, label, False)
                 images.append(roi_image)
                 labels.append(label)
-            label = face_labelling[i]
-            disti = dist[i]
+            label = labels_pred[label_idx]
+            distance_fr = distance[label_idx]
             recognitions.append(
                 Recognition(
                     categorical_distribution=CategoricalDistribution(
                         unknown_probability=0.0,  # TODO: When is it unknown?
                         probabilities=[
-                            CategoryProbability(label=label, probability=1.0 / (disti + 0.001)) for l2 in face_recognition
+                            # This line needs some changing 
+                            CategoryProbability(label=label, probability=1.0 / (distance_fr + 0.001)) for l2 in face_recognition
                         ],
                     ),
                     roi=RegionOfInterest(
@@ -175,7 +178,7 @@ class OpenfaceROS:
                     ),
                 )
             )
-            i = i + 1
+            label_idx = label_idx + 1
 
         annotated_original_image = image_writer.get_annotated_cv_image(bgr_image, recognitions)
         if save_images:
@@ -194,7 +197,7 @@ class OpenfaceROS:
         return recognitions
 
     def _image_callback(self, image_msg):
-        # UNCOMMENT THOSE LINES NOW ITS COMMENTED FOR DEBUGGING
+        # Comment this exception for beeter debbuging
         try:
             recognitions = self._get_recognitions(
                 image_msg,
