@@ -5,8 +5,9 @@ import argparse
 
 import cv2
 from image_recognition_msgs.msg import Recognition
-from image_recognition_openface.face_recognizer import FaceRecognizer
+from image_recognition_face_recognition.facenet_recognition import Facenet_recognition
 # Assign description to the help doc
+import math
 from sensor_msgs.msg import RegionOfInterest
 
 from image_recognition_util import image_writer
@@ -28,20 +29,26 @@ args = parser.parse_args()
 img = cv2.imread(args.image)
 
 # Create openface interface
-face_recognizer = FaceRecognizer(args.align_path, args.net_path)
+face_recognizer = Facenet_recognition()
 
 if args.db:
     face_recognizer.restore_trained_faces(args.db)
 
-recognized_faces = face_recognizer.recognize(img)
+recognized_faces = face_recognizer.face_detection(img)
 print(recognized_faces)
-annotated_original_image = image_writer.get_annotated_cv_image(img, [Recognition(
-    roi=RegionOfInterest(
-        x_offset=f.roi.x_offset,
-        y_offset=f.roi.y_offset,
-        width=f.roi.width,
-        height=f.roi.height
+
+recognitions = []
+for fr in recognized_faces:
+    face_recognition = [math.floor(xi) for xi in fr]
+    recognitions.append(Recognition(
+        roi=RegionOfInterest(
+            x_offset=face_recognition[0],
+            y_offset=face_recognition[1],
+            width=face_recognition[2] - face_recognition[0],
+            height=face_recognition[3] - face_recognition[1],
+        )
     )
-) for f in recognized_faces])
+)
+    annotated_original_image = image_writer.get_annotated_cv_image(img, recognitions) 
 cv2.imshow("result", annotated_original_image)
 cv2.waitKey()
