@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<?xml-model
+  href="http://download.ros.org/schema/package_format3.xsd"
+  schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>image_recognition_face_recognition</name>
+  <version>0.0.1</version>
+  <description>The image_recognition_face_recognition package</description>
+
+  <maintainer email="iasonth95@gmail.com">iason</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <buildtool_depend>python3-setuptools</buildtool_depend>
+  
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>diagnostic_updater</exec_depend>
+  <exec_depend>image_recognition_msgs</exec_depend>
+  <exec_depend>image_recognition_util</exec_depend>
+  <exec_depend>python-dlib</exec_depend> <!--pip package-->
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-opencv</exec_depend>
+  <exec_depend>rospy</exec_depend>
+
+  <test_depend>catkin_lint_cmake</test_depend>
+
+  <doc_depend>python3-sphinx</doc_depend>
+  <doc_depend>python-sphinx-autoapi-pip</doc_depend>
+  <doc_depend>python-sphinx-rtd-theme-pip</doc_depend>
+  <doc_depend>python3-yaml</doc_depend>
+
+  <export>
+    <rosdoc config="rosdoc.yaml" />
+  </export>
+</package>
