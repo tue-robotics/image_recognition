@@ -1,12 +1,14 @@
-import numpy as np
-
-import cv2
 import datetime
 import errno
 import os
+from typing import List, Optional
+
+import cv2
+import numpy as np
+from image_recognition_msgs.msg import Recognition
 
 
-def mkdir_p(directory):
+def mkdir_p(directory: str) -> None:
     """
     os.makedirs() without raising an exception in case of existence
 
@@ -19,16 +21,13 @@ def mkdir_p(directory):
             raise
 
 
-def create_estimation_dir(parent_dir, suffix):
+def create_estimation_dir(parent_dir: str, suffix: str) -> Optional[str]:
     """
     Create an estimation dir in parent directory
 
     :param parent_dir: parent directory
-    :type parent_dir: str
     :param suffix:
-    :type suffix: str
     :return: Created estimations directory
-    :rtype: str
     """
     if parent_dir is None:
         return None
@@ -43,7 +42,7 @@ def create_estimation_dir(parent_dir, suffix):
     return estimation_dir
 
 
-def color_map(n=256, normalized=False):
+def color_map(n: int = 256, normalized: bool = False) -> np.ndarray:
     """
     Generate an RGB color map of N different colors
     :param n: amount of colors to generate
@@ -52,10 +51,10 @@ def color_map(n=256, normalized=False):
     :type normalized: bool
     :return a numpy.array of shape (N, 3) with a row for each color and each row is [R,G,B]
     """
-    def bitget(byteval, idx):
+    def bitget(byteval: int, idx: int) -> bool:
         return (byteval & (1 << idx)) != 0
 
-    dtype = 'float32' if normalized else 'uint8'
+    dtype = "float32" if normalized else "uint8"
     cmap = np.zeros((n, 3), dtype=dtype)
     for i in range(n):
         r = g = b = 0
@@ -72,29 +71,30 @@ def color_map(n=256, normalized=False):
     return cmap
 
 
-def write_estimation(dir_path, image, label, annotated_original_image=None, suffix=""):
+def write_estimation(
+    dir_path: str,
+    image: np.ndarray,
+    label: str,
+    annotated_original_image: Optional[np.ndarray] = None,
+    suffix: str = "",
+) -> bool:
     """
-    Write estimation to a directory, for the estimation, a directory of the run will be created
+    Write estimation to a directory.
+    For the estimation, a directory of the run will be created
 
     :param dir_path: Parent directory
-    :type dir_path: str
     :param image: Image to write
-    :type image: cv2.Image
     :param label: Label of the image
-    :type label: str
     :param annotated_original_image: The entire image with annotations
-    :type annotated_original_image: cv2.Image
     :param suffix: Suffix of the run specific directory
-    :type suffix: str
     :return: Success
-    :rtype: bool
     """
 
     estimation_dir = create_estimation_dir(dir_path, suffix)
     if estimation_dir is None:
         return False
 
-    filename = os.path.join(estimation_dir, "%s.jpg" % label)
+    filename = os.path.join(estimation_dir, f"{label}.jpg")
     cv2.imwrite(filename, image)
 
     if annotated_original_image is not None:
@@ -104,22 +104,23 @@ def write_estimation(dir_path, image, label, annotated_original_image=None, suff
     return True
 
 
-def write_estimations(dir_path, images, labels, annotated_original_image=None, suffix=""):
+def write_estimations(
+    dir_path: str,
+    images: List[np.ndarray],
+    labels: List[str],
+    annotated_original_image: Optional[np.ndarray] = None,
+    suffix: str = "",
+    ) -> bool:
     """
-    Write estimations to a directory, for each estimation cycle, a directory of the run will be created
+    Write estimations to a directory.
+    For each estimation cycle, a directory of the run will be created
 
     :param dir_path: Parent directory
-    :type dir_path: str
     :param images: Image to write
-    :type images: list[cv2.Image]
     :param labels: Label of the image
-    :type labels: list[str]
     :param annotated_original_image: The entire image with annotations
-    :type annotated_original_image: cv2.Image
     :param suffix: Suffix of the run specific directory
-    :type suffix: str
     :return: Success
-    :rtype: bool
     """
     assert len(images) == len(labels)
 
@@ -128,7 +129,7 @@ def write_estimations(dir_path, images, labels, annotated_original_image=None, s
         return False
 
     for i, (image, label) in enumerate(zip(images, labels)):
-        filename = os.path.join(estimation_dir, "%s_%d.jpg" % (label, i))
+        filename = os.path.join(estimation_dir, f"{label}_{i}.jpg")
         cv2.imwrite(filename, image)
 
     if annotated_original_image is not None:
@@ -138,19 +139,15 @@ def write_estimations(dir_path, images, labels, annotated_original_image=None, s
     return True
 
 
-def write_annotated(dir_path, image, label, verified=False):
+def write_annotated(dir_path: str, image: np.ndarray, label: str, verified: bool = False) -> bool:
     """
     Write an image with an annotation to a folder
+
     :param dir_path: The base directory we are going to write to
-    :type dir_path: str
     :param image: The OpenCV image
-    :type image: cv2.Image
-    :param label: The label that is used for creating the sub directory if not exists
-    :type label:str
+    :param label: The label that is used for creating the subdirectory if not exists
     :param verified: Whether we are sure the label is correct
-    :type verified: bool
     :return: Success
-    :rtype: bool
     """
 
     if dir_path is None:
@@ -161,23 +158,19 @@ def write_annotated(dir_path, image, label, verified=False):
     label_dir = os.path.join(annotated_verified_unverified_dir, label)
     mkdir_p(label_dir)
 
-    filename = os.path.join(label_dir, "%s.jpg" % datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S_%f"))
+    filename = os.path.join(label_dir, f"{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S_%f')}.jpg")
     cv2.imwrite(filename, image)
 
     return True
 
 
-def write_raw(dir_path, image, subfolder_name="raw"):
+def write_raw(dir_path: str, image: np.ndarray, subfolder_name: str = "raw") -> bool:
     """
-    Write an image to a file (path) with the label as sub-folder
+    Write an image to a file (path) with the label as subfolder
     :param dir_path: The base directory we are going to write to
-    :type dir_path: str
     :param image: The OpenCV image
-    :type image: cv2.Image
     :param subfolder_name: A directory within the path is created with this name
-    :type subfolder_name:str
     :return: Success
-    :rtype: bool
     """
 
     if dir_path is None:
@@ -186,23 +179,21 @@ def write_raw(dir_path, image, subfolder_name="raw"):
     raw_dir = os.path.join(dir_path, subfolder_name)
     mkdir_p(raw_dir)
 
-    filename = os.path.join(raw_dir, "%s.jpg" % datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S_%f"))
+    filename = os.path.join(raw_dir, f"{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S_%f')}.jpg")
     cv2.imwrite(filename, image)
 
     return True
 
 
-def get_annotated_cv_image(cv_image, recognitions, labels=None):
+def get_annotated_cv_image(
+    cv_image: np.ndarray, recognitions: List[Recognition], labels: Optional[List[str]] = None
+) -> np.ndarray:
     """
     Gets an annotated CV image based on recognitions, drawing using cv.rectangle
     :param cv_image: Original cv image
-    :type cv_image: cv2.Image
     :param recognitions: List of recognitions
-    :type recognitions: list[recognition]
     :param labels: List of labels per recognition
-    :type labels: list[str]
     :return: Annotated image
-    :rtype: cv2.Image
     """
     if labels is None:
         labels = []
