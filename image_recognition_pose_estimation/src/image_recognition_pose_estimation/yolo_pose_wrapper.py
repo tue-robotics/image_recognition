@@ -5,48 +5,10 @@ from typing import List, Tuple
 import numpy as np
 import torch
 from image_recognition_msgs.msg import CategoricalDistribution, CategoryProbability, Recognition
+from image_recognition_pose_estimation.body_parts import BODY_PARTS
 from sensor_msgs.msg import RegionOfInterest
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
-
-# Yolo pose keypoint labels
-# 0: nose
-# 1: left-eye
-# 2: right-eye
-# 3: left-ear
-# 4: right-ear
-# 5: left-shoulder
-# 6: right-shoulder
-# 7: left-elbow
-# 8: right-elbow
-# 9: left-wrist
-# 10: right-wrist
-# 11: left-hip
-# 12: right-hip
-# 13: left-knee
-# 14: right-knee
-# 15: left-ankle
-# 16: right-ankle
-
-YOLO_POSE_KEYPOINT_LABELS = [
-    "nose",
-    "left-eye",
-    "right-eye",
-    "left-ear",
-    "right-ear",
-    "left-shoulder",
-    "right-shoulder",
-    "left-elbow",
-    "right-elbow",
-    "left-wrist",
-    "right-wrist",
-    "left-hip",
-    "right-hip",
-    "left-knee",
-    "right-knee",
-    "left-ankle",
-    "right-ankle",
-]
 
 
 YOLO_POSE_PATTERN = re.compile(r"^yolov8(?:([nsml])|(x))-pose(?(2)-p6|)?.pt$")
@@ -101,6 +63,8 @@ class YoloPoseWrapper:
         result = results[0]  # Only using
         overlayed_image = result.plot(boxes=False)
 
+        body_parts = list(BODY_PARTS.values())
+
         for i, person in enumerate(result.keypoints.cpu().numpy()):
             for j, (x, y, pred_conf) in enumerate(person.data[0]):
                 if pred_conf > 0 and x > 0 and y > 0:
@@ -111,7 +75,7 @@ class YoloPoseWrapper:
                             categorical_distribution=CategoricalDistribution(
                                 probabilities=[
                                     CategoryProbability(
-                                        label=YOLO_POSE_KEYPOINT_LABELS[j],
+                                        label=body_parts[j],
                                         probability=float(pred_conf),
                                     )
                                 ]
