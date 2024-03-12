@@ -12,7 +12,7 @@ from image_recognition_util import image_writer
 
 
 class FacePropertiesNode:
-    def __init__(self, weights_file_path, img_size, save_images_folder, use_gpu):
+    def __init__(self, weights_file_path: str, img_size: int, save_images_folder: bool, use_gpu: bool):
         """
         ROS node that wraps the PyTorch age gender estimator
         """
