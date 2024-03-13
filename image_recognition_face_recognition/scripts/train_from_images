@@ -3,20 +3,20 @@ import os
 import cv2
 import logging
 from argparse import ArgumentParser, Action, ArgumentTypeError, FileType
-from image_recognition_openface.face_recognizer import FaceRecognizer
+from image_recognition_face_recognition.face_recognizer import FaceRecognizer
 
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
-def main(modeldir, outfile, align_path, net_path, verbose):
+def main(modeldir, outfile, verbose: bool = False):
     if verbose:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
 
-    face_recognizer = FaceRecognizer(align_path, net_path)
+    face_recognizer = FaceRecognizer()
 
     dirs = [o for o in os.listdir(modeldir) if os.path.isdir(os.path.join(modeldir, o))]
     for cat in dirs:

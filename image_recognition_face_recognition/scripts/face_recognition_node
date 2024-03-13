@@ -15,7 +15,7 @@ from image_recognition_msgs.msg import (
 )
 from image_recognition_msgs.srv import Recognize, Annotate
 from image_recognition_util import image_writer
-from image_recognition_face_recognition.facenet_recognition import FacenetRecognition
+from image_recognition_face_recognition.face_recognizer import FaceRecognizer
 
 
 class OpenfaceROS:
@@ -37,7 +37,7 @@ class OpenfaceROS:
         """
 
         # Openface ROS
-        self._face_recognizer = FacenetRecognition()
+        self._face_recognizer = FaceRecognizer()
         self._save_images_folder = save_images_folder
         self._topic_save_images = topic_save_images
         self._service_save_images = service_save_images

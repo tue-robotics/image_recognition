@@ -1,12 +1,13 @@
 #!/usr/bin/env python
-from __future__ import print_function
-from image_recognition_msgs.msg import Recognition
-from image_recognition_face_recognition.facenet_recognition import FacenetRecognition
-from sensor_msgs.msg import RegionOfInterest
-from image_recognition_util import image_writer
-import argparse
+
 import math
+from typing import Optional
+
 import cv2
+from image_recognition_face_recognition.face_recognizer import FaceRecognizer
+from image_recognition_msgs.msg import Recognition
+from image_recognition_util import image_writer
+from sensor_msgs.msg import RegionOfInterest
 
 parser = argparse.ArgumentParser(description='Get face recognitions')
 
