@@ -20,7 +20,6 @@
   <exec_depend>diagnostic_updater</exec_depend>
   <exec_depend>image_recognition_msgs</exec_depend>
   <exec_depend>image_recognition_util</exec_depend>
-  <exec_depend>python-dlib</exec_depend> <!--pip package-->
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-opencv</exec_depend>
   <exec_depend>rospy</exec_depend>
