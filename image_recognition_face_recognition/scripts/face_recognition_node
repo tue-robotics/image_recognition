@@ -29,6 +29,7 @@ class OpenfaceROS:
     ):
         """
         OpenfaceROS class that wraps the FaceRecognizer in a ROS node
+
         :param save_images_folder: path where to store the images
         :param topic_save_images: whether to save images originated from image topic callback
         :param service_save_images: whether to save images originated from a service call
