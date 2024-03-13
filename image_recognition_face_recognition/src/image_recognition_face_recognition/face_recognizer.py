@@ -29,7 +29,7 @@ class TrainedFace:
         return self.representations
 
 
-class FacenetRecognition:
+class FaceRecognizer:
     """
     This class handles the recognition using the Facenet model.
     """
