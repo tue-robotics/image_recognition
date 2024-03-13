@@ -2,12 +2,12 @@
 
 TO DO
 
-Face recognition with use of Facenet (https://github.com/timesler/facenet-pytorch/tree/master)
+Face recognition with use of Facenet (<https://github.com/timesler/facenet-pytorch/tree/master>)
 Paper can be found: [paper](https://arxiv.org/pdf/1503.03832.pdf)
 
 ## Installation
 
-See https://github.com/tue-robotics/image_recognition
+See <https://github.com/tue-robotics/image_recognition>
 
 Make sure you have installed **CUDA8**.
 
@@ -24,11 +24,11 @@ Run the command why using your camera as an input (use roscamera node):
 
 ### ROS Node
 
-Run the image_recognition_face_detection node in one terminal (Specify the dlib and openface_net path as ROS parameter):
+Run the image_recognition_face_detection node in one terminal:
 
     rosrun image_recognition_face_detection face_recognition_node
 
-Run the rqt annotation client (https://github.com/tue-robotics/image_recognition_rqt)
+Run the rqt annotation client (<https://github.com/tue-robotics/image_recognition_rqt>)
 
     rosrun image_recognition_rqt annotation_gui
 
@@ -36,7 +36,7 @@ Setup the service by clicking the gear wheel in the top-right corner. Select the
 
 ![Configuration](doc/config.png)
 
-Now draw a rectangle around the face you would like to learn. The face recognizer will find the biggest face in the image and store a representation for this face. 
+Now draw a rectangle around the face you would like to learn. The face recognizer will find the biggest face in the image and store a representation for this face.
 
 ![Annotate](doc/annotate.png)
 
@@ -46,7 +46,7 @@ Now select the label and you will see that the openface ros node stores the face
 
 Learn as many faces as you want ..
 
-Next step is starting the image_recognition_Rqt test gui (https://github.com/tue-robotics/image_recognition_rqt)
+Next step is starting the image_recognition_Rqt test gui (<https://github.com/tue-robotics/image_recognition_rqt>)
 
     rosrun image_recognition_rqt test_gui
 
@@ -55,7 +55,6 @@ Again configure the service you want to call with the gear-wheel in the top-righ
 ![Test](doc/test_face.png)
 
 You will see that the result of the detection will prompt in a dialog combo box. Also the detections will be drawn on the image.
-
 
 ### Command line
 
