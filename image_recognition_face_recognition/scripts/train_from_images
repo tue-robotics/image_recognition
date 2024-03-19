@@ -57,7 +57,7 @@ if __name__ == '__main__':
     parser = ArgumentParser(description='Train openface from a database of images')
 
     parser.add_argument('modeldir', action=ReadableDir, help='Directory with folders for each category')
-    parser.add_argument('outfile', type=FileType('w'), help='Where to output the trained faces database')
+    parser.add_argument('outfile', type=FileType('wb'), help='Where to output the trained faces database')
 
     parser.add_argument('-v', '--verbose', action='store_true')
 
