@@ -3,7 +3,7 @@ import rospy
 import torch
 from facenet_pytorch import MTCNN, InceptionResnetV1
 import numpy as np
-
+import pickle
 
 class TrainedFace:
     """
@@ -179,3 +179,9 @@ class FaceRecognizer:
             rospy.loginfo(
                 f"Label: {trained_face.get_label()}, Representations: {len(trained_face.get_representations())}"
             )
+
+    def save_trained_faces(self, file_name):
+        pickle.dump(self._trained_faces, file_name)
+
+    def restore_trained_faces(self, file_name):
+        self._trained_faces = pickle.load(file_name)
