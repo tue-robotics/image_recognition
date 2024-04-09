@@ -1,9 +1,9 @@
 from typing import List, Tuple, Union
+from facenet_pytorch import MTCNN, InceptionResnetV1
+import pickle
 import rospy
 import torch
-from facenet_pytorch import MTCNN, InceptionResnetV1
 import numpy as np
-import pickle
 
 
 class TrainedFace:
@@ -84,7 +84,7 @@ class FaceRecognizer:
         min_value_list_per_emb = []
 
         # Calculate the L2 distance between the embedding and all the stored representations.
-        for idx,emb in enumerate(embeddings):
+        for idx, emb in enumerate(embeddings):
             for face in self._trained_faces:
                 for rep in face.representations:
                     dist_per_emb.append(abs(rep - emb).norm().item())
@@ -118,14 +118,30 @@ class FaceRecognizer:
 
         return min_value_list_per_emb, labelling
 
+    def threhold_check(self, dist: List[float], labelling: List[str], labels: List[str], threshold: float) -> None:
+        """
+        Updates the database with a new addition if the minimum distance is greater than the threshold.
+
+        :param dist: the list of minumum l2 norms of the embedded vectors compared with the database faces
+        :param labelling: the corresponding labels of the chosen minimum face representations. 
+        :param labels: the general list of labels
+        :param threshold: the threshold value which denotes if a face is new or not
+        """
+        for idx, dis in enumerate(dist):
+            rospy.loginfo(f"distances are {dist} and labels are {labelling}")
+            if dis > threshold:
+                labelling[idx] = labels[idx] # you can always condider the last label or something similar
+                rospy.loginfo(f"Distance is >1 so assign new label: {self._trained_faces[-1].get_label()},
+                                Representations: {len(self._trained_faces[-1].get_representations())}")
+            else:
+                rospy.loginfo(f"Distance is <1 so no new label is needed")
+
     def detection_recognition(self, img: np.ndarray, labels: List[str], train: bool) -> Tuple[List[float], List[str]]:
         """
         Returns min l2 distance of the identified face (compared with the database of know faces)
 
         :param img: the target image collected from camera
-        :param images: NA/ a list with all img (why this is needed?)
         :param labels: NA/ a list with all labels (this will be used during integration)
-        :param save_images: NA/ a folder with all saved images (why this is needed?)
         :param train: flag to train during inference time
         :return: the min distance(s) of the embedded vector compared with the database faces
         :return: the corresponding label(s)
@@ -133,9 +149,9 @@ class FaceRecognizer:
         resnet = InceptionResnetV1(
             pretrained="vggface2").eval().to(self.device)
 
-        x_aligned = self.mtcnn(img)
-        x_aligned = x_aligned.cuda()  # add this line
-        embeddings = resnet(x_aligned).detach().cpu()
+        pred_aligned = self.mtcnn(img)
+        pred_aligned = pred_aligned.cuda() 
+        embeddings = resnet(pred_aligned).detach().cpu()
         rospy.loginfo(
             f"{embeddings.size()}, {type(embeddings)}, embeddings size")
 
@@ -149,19 +165,12 @@ class FaceRecognizer:
 
         # Calculate the L2 norm and check if the distance is bigger than 1 (face that we have not seen yet)
         dist, labelling = self._get_dists(embeddings)
-        for idx, dis in enumerate(dist):
-            rospy.loginfo(f"distances are {dist} and labels are {labelling}")
-            if dis > 1:
-                labelling[idx] = labels[idx] # you can always condider the last label or something similar
-                rospy.loginfo(f"BIG DISTANCE SO...Label: {self._trained_faces[-1].get_label()}, Representations: {len(self._trained_faces[-1].get_representations())}")
-        # in this case we should ask for a label
-        rospy.loginfo(f"{labels[0]}, {labelling}, label[0],labelling")
+        self.threhold_check(dist, labelling, labels, threshold=1)
 
         if train:
             for idx_label, emb in enumerate(embeddings):
                 rospy.loginfo(f"{idx_label}, idx_label")
                 self.train(emb, labelling[idx_label])
-        # except:
         rospy.loginfo(f"{len(self._trained_faces)}")
         return dist, labelling
 
