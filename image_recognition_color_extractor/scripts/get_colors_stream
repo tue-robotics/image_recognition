@@ -26,7 +26,7 @@ def callback(msg):
 
 if __name__ == '__main__':
 
-    rospy.init_node('pose_estimation_image_subscriber')
+    rospy.init_node('color_extractor_stream')
 
     parser = argparse.ArgumentParser(description='Get dominant colors from image')
     parser.add_argument('--topic', default='/image', type=str, help='Topic')
