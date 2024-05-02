@@ -17,11 +17,16 @@
 
   <buildtool_depend>python3-setuptools</buildtool_depend>
 
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>diagnostic_updater</exec_depend>
+  <exec_depend>image_recognition_msgs</exec_depend>
+  <exec_depend>image_recognition_util</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-opencv</exec_depend>
   <exec_depend>python3-pytorch-pip</exec_depend>
   <exec_depend>python3-ultralytics-pip</exec_depend>
   <exec_depend>rospy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
 
   <test_depend>catkin_lint_cmake</test_depend>
 
