@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+import argparse
+
+import rospy
+
+from sensor_msgs.msg import Image
+
+from image_recognition_msgs.srv import Recognize
+
+def extract_color_client(img_msg):
+
+    rospy.wait_for_service('extract_color')
+    try:
+        extract_color = rospy.ServiceProxy('extract_color', Recognize)
+        return extract_color(img_msg)
+    except rospy.ServiceException as e:
+        print("Service call failed: %s"%e)
+
+# Create a callback function for the subscriber.
+def callback(msg):
+
+    # Simply print out values in our custom message.
+    colors = extract_color_client(msg)
+    rospy.loginfo(colors)
+
+
+if __name__ == '__main__':
+
+    rospy.init_node('pose_estimation_image_subscriber')
+
+    parser = argparse.ArgumentParser(description='Get dominant colors from image')
+    parser.add_argument('--topic', default='/image', type=str, help='Topic')
+    args = parser.parse_args()
+    sub = rospy.Subscriber(args.topic, Image, callback)
+    rospy.loginfo('Node has been started')
+
+    rospy.spin()
