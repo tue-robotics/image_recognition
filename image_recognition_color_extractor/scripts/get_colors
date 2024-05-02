@@ -5,18 +5,33 @@ from __future__ import print_function
 import argparse
 
 import cv2
-from image_recognition_color_extractor import ColorExtractor
 
-# Assign description to the help doc
-parser = argparse.ArgumentParser(description='Get dominant colors from image')
-parser.add_argument('image', type=argparse.FileType('r'), nargs='+', help='Image')
-parser.add_argument('--total-colors', default=3, type=int, help='Total colors')
-parser.add_argument('--dominant-range', default=10, type=int, help='Dominant range')
+import rospy
 
-args = parser.parse_args()
+from image_recognition_msgs.srv import Recognize
 
-color_extractor = ColorExtractor(args.total_colors, args.dominant_range)
-for image in args.image:
-    print(image.name)
-    colors = color_extractor.recognize(cv2.imread(image.name))
-    print('Colors:', colors)
+from cv_bridge import CvBridge
+
+def  extract_color_client(img_msg):
+
+    rospy.wait_for_service('extract_color')
+    try:
+        extract_color = rospy.ServiceProxy('extract_color', Recognize)
+        return extract_color(img_msg)
+    except rospy.ServiceException as e:
+        print("Service call failed: %s"%e)
+
+
+if __name__ == "__main__":
+
+    # Assign description to the help doc
+    parser = argparse.ArgumentParser(description='Get dominant colors from image')
+    parser.add_argument('image', type=argparse.FileType('r'), nargs='+', help='Image')
+    args = parser.parse_args()
+    bridge = CvBridge()
+
+    for image in args.image:
+        print(image.name)
+        colors = extract_color_client(bridge.cv2_to_imgmsg(cv2.imread(image.name)))
+        print(colors)
+
