@@ -7,31 +7,25 @@ from sensor_msgs.msg import Image
 
 from image_recognition_msgs.srv import Recognize
 
-def extract_color_client(img_msg):
+class ExtractColorClient(object):
+    def __init__(self, image_topic, color_service):
+        self.image_sub = rospy.Subscriber(image_topic, Image, self.color_callback)
+        self.color_proxy = rospy.ServiceProxy(color_service, Recognize)
+        self.color_proxy.wait_for_service(timeout=20)
 
-    rospy.wait_for_service('extract_color')
-    try:
-        extract_color = rospy.ServiceProxy('extract_color', Recognize)
-        return extract_color(img_msg)
-    except rospy.ServiceException as e:
-        print("Service call failed: %s"%e)
-
-# Create a callback function for the subscriber.
-def callback(msg):
-
-    # Simply print out values in our custom message.
-    colors = extract_color_client(msg)
-    rospy.loginfo(colors)
-
+    def color_callback(self, msg):
+        # Simply print out values in our custom message.
+        colors = self.color_proxy(msg)
+        rospy.loginfo(colors)
 
 if __name__ == '__main__':
-
-    rospy.init_node('color_extractor_stream')
 
     parser = argparse.ArgumentParser(description='Get dominant colors from image')
     parser.add_argument('--topic', default='/image', type=str, help='Topic')
     args = parser.parse_args()
-    sub = rospy.Subscriber(args.topic, Image, callback)
-    rospy.loginfo('Node has been started')
+
+    rospy.init_node('color_extractor_stream')
+
+    extract_color_client = ExtractColorClient(args.topic, 'extract_color')
 
     rospy.spin()
