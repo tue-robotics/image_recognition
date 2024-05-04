@@ -22,10 +22,11 @@ class ExtractColorClient:
 
 if __name__ == '__main__':
 
+    myargs = rospy.myargv()
     parser = argparse.ArgumentParser(description='Get dominant colors from image')
-    parser.add_argument('--topic', default='/image', type=str, help='Topic')
-    parser.add_argument('--service', default='extract_color', type=str, help='Service')
-    args = parser.parse_args()
+    parser.add_argument('--topic', required=False, default='/image', type=str, help='Topic')
+    parser.add_argument('--service', required=False, default='extract_color', type=str, help='Service')
+    args = parser.parse_args(myargs[1:])
 
     rospy.init_node('color_extractor_stream')
 
