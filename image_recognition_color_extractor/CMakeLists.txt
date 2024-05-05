@@ -10,6 +10,7 @@ catkin_package()
 install(PROGRAMS
   scripts/color_extractor_node
   scripts/get_colors
+  scripts/get_colors_stream
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
