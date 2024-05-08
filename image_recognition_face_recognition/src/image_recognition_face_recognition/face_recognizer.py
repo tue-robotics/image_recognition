@@ -131,8 +131,10 @@ class FaceRecognizer:
             rospy.loginfo(f"distances are {dist} and labels are {labelling}")
             if dis > threshold:
                 labelling[idx] = labels[idx] # you can always condider the last label or something similar
-                rospy.loginfo(f"Distance is >1 so assign new label: {self._trained_faces[-1].get_label()}, \
-                                Representations: {len(self._trained_faces[-1].get_representations())}")
+                rospy.loginfo(
+                    f"Distance is >1 so assign new label: {self._trained_faces[-1].get_label()}, \
+                                Representations: {len(self._trained_faces[-1].get_representations())}"
+                )
             else:
                 rospy.loginfo(f"Distance is <1 so no new label is needed")
 
