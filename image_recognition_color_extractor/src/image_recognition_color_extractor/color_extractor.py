@@ -2,6 +2,7 @@ import colorsys as cs
 
 import numpy as np
 from sklearn.cluster import KMeans
+import bisect
 
 
 class ColorExtractor(object):
@@ -45,6 +46,30 @@ class ColorExtractor(object):
         colors = list()
         sort_ix = sort_ix[::-1]
 
+        hue_dict = {
+                    1: "red",
+                    14: "red",
+                    15: "orange",
+                    39: "orange",
+                    40: "yellow",
+                    64: "yellow",
+                    65: "light green",
+                    84: "light green",
+                    85: "green",
+                    154: "green",
+                    155: "cyan",
+                    174: "cyan",
+                    175: "light blue",
+                    194: "light blue",
+                    195: "blue",
+                    264: "blue",
+                    265: "purple",
+                    289: "purple",
+                    290: "pink",
+                    339: "pink",
+                    340: "red",
+                    360: "red" }
+
         for i, cluster_center in enumerate(kmeans.cluster_centers_[sort_ix]):
             hue, sat, val = cs.rgb_to_hsv(cluster_center[2] / 255.0, cluster_center[1] / 255.0,
                                           cluster_center[0] / 255.0)
@@ -58,28 +83,8 @@ class ColorExtractor(object):
                     colors.append('white')
                 else:
                     colors.append('grey')
-            elif hue < 15:
-                colors.append('red')
-            elif hue < 40:
-                colors.append('orange')
-            elif hue < 65:
-                colors.append('yellow')
-            elif hue < 85:
-                colors.append('light green')
-            elif hue < 155:
-                colors.append('green')
-            elif hue < 175:
-                colors.append('cyan')
-            elif hue < 195:
-                colors.append('light blue')
-            elif hue < 265:
-                colors.append('blue')
-            elif hue < 290:
-                colors.append('purple')
-            elif hue < 340:
-                colors.append('pink')
             else:
-                colors.append('red')
+                colors.append(hue_dict.get(hue) if hue_dict.get(hue) else hue_dict[list(hue_dict.keys())[bisect.bisect_right(list(hue_dict.keys()), hue)]])
 
         dominant_colors.append((colors[0], percentages[0]))
 
