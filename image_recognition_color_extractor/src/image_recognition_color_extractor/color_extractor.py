@@ -1,8 +1,8 @@
-import colorsys as cs
 
 import numpy as np
 from sklearn.cluster import KMeans
 
+import pandas as pd
 
 class ColorExtractor(object):
     def __init__(self, total_colors=3, dominant_range=10):
@@ -17,6 +17,20 @@ class ColorExtractor(object):
         """
         self._total_colors = total_colors
         self._dominant_range = dominant_range
+
+    # function to calculate minimum distance from all colors and get the most matching color
+    @staticmethod
+    def getColorName(R, G, B):
+        # Reading csv file with pandas and giving names to each column
+        index = ["color", "color_name", "hex", "R", "G", "B"]
+        csv = pd.read_csv('colors.csv', names=index, header=None)
+        minimum = 10000
+        for i in range(len(csv)):
+            d = abs(R - int(csv.loc[i, "R"])) + abs(G - int(csv.loc[i, "G"])) + abs(B - int(csv.loc[i, "B"]))
+            if (d <= minimum):
+                minimum = d
+                cname = csv.loc[i, "color_name"]
+        return cname
 
     def recognize(self, img):
         """
@@ -46,40 +60,7 @@ class ColorExtractor(object):
         sort_ix = sort_ix[::-1]
 
         for i, cluster_center in enumerate(kmeans.cluster_centers_[sort_ix]):
-            hue, sat, val = cs.rgb_to_hsv(cluster_center[2] / 255.0, cluster_center[1] / 255.0,
-                                          cluster_center[0] / 255.0)
-            hue *= 360
-            if val < 0.3:
-                colors.append('black')
-            elif sat < 0.4:
-                if val < 0.3:
-                    colors.append('black')
-                elif val > 0.6:
-                    colors.append('white')
-                else:
-                    colors.append('grey')
-            elif hue < 15:
-                colors.append('red')
-            elif hue < 40:
-                colors.append('orange')
-            elif hue < 65:
-                colors.append('yellow')
-            elif hue < 85:
-                colors.append('light green')
-            elif hue < 155:
-                colors.append('green')
-            elif hue < 175:
-                colors.append('cyan')
-            elif hue < 195:
-                colors.append('light blue')
-            elif hue < 265:
-                colors.append('blue')
-            elif hue < 290:
-                colors.append('purple')
-            elif hue < 340:
-                colors.append('pink')
-            else:
-                colors.append('red')
+            colors.append(ColorExtractor.getColorName(R=cluster_center[2], G=cluster_center[1], B=cluster_center[0]))
 
         dominant_colors.append((colors[0], percentages[0]))
 
