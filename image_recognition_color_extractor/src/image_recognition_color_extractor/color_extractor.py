@@ -1,9 +1,8 @@
-import colorsys as cs
 
 import numpy as np
 from sklearn.cluster import KMeans
-import bisect
 
+import pandas as pd
 
 class ColorExtractor(object):
     def __init__(self, total_colors=3, dominant_range=10):
@@ -18,6 +17,20 @@ class ColorExtractor(object):
         """
         self._total_colors = total_colors
         self._dominant_range = dominant_range
+
+    # function to calculate minimum distance from all colors and get the most matching color
+    @staticmethod
+    def getColorName(R, G, B):
+        # Reading csv file with pandas and giving names to each column
+        index = ["color", "color_name", "hex", "R", "G", "B"]
+        csv = pd.read_csv('colors.csv', names=index, header=None)
+        minimum = 10000
+        for i in range(len(csv)):
+            d = abs(R - int(csv.loc[i, "R"])) + abs(G - int(csv.loc[i, "G"])) + abs(B - int(csv.loc[i, "B"]))
+            if (d <= minimum):
+                minimum = d
+                cname = csv.loc[i, "color_name"]
+        return cname
 
     def recognize(self, img):
         """
@@ -46,45 +59,8 @@ class ColorExtractor(object):
         colors = list()
         sort_ix = sort_ix[::-1]
 
-        hue_dict = {
-                    1: "red",
-                    14: "red",
-                    15: "orange",
-                    39: "orange",
-                    40: "yellow",
-                    64: "yellow",
-                    65: "light green",
-                    84: "light green",
-                    85: "green",
-                    154: "green",
-                    155: "cyan",
-                    174: "cyan",
-                    175: "light blue",
-                    194: "light blue",
-                    195: "blue",
-                    264: "blue",
-                    265: "purple",
-                    289: "purple",
-                    290: "pink",
-                    339: "pink",
-                    340: "red",
-                    360: "red" }
-
         for i, cluster_center in enumerate(kmeans.cluster_centers_[sort_ix]):
-            hue, sat, val = cs.rgb_to_hsv(cluster_center[2] / 255.0, cluster_center[1] / 255.0,
-                                          cluster_center[0] / 255.0)
-            hue *= 360
-            if val < 0.3:
-                colors.append('black')
-            elif sat < 0.4:
-                if val < 0.3:
-                    colors.append('black')
-                elif val > 0.6:
-                    colors.append('white')
-                else:
-                    colors.append('grey')
-            else:
-                colors.append(hue_dict.get(hue) if hue_dict.get(hue) else hue_dict[list(hue_dict.keys())[bisect.bisect_right(list(hue_dict.keys()), hue)]])
+            colors.append(ColorExtractor.getColorName(R=cluster_center[2], G=cluster_center[1], B=cluster_center[0]))
 
         dominant_colors.append((colors[0], percentages[0]))
 
