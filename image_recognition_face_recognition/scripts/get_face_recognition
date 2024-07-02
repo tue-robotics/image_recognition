@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
 import math
-from typing import Optional
+from typing import List, Optional
 
 import cv2
-from image_recognition_face_recognition.face_recognizer import FaceRecognizer
 from image_recognition_msgs.msg import Recognition
 from image_recognition_util import image_writer
 from sensor_msgs.msg import RegionOfInterest
+
+from image_recognition_face_recognition.face_recognizer import FaceRecognizer, RecognizedFace
 
 
 def main(image, db: Optional[str] = None):
@@ -20,26 +21,21 @@ def main(image, db: Optional[str] = None):
     if db:
         face_recognizer.restore_trained_faces(db)
 
-    recognized_faces = face_recognizer.face_detection(img)
-    print(recognized_faces)
+    recognized_faces: List[RecognizedFace] = face_recognizer.detect(img)
 
     recognitions = []
     for fr in recognized_faces:
-        face_recognition = [math.floor(xi) for xi in fr]
         recognitions.append(
             Recognition(
                 roi=RegionOfInterest(
-                    x_offset=face_recognition[0],
-                    y_offset=face_recognition[1],
-                    width=face_recognition[2] - face_recognition[0],
-                    height=face_recognition[3] - face_recognition[1],
+                    x_offset=fr.roi.x_offset, y_offset=fr.roi.y_offset, width=fr.roi.width, height=fr.roi.height
                 )
             )
         )
 
     annotated_original_image = image_writer.get_annotated_cv_image(img, recognitions)
     cv2.imshow("result", annotated_original_image)
-    cv2.waitKey(1000)
+    cv2.waitKey()
 
 
 if __name__ == "__main__":
