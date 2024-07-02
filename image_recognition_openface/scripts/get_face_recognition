@@ -16,9 +16,9 @@ parser = argparse.ArgumentParser(description='Get face recognitions')
 # Add arguments
 parser.add_argument('image', type=str, help='Image')
 parser.add_argument('-k', '--align_path', type=str, help='DLib Align path', required=False,
-                    default="~/openface/models/dlib/shape_predictor_68_face_landmarks.dat")
+                    default="~/src/openface/models/dlib/shape_predictor_68_face_landmarks.dat")
 parser.add_argument('-s', '--net_path', type=str, help='Openface neural network path', required=False,
-                    default='~/openface/models/openface/nn4.small2.v1.t7')
+                    default='~/src/openface/models/openface/nn4.small2.v1.t7')
 parser.add_argument('-d', '--db', type=argparse.FileType('r'), help='Load already trained faces db from file')
 parser.add_argument(
     '-v', '--verbose', help="Increase output verbosity", action="store_true")
