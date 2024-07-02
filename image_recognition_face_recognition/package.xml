@@ -5,7 +5,7 @@
 <package format="3">
   <name>image_recognition_face_recognition</name>
   <version>0.0.1</version>
-  <description>The image_recognition_face_recognition package</description>
+  <description>Providing detection and recognition of faces</description>
 
   <maintainer email="iasonth95@gmail.com">iason</maintainer>
 
@@ -20,10 +20,11 @@
   <exec_depend>diagnostic_updater</exec_depend>
   <exec_depend>image_recognition_msgs</exec_depend>
   <exec_depend>image_recognition_util</exec_depend>
-  <exec_depend>python-dlib</exec_depend> <!--pip package-->
+  <exec_depend>python3-facenet-pytorch-pip</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-opencv</exec_depend>
   <exec_depend>rospy</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
 
   <test_depend>catkin_lint_cmake</test_depend>
 

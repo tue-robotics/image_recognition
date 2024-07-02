@@ -124,7 +124,7 @@ class FaceRecognizer:
         self._face_detector = dlib.get_frontal_face_detector()
         self._trained_faces = []
 
-    def update_with_categorical_distribution(self, recognition):
+    def update_with_categorical_distribution(self, recognition: RecognizedFace) -> RecognizedFace:
         """
         Update the recognition with a categorical distribution of the trained faces
 
