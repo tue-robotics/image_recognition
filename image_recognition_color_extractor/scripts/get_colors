@@ -1,22 +1,29 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-
 import argparse
+from pathlib import Path
 
 import cv2
 from image_recognition_color_extractor import ColorExtractor
+from rospkg import RosPack
 
-# Assign description to the help doc
-parser = argparse.ArgumentParser(description='Get dominant colors from image')
-parser.add_argument('image', type=argparse.FileType('r'), nargs='+', help='Image')
-parser.add_argument('--total-colors', default=3, type=int, help='Total colors')
-parser.add_argument('--dominant-range', default=10, type=int, help='Dominant range')
 
-args = parser.parse_args()
+if __name__ == "__main__":
+    rospack = RosPack()
+    pkg_dir = Path(rospack.get_path("image_recognition_color_extractor"))
+    default_colors_config = pkg_dir / "config" / "colors.csv"
 
-color_extractor = ColorExtractor(args.total_colors, args.dominant_range)
-for image in args.image:
-    print(image.name)
-    colors = color_extractor.recognize(cv2.imread(image.name))
-    print('Colors:', colors)
+    # Assign description to the help doc
+    parser = argparse.ArgumentParser(description="Get dominant colors from image")
+    parser.add_argument("image", type=argparse.FileType("r"), nargs="+", help="Image")
+    parser.add_argument("--colors-config", deafult=str(default_colors_config), type=str, help="Colors config")
+    parser.add_argument("--total-colors", default=3, type=int, help="Total colors")
+    parser.add_argument("--dominant-range", default=10, type=int, help="Dominant range")
+
+    args = parser.parse_args()
+
+    color_extractor = ColorExtractor(Path(args.colors_config), args.total_colors, args.dominant_range)
+    for image in args.image:
+        print(image.name)
+        colors = color_extractor.recognize(cv2.imread(image.name))
+        print("Colors:", colors)
