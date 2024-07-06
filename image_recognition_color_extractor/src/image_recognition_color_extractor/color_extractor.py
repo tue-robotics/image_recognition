@@ -22,10 +22,10 @@ class ColorExtractor:
         self._total_colors = total_colors
         self._dominant_range = dominant_range
         # Reading csv file with pandas and giving names to each column
-        self.index = ["color", "color_name", "hex", "R", "G", "B"]
+        column_names = ["color", "color_name", "hex", "R", "G", "B"]
         if not colors_config_file.exists():
             raise ValueError(f"Colors config file '{colors_config_file}' doesn't exist")
-        self._colors_csv = pd.read_csv(colors_config_file, names=self.index, header=None)
+        self._colors_csv = pd.read_csv(colors_config_file, names=column_names, header=None)
 
     # function to calculate minimum distance from all colors and get the most matching color
     def get_color_name(self, red: int, green: int, blue: int) -> Optional[str]:
