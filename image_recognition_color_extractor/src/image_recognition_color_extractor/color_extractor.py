@@ -1,11 +1,15 @@
+from pathlib import Path
+from typing import Optional
 
 import numpy as np
+import rospy
 from sklearn.cluster import KMeans
 
 import pandas as pd
 
-class ColorExtractor(object):
-    def __init__(self, total_colors=3, dominant_range=10):
+
+class ColorExtractor:
+    def __init__(self, colors_config_file: Path, total_colors: int = 3, dominant_range: int = 10):
         """
         Constructor
 
@@ -17,22 +21,34 @@ class ColorExtractor(object):
         """
         self._total_colors = total_colors
         self._dominant_range = dominant_range
+        # Reading csv file with pandas and giving names to each column
+        self.index = ["color", "color_name", "hex", "R", "G", "B"]
+        if not colors_config_file.exists():
+            raise ValueError(f"Colors config file '{colors_config_file}' doesn't exist")
+        self._colors_csv = pd.read_csv(colors_config_file, names=self.index, header=None)
 
     # function to calculate minimum distance from all colors and get the most matching color
-    @staticmethod
-    def getColorName(R, G, B):
-        # Reading csv file with pandas and giving names to each column
-        index = ["color", "color_name", "hex", "R", "G", "B"]
-        csv = pd.read_csv('colors.csv', names=index, header=None)
-        minimum = 10000
-        for i in range(len(csv)):
-            d = abs(R - int(csv.loc[i, "R"])) + abs(G - int(csv.loc[i, "G"])) + abs(B - int(csv.loc[i, "B"]))
-            if (d <= minimum):
-                minimum = d
-                cname = csv.loc[i, "color_name"]
+    def get_color_name(self, red: int, green: int, blue: int) -> Optional[str]:
+        """
+        Get the name of closest color
+
+        :param red: red value [0-255]
+        :param green: green value [0-255]
+        :param blue: blue value [0-255]
+
+        :return: Optional color name
+        """
+        min_distance = 1e9
+        cname = None
+        for i in range(len(self._colors_csv)):
+            d = abs(red - int(self._colors_csv.loc[i, "R"])) + abs(green - int(self._colors_csv.loc[i, "G"])) + abs(blue - int(self._colors_csv.loc[i, "B"]))
+            if d <= min_distance:
+                min_distance = d
+                cname = self._colors_csv.loc[i, "color_name"]
+
         return cname
 
-    def recognize(self, img):
+    def recognize(self, img: np.ndarray):
         """
         Extract the most dominant color(s)
 
@@ -54,15 +70,16 @@ class ColorExtractor(object):
         unique_l, counts_l = np.unique(kmeans.labels_, return_counts=True)
 
         sort_ix = np.argsort(counts_l)
+        sort_ix = sort_ix[::-1]  # Reverse the list
         factor_counts = 100.0 / sum(counts_l)
-        percentages = [factor_counts * counts_l[ix] for ix in reversed(sort_ix)]
-        colors = list()
-        sort_ix = sort_ix[::-1]
+        percentages = [factor_counts * counts_l[ix] for ix in sort_ix]
+        colors = []
 
-        for i, cluster_center in enumerate(kmeans.cluster_centers_[sort_ix]):
-            colors.append(ColorExtractor.getColorName(R=cluster_center[2], G=cluster_center[1], B=cluster_center[0]))
+        for cluster_center in kmeans.cluster_centers_[sort_ix]:
+            colors.append(self.get_color_name(red=cluster_center[2], green=cluster_center[1], blue=cluster_center[0]))
 
-        dominant_colors.append((colors[0], percentages[0]))
+        if colors:
+            dominant_colors.append((colors[0], percentages[0]))
 
         for color, percentage in zip(colors[1:], percentages[1:]):
             if percentages[0] - percentage > self._dominant_range:
