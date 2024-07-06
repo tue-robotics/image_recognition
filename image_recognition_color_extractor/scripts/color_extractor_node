@@ -1,17 +1,19 @@
 #!/usr/bin/env python
 
+from pathlib import Path
+
 import rospy
 from cv_bridge import CvBridge
-from image_recognition_color_extractor import ColorExtractor
+from image_recognition_color_extractor.color_extractor import ColorExtractor
 from image_recognition_msgs.msg import CategoryProbability, CategoricalDistribution, Recognition
 from image_recognition_msgs.srv import Recognize, RecognizeResponse
 from sensor_msgs.msg import RegionOfInterest
 
 
 class ColorExtractorNode:
-    def __init__(self, total_colors=3, dominant_range=10):
+    def __init__(self, colors_config_file: Path, total_colors: int = 3, dominant_range: int = 10):
         self._bridge = CvBridge()
-        self._color_extractor = ColorExtractor(total_colors, dominant_range)
+        self._color_extractor = ColorExtractor(colors_config_file, total_colors, dominant_range)
         self._extract_color_srv = rospy.Service('extract_color', Recognize, self._extract_color_srv)
 
     def _extract_color_srv(self, req):
@@ -34,9 +36,13 @@ class ColorExtractorNode:
 
 
 if __name__ == "__main__":
+    from rospkg import RosPack
     rospy.init_node('color_extractor')
     try:
-        ColorExtractorNode(rospy.get_param('~total_colors', 3), rospy.get_param('~dominant_range', 10))
+        rospack = RosPack()
+        pkg_dir = Path(rospack.get_path("image_recognition_color_extractor"))
+        default_colors_config = pkg_dir / "config" / "colors.csv"
+        ColorExtractorNode(Path(rospy.get_param("~colors_config", default_colors_config)).expanduser(), rospy.get_param('~total_colors', 3), rospy.get_param('~dominant_range', 10))
         rospy.spin()
     except Exception as e:
         rospy.logfatal("Exception: %s" % e)
