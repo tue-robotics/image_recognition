@@ -40,11 +40,11 @@ class ColorExtractor:
         """
         min_distance = 1e9
         cname = None
-        for i in range(len(self._colors_csv)):
-            d = abs(red - int(self._colors_csv.loc[i, "R"])) + abs(green - int(self._colors_csv.loc[i, "G"])) + abs(blue - int(self._colors_csv.loc[i, "B"]))
+        for _, row in self._colors_csv.iterrows():
+            d = abs(red - int(row["R"])) + abs(green - int(row["G"])) + abs(blue - int(row["B"]))
             if d <= min_distance:
                 min_distance = d
-                cname = self._colors_csv.loc[i, "color_name"]
+                cname = row["color_name"]
 
         return cname
 
