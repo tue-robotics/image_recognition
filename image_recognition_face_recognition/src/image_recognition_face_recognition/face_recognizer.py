@@ -263,11 +263,8 @@ class FaceRecognizer:
                 for face in self._trained_faces
             ]
 
-            distance.append(distance_per_emb)
-            rospy.loginfo(f"{distance_per_emb} dist_per_emb for embedded with index {idx}")
-            distance_per_emb = []
-            distance_per_emb_final.append(distance)
-            distance = []
+            rospy.loginfo(f"{distance_per_emb=} for embedded with index {idx}")
+            distance_per_emb_final = [[distance_per_emb]]
 
         rospy.loginfo(f"{distance_per_emb_final=}")
 
@@ -284,7 +281,7 @@ class FaceRecognizer:
             rospy.loginfo(f"{value} idx")
             min_index_list_per_emb.append(value.index(min(value)))
             min_value_list_per_emb.append(min(value))
-            rospy.loginfo(f"{min_index_list_per_emb}, min_index_list_per_emb")
+            rospy.loginfo(f"{min_index_list_per_emb=}")
 
         labelling = [self._trained_faces[i].label for i in min_index_list_per_emb]
         rospy.loginfo(f"{labelling}, {min_value_list_per_emb}")
@@ -295,7 +292,7 @@ class FaceRecognizer:
         """
         Updates the database with a new addition if the minimum distance is greater than the threshold.
 
-        :param dist: the list of minumum l2 norms of the embedded vectors compared with the database faces
+        :param dist: the list of minimum l2 norms of the embedded vectors compared with the database faces
         :param labelling: the corresponding labels of the chosen minimum face representations.
         :param labels: the general list of labels
         :param threshold: the threshold value which denotes if a face is new or not
@@ -303,9 +300,9 @@ class FaceRecognizer:
         for idx, dis in enumerate(dist):
             rospy.loginfo(f"distances are {dist} and labels are {labelling}")
             if dis > threshold:
-                labelling[idx] = labels[idx]  # you can always condider the last label or something similar
+                labelling[idx] = labels[idx]  # you can always consider the last label or something similar
                 rospy.loginfo(
-                    f"Distance is >1 so assign new label: {self._trained_faces[-1].get_label()}, \
+                    f"Distance is >{threshold} so assign new label: {self._trained_faces[-1].get_label()}, \
                                 Representations: {len(self._trained_faces[-1].get_representations())}"
                 )
             else:
