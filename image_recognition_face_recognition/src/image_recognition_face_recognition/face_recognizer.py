@@ -92,7 +92,7 @@ def extract_face(img, box, image_size=160, margin=0, save_path=None) -> tuple[to
         Path(save_path).parent.mkdir(parents=True, exist_ok=True)
         save_img(face, save_path)
 
-    face = F.to_tensor(np.float32(face))
+    # face = F.to_tensor(np.float32(face))
 
     return face, box
 
@@ -129,7 +129,8 @@ class RecognizedFace:
 
     @property
     def image(self) -> np.ndarray:
-        return self._image.permute(1, 2, 0).detach().cpu().numpy()
+        # return self._image.permute(1, 2, 0).detach().cpu().numpy()
+        return self._image
 
     @property
     def roi(self) -> ROI:
