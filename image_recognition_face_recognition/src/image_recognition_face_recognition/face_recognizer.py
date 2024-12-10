@@ -125,7 +125,7 @@ class RecognizedFace:
         """
         self._image = image
         self._roi: ROI = roi
-        self.l2_distances: list[L2Distance] = []
+        self.l2_distances: List[L2Distance] = []
 
     @property
     def image(self) -> np.ndarray:
@@ -159,7 +159,7 @@ class FaceRecognizer:
         """
         Constructor for the list which contains the TrainedFace structure
         """
-        self._trained_faces: list[TrainedFace] = []
+        self._trained_faces: List[TrainedFace] = []
         self._device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         rospy.loginfo(f"Running on device: {self._device}")
         self._mtcnn = MTCNN(
@@ -248,8 +248,7 @@ class FaceRecognizer:
         :param embeddings: The embedded representation(s) of a face(s)
         :return: the min distance(s) of the embedded vector compared with the database faces from the corresponding label(s)
         """
-        distance_per_emb_final = []
-        distance = []
+        distance_per_emb_final: List[List] = []
         distance_per_emb = []
 
         min_of_emb_final = []
