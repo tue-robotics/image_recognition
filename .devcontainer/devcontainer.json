@@ -1,0 +1,26 @@
+{
+  "name": "noetic desktop",
+  "image": "ghcr.io/tue-robotics/tue-env-ros-noetic:latest",
+  "runArgs": [
+    "--network=host",
+    "--gpus", "all"
+  ],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/docker/ros/noetic/repos/github.com/tue-robotics/${localWorkspaceFolderBasename},type=bind",
+  "workspaceFolder": "/home/docker/ros/noetic/repos/github.com/tue-robotics/${localWorkspaceFolderBasename}",
+  "containerEnv": {
+        "DISPLAY": "unix:0"
+    },
+  "mounts": [
+    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.bash_history,target=/home/docker/.bash_history,type=bind"
+  ],
+  "customizations" : {
+    "jetbrains" : {
+      "backend" : "IntelliJ"
+    }
+  },
+
+  "postCreateCommand": "tue-env config ros-noetic git-use-ssh; tue-get install git-ps1",
+
+  "postAttachCommand": "tue-get install ros-image_recognition_face_recognition",
+}
