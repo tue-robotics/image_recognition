@@ -12,6 +12,7 @@ import torch
 from torchvision.transforms import functional as F
 from facenet_pytorch import MTCNN, InceptionResnetV1
 from facenet_pytorch.models.utils.detect_face import get_size, crop_resize, save_img
+import cv2
 
 
 @dataclass
@@ -82,8 +83,8 @@ def extract_face(img, box, image_size=160, margin=0, save_path=None) -> tuple[to
     box = [
         int(max(box[0] - margin[0] / 2, 0)),
         int(max(box[1] - margin[1] / 2, 0)),
-        int(min(box[2] + margin[0] / 2, raw_image_size[0])),
-        int(min(box[3] + margin[1] / 2, raw_image_size[1])),
+        int(min(box[2] + margin[0] / 2, raw_image_size[1])),
+        int(min(box[3] + margin[1] / 2, raw_image_size[0])),
     ]
 
     face = crop_resize(img, box, image_size)
@@ -160,7 +161,8 @@ class FaceRecognizer:
         Constructor for the list which contains the TrainedFace structure
         """
         self._trained_faces: List[TrainedFace] = []
-        self._device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self._device = torch.device(
+            "cuda:0" if torch.cuda.is_available() else "cpu")
         rospy.loginfo(f"Running on device: {self._device}")
         self._mtcnn = MTCNN(
             keep_all=True,
@@ -172,9 +174,10 @@ class FaceRecognizer:
             post_process=True,
             device=self._device,
         )
-        self._resnet = InceptionResnetV1(pretrained="vggface2", device=self._device).eval()
+        self._resnet = InceptionResnetV1(
+            pretrained="vggface2", device=self._device).eval()
 
-    def _update_with_categorical_distribution(self, recognition: RecognizedFace) -> RecognizedFace:
+    def _update_with_categorical_distribution(self, recognition: RecognizedFace, labels: List[str]) -> RecognizedFace:
         """
         Update the recognition with a categorical distribution of the trained faces
 
@@ -185,28 +188,43 @@ class FaceRecognizer:
             # Try to get a representation of the detected face
             recognition_embedding = None
             try:
-                recognition_embedding = self._get_embedding(torch.stack([recognition._image], dim=0)).squeeze()
+                recognition_embedding = self._get_embedding(
+                    torch.stack([recognition], dim=0)).squeeze()
             except Exception as e:
                 rospy.logerr(f"Error getting the embedding: {e}")
 
             if recognition_embedding is not None:
                 # Calculate the L2 distance between the embedding and all the stored representations.
                 recognition.l2_distances = [
-                    L2Distance(self._get_min_l2_distance(face.representations, recognition_embedding), face.label)
+                    L2Distance(self._get_min_l2_distance(
+                        face.representations, recognition_embedding), face.label)
                     for face in self._trained_faces
                 ]
+        else:
+            recognition_embedding = None
+            try:
+                recognition_embedding = self._get_embedding(
+                    torch.stack([recognition], dim=0)).squeeze()
+            except Exception as e:
+                rospy.logerr(f"Error getting the embedding: {e}")
+
+            index = self._get_trained_face_index(labels[0])
+            if index == -1:
+                self._trained_faces.append(TrainedFace(labels[0]))
+            self._trained_faces[index].representations.append(
+                recognition_embedding)
 
         return recognition
 
     def _get_recognized_face(self, img, bbox) -> RecognizedFace:
-        face, bbox = extract_face(img, bbox, self._mtcnn.image_size, self._mtcnn.margin)
+        face, bbox = extract_face(
+            img, bbox, self._mtcnn.image_size, self._mtcnn.margin)
         x_offset = bbox[0]
         y_offset = bbox[1]
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
 
         return RecognizedFace(face, ROI(x_offset, y_offset, w, h))
-
 
     def _get_embedding(self, bgr_image: torch.Tensor) -> torch.Tensor:
         """
@@ -217,20 +235,38 @@ class FaceRecognizer:
         """
         return self._resnet(bgr_image.to(self._device)).detach().cpu().numpy()
 
-    def detect(self, img: np.ndarray) -> List[RecognizedFace]:
+    def detect(self, img: np.ndarray, labels: List[str]) -> List[RecognizedFace]:
         """Detect faces in an image
 
         :param img: input image in bgr
         :return: The detected faces
         """
-        bboxes, probs, _ = self._mtcnn.detect(img, landmarks=True)
 
-        # Extract faces
-        recognized_faces = [self._get_recognized_face(img, bbox) for bbox in bboxes]
-        recognized_faces = [self._update_with_categorical_distribution(face) for face in recognized_faces]
+        bboxes, probs, _ = self._mtcnn.detect(img)
+        pred_aligned, batch_probs = self._mtcnn(img)
+        pred_aligned = pred_aligned.cuda()
+        # Extract faces from the bounding boxes
+        recognized_faces = [self._get_recognized_face(
+            img, bbox) for bbox in bboxes]
+        faceone = recognized_faces[0].image
+        # TODO: Implement the update with categorical distribution
+        recognized_faces = [self._update_with_categorical_distribution(
+            face, labels) for face in pred_aligned]
+        # faces_only = [face._image for face in recognized_faces]
+        # faces_only = [torch.from_numpy(face_only) for face_only in faces_only]
+        # faces_only = torch.stack(faces_only, axis=0)
+
+        embeddings = self._resnet(pred_aligned).detach().cpu()
+        # embeddings = self._get_embedding(faces_only)
+
+        for idx_label, emb in enumerate(embeddings):
+            rospy.loginfo(f"{idx_label}, idx_label")
+            self.train(emb, labelling[idx_label])
+        rospy.loginfo(f"{len(self._trained_faces)}")
+
         return recognized_faces
 
-    @staticmethod
+    @ staticmethod
     def _get_min_l2_distance(olds: List[np.ndarray], new: np.ndarray) -> float:
         """
         Calculate the minimal l2 distance of a vector list w.r.t. another vector
@@ -259,7 +295,8 @@ class FaceRecognizer:
         # Calculate the L2 distance between the embedding and all the stored representations.
         for idx, emb in enumerate(embeddings):  # New measurements
             embeddings.l2_distances = [
-                L2Distance(self._get_min_l2_distance(face.representations, emb), face.label)
+                L2Distance(self._get_min_l2_distance(
+                    face.representations, emb), face.label)
                 for face in self._trained_faces
             ]
 
@@ -283,7 +320,8 @@ class FaceRecognizer:
             min_value_list_per_emb.append(min(value))
             rospy.loginfo(f"{min_index_list_per_emb=}")
 
-        labelling = [self._trained_faces[i].label for i in min_index_list_per_emb]
+        labelling = [
+            self._trained_faces[i].label for i in min_index_list_per_emb]
         rospy.loginfo(f"{labelling}, {min_value_list_per_emb}")
 
         return min_value_list_per_emb, labelling
@@ -300,7 +338,8 @@ class FaceRecognizer:
         for idx, dis in enumerate(dist):
             rospy.loginfo(f"distances are {dist} and labels are {labelling}")
             if dis > threshold:
-                labelling[idx] = labels[idx]  # you can always consider the last label or something similar
+                # you can always consider the last label or something similar
+                labelling[idx] = labels[idx]
                 rospy.loginfo(
                     f"Distance is >{threshold} so assign new label: {self._trained_faces[-1].get_label()}, \
                                 Representations: {len(self._trained_faces[-1].get_representations())}"
@@ -317,7 +356,7 @@ class FaceRecognizer:
         :return: the corresponding label(s)
         """
 
-        bboxes, probs, _ = self._mtcnn.detect(img, landmarks=True)
+        bboxes, probs, _ = self._mtcnn.detect(img)
 
         faces = [self._get_recognized_face(img, bbox) for bbox in bboxes]
         faces_only = [face._image for face in faces]
@@ -357,7 +396,8 @@ class FaceRecognizer:
 
     def train(self, img: np.ndarray, name: str) -> TrainedFace:
         face = self._mtcnn(img)
-        embedding = self._get_embedding(torch.stack([face[0]], dim=0)).squeeze()
+        embedding = self._get_embedding(
+            torch.stack([face[0]], dim=0)).squeeze()
         return self._train_impl(embedding, name)
 
     def _train_impl(self, face_representation: np.ndarray, name: str) -> None:
