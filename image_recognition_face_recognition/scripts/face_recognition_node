@@ -129,10 +129,10 @@ class OpenfaceROS:
             image_writer.write_raw(self._save_images_folder, bgr_image)
 
         images = []
-        labels = ['jason']
+        labels = []
 
         # Call facenet neural network in two stages
-        face_recognitions = self._face_recognizer.detect(bgr_image, labels)
+        face_recognitions = self._face_recognizer.detect(bgr_image)
         # distance, labels_pred = self._face_recognizer.detection_recognition(bgr_image, labels, train=True)
 
         # Fill recognitions
