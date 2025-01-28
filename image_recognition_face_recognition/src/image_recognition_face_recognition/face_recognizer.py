@@ -186,7 +186,7 @@ class FaceRecognizer:
         recognition_embedding = None
         try:
             recognition_embedding = self._get_embedding(
-                torch.stack([recognition.image], dim=0)).squeeze()
+                recognition.image)
         except Exception as e:
             rospy.logerr(f"Error getting the embedding: {e}")
 
@@ -229,6 +229,12 @@ class FaceRecognizer:
         :param bgr_image: The input image [batch_size, C, H, W]
         :return: The vector embedding
         """
+        if isinstance(bgr_image, np.ndarray):
+            bgr_image = torch.stack([torch.from_numpy(bgr_image)], dim=0).permute(0, 3, 2, 1).float()
+        elif isinstance(bgr_image, torch.Tensor):
+            pass
+        else:
+            raise ValueError("Input image must be a numpy array or a torch tensor")
         return self._resnet(bgr_image.to(self._device)).detach().cpu().numpy()
 
     @staticmethod
