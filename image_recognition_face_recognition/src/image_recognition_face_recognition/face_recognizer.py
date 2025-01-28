@@ -272,7 +272,8 @@ class FaceRecognizer:
         :param new: torch.Tensor
         :return: Minimal l2 distance
         """
-        return min([np.dot(old - new, old - new) for old in olds])
+        #return min([np.dot(old - new, old - new) for old in olds])
+        return min([np.linalg.norm(old - new) for old in olds])
 
     def _get_distances(self, embeddings: List[torch.Tensor]) -> Tuple[List[float], List[str]]:
         """
