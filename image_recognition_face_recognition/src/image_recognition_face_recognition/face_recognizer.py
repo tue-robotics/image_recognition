@@ -88,15 +88,10 @@ def extract_face(img, box, image_size=160, margin=0, save_path=None) -> tuple[to
         int(min(box[3] + margin[1] / 2, raw_image_size[0])),
     ]
 
-    face = crop_resize(img, box, image_size)
-
-    if save_path is not None:
-        Path(save_path).parent.mkdir(parents=True, exist_ok=True)
-        save_img(face, save_path)
 
     # face = F.to_tensor(np.float32(face))
 
-    return face, box
+    return box
 
 
 @dataclass
@@ -215,13 +210,16 @@ class FaceRecognizer:
         return recognition
 
     def _get_recognized_face(self, img, bbox) -> RecognizedFace:
-        face, bbox = extract_face(
+        
+        face = self._mtcnn.extract(img, bbox, save_path=None)
+        bbox = extract_face(
             img, bbox, self._mtcnn.image_size, self._mtcnn.margin)
+        
         x_offset = bbox[0]
         y_offset = bbox[1]
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
-
+        
         return RecognizedFace(face, ROI(x_offset, y_offset, w, h))
 
     def _get_embedding(self, bgr_image: torch.Tensor) -> torch.Tensor:
