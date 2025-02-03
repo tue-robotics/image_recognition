@@ -172,7 +172,7 @@ class OpenfaceROS:
                     ),
                 )
             )
-
+        # returns image with drawn rectangles of the faces and the labels
         annotated_original_image = image_writer.get_annotated_cv_image(
             bgr_image, recognitions)
         if save_images:

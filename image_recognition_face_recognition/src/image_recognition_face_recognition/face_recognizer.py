@@ -393,9 +393,11 @@ class FaceRecognizer:
         return -1
 
     def train(self, img: np.ndarray, name: str) -> TrainedFace:
-        face = self._mtcnn(img)
-        embedding = self._get_embedding(
-            torch.stack([face[0]], dim=0)).squeeze()
+      
+        #face = self._mtcnn(img)
+        #embedding = self._get_embedding(
+            #torch.stack([face[0]], dim=0)).squeeze()
+        embedding = self._get_embedding(img)
         return self._train_impl(embedding, name)
 
     def _train_impl(self, face_representation: np.ndarray, name: str) -> None:
