@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import math
 from typing import List, Optional
 
 import cv2

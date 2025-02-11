@@ -4,16 +4,13 @@ import pickle
 import uuid
 from dataclasses import dataclass, field
 from os import PathLike
-from pathlib import Path
 from typing import List, Tuple
 
 import numpy as np
 import rospy
 import torch
-from torchvision.transforms import functional as F
 from facenet_pytorch import MTCNN, InceptionResnetV1
 from facenet_pytorch.models.utils.detect_face import get_size, crop_resize, save_img
-import cv2
 
 
 @dataclass

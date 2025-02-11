@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import logging
 import os
 from argparse import Action, ArgumentParser, ArgumentTypeError, FileType, Namespace
