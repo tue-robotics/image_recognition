@@ -5,7 +5,7 @@
 <package format="3">
   <name>image_recognition_face_recognition</name>
   <version>0.0.1</version>
-  <description>The image_recognition_face_recognition package</description>
+  <description>Face detection and recognition using facenet in pytorch</description>
 
   <maintainer email="iasonth95@gmail.com">iason</maintainer>
 
