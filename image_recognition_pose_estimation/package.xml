@@ -5,7 +5,7 @@
 <package format="3">
   <name>image_recognition_pose_estimation</name>
   <version>0.0.1</version>
-  <description>The image_recognition_pose_estimation package</description>
+  <description>Estimates people's pose using yolo v8</description>
 
   <author email="MatthijsBurgh@outlook.com">Matthijs van der Burgh</author>
 
