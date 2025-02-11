@@ -7,7 +7,10 @@
   <version>0.0.1</version>
   <description>Face detection and recognition using facenet in pytorch</description>
 
-  <maintainer email="iasonth95@gmail.com">iason</maintainer>
+  <author email="iasonth95@gmail.com">Iason Theodorou</author>
+  <author email="MatthijsBurgh@outlook.com">Matthijs van der Burgh</author>
+
+  <maintainer email="iasonth95@gmail.com">Iason Theodorou</maintainer>
 
   <license>MIT</license>
 
