@@ -2,6 +2,7 @@
 
 import os
 import sys
+import traceback
 
 import diagnostic_updater
 import rospy
@@ -200,7 +201,7 @@ class OpenfaceROS:
                 publish_images=self._topic_publish_result_image,
             )
         except Exception as e:
-            rospy.logerr(str(e))
+            rospy.logerr(f"{e}\n" + traceback.format_exc())
             return
 
         self._recognitions_publisher.publish(Recognitions(
