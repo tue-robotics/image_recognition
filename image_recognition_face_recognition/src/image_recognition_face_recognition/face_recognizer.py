@@ -255,6 +255,9 @@ class FaceRecognizer:
 
         bboxes, probs, _ = self._mtcnn.detect(img)
 
+        if bboxes is None or not len(bboxes):
+            return []
+
         # Extract faces from the bounding boxes
         recognized_faces = [self._get_recognized_face(
             img, bbox) for bbox in bboxes]
