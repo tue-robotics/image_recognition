@@ -10,7 +10,7 @@ import numpy as np
 import rospy
 import torch
 from facenet_pytorch import MTCNN, InceptionResnetV1
-from facenet_pytorch.models.utils.detect_face import extract_face
+from facenet_pytorch.models.utils.detect_face import extract_box
 
 
 @dataclass
@@ -143,7 +143,7 @@ class FaceRecognizer:
     def _get_recognized_face(self, img, bbox) -> RecognizedFace:
         
         face = self._mtcnn.extract(img, bbox, save_path=None)
-        bbox = extract_face(
+        bbox = extract_box(
             img, bbox, self._mtcnn.image_size, self._mtcnn.margin)
         
         x_offset = bbox[0]
