@@ -115,6 +115,8 @@ class FaceRecognizer:
         """
         # Try to get a representation of the detected face
         recognition_embedding = None
+        # Unsqueeze the image if it is 3D
+        [recognition.image.unsqueeze_(0) if recognition.image.dim() == 3 else recognition.image]
         try:
             recognition_embedding = self._get_embedding(
                 recognition.image)
