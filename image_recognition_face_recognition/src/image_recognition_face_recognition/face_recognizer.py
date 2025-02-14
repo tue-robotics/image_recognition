@@ -13,6 +13,9 @@ from facenet_pytorch import MTCNN, InceptionResnetV1
 from facenet_pytorch.models.utils.detect_face import extract_box
 
 
+ALLOWED_DEVICE_TYPES = ["cpu", "cuda"]
+
+
 @dataclass
 class ROI:
     """
@@ -83,16 +86,37 @@ class FaceRecognizer:
     This class handles the recognition using the Facenet model.
     """
 
-    def __init__(self, distance_threshold: float = 1.0) -> None:
+    def __init__(self, device: str, distance_threshold: float = 1.0) -> None:
         """
         Constructor for the list which contains the TrainedFace structure
         """
         self._distance_threshold: float = distance_threshold
 
         self._trained_faces: List[TrainedFace] = []
-        self._device = torch.device(
-            "cuda:0" if torch.cuda.is_available() else "cpu")
+        
+        try:
+            device_type, device_id = device.split(":")
+        except ValueError:
+            if device == "cpu":
+                device_type = "cpu"
+                device_id = 0
+            else:
+                raise
+        device_id = int(device_id)
+        if device_type not in ALLOWED_DEVICE_TYPES:
+            raise ValueError(f"Device type '{device_type}' not in {ALLOWED_DEVICE_TYPES}")
+
+        if device_type == "cuda":
+            if not torch.cuda.is_available():
+                raise ValueError("CUDA is not available")
+            if device_id >= torch.cuda.device_count():
+                raise ValueError(
+                    f"cuda:{device_id} is not available, only {torch.cuda.device_count()} devices available"
+                )
+
+        self._device = torch.device(device_type, device_id)
         rospy.loginfo(f"Running on device: {self._device}")
+        
         self._mtcnn = MTCNN(
             keep_all=True,
             image_size=160,

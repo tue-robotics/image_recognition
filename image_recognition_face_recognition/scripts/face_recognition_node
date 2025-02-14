@@ -16,9 +16,10 @@ from std_srvs.srv import Empty, EmptyRequest, EmptyResponse
 from image_recognition_face_recognition.face_recognizer import FaceRecognizer
 
 
-class OpenfaceROS:
+class FaceRecognitionRos:
     def __init__(
         self,
+        device: str,
         save_images_folder,
         topic_save_images,
         service_save_images,
@@ -26,8 +27,9 @@ class OpenfaceROS:
         service_publish_result_image,
     ):
         """
-        OpenfaceROS class that wraps the FaceRecognizer in a ROS node
+        FaceRecognitionRos class that wraps the FaceRecognizer in a ROS node
 
+        :param device: device to use for the face recognition
         :param save_images_folder: path where to store the images
         :param topic_save_images: whether to save images originated from image topic callback
         :param service_save_images: whether to save images originated from a service call
@@ -36,7 +38,7 @@ class OpenfaceROS:
         """
 
         # Openface ROS
-        self._face_recognizer = FaceRecognizer()
+        self._face_recognizer = FaceRecognizer(device)
         self._save_images_folder = save_images_folder
         self._topic_save_images = topic_save_images
         self._service_save_images = service_save_images
@@ -64,7 +66,8 @@ class OpenfaceROS:
             self._result_image_publisher = rospy.Publisher(
                 "result_image", Image, queue_size=10)
 
-        rospy.loginfo("OpenfaceROS initialized:")
+        rospy.loginfo("FaceRecognitionRos initialized:")
+        rospy.loginfo(" - device=%s", device)
         rospy.loginfo(" - save_images_folder=%s", save_images_folder)
         rospy.loginfo(" - topic_save_images=%s", topic_save_images)
         rospy.loginfo(" - service_save_images=%s", service_save_images)
@@ -221,6 +224,7 @@ class OpenfaceROS:
 if __name__ == "__main__":
     rospy.init_node("face_recognition")
     try:
+        device = rospy.get_param("~device", "cuda:0")
         save_images = rospy.get_param("~save_images", True)
         topic_save_images = rospy.get_param("~topic_save_images", False)
         service_save_images = rospy.get_param("~service_save_images", True)
@@ -243,17 +247,18 @@ if __name__ == "__main__":
         rospy.logerr("Parameter %s not found" % e)
         sys.exit(1)
 
-    image_recognition_openface = OpenfaceROS(
-        save_images_folder,
-        topic_save_images,
-        service_save_images,
-        topic_publish_result_image,
-        service_publish_result_image,
+    face_recognition_node = FaceRecognitionRos(
+        device=device,
+        save_images_folder=save_images_folder,
+        topic_save_images=topic_save_images,
+        service_save_images=service_save_images,
+        topic_publish_result_image=topic_publish_result_image,
+        service_publish_result_image=service_publish_result_image,
     )
 
     if db:
         rospy.loginfo(f"loading face database from {db}")
-        image_recognition_openface.restore_trained_faces(db)
+        face_recognition_node.restore_trained_faces(db)
 
     updater = diagnostic_updater.Updater()
     updater.setHardwareID("none")
