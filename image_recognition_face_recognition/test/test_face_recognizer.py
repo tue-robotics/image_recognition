@@ -17,7 +17,7 @@ class TestFaceRecognizer(unittest.TestCase):
 
     def test_get_embedding(self):
         """ 
-        Test the get_embedding method dimentions 
+        Test the get_embedding method dimensions
         """
         # Create a dummy image tensor [batch_size, C, H, W]
         dummy_image = torch.randn(1, 3, 160, 160)
@@ -59,13 +59,17 @@ class TestFaceRecognizer(unittest.TestCase):
         Test the detect method with different images (single/multiple faces, no faces)
         """
         # Test with an image containing one face
-        single_face_image = cv2.imread("doc/1.jpg")
+        image_path = "doc/1.jpg"
+        single_face_image = cv2.imread(image_path)
+        self.assertIsNotNone(single_face_image, f"Image not found at {image_path}")
         recognized_faces = self.face_recognizer.detect(single_face_image)
         self.assertIsInstance(recognized_faces, list)
         self.assertEqual(len(recognized_faces), 1)  # Expect exactly 1 face
 
         # Test with an image containing multiple faces
-        multiple_faces_image = cv2.imread("doc/example.png")
+        image_path = "doc/example.png"
+        multiple_faces_image = cv2.imread(image_path)
+        self.assertIsNotNone(multiple_faces_image, f"Image not found at {image_path}")
         recognized_faces = self.face_recognizer.detect(multiple_faces_image)
         self.assertIsInstance(recognized_faces, list)
         self.assertGreaterEqual(len(recognized_faces), 6)  # Expect at least 2 faces
