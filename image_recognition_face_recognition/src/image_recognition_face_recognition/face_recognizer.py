@@ -232,113 +232,7 @@ class FaceRecognizer:
         :param new: torch.Tensor
         :return: Minimal l2 distance
         """
-        #return min([np.dot(old - new, old - new) for old in olds])
         return min([np.linalg.norm(old - new) for old in olds])
-
-    def _get_distances(self, embeddings: List[torch.Tensor]) -> Tuple[List[float], List[str]]:
-        """
-        Returns min l2 distance of the identified face (compared with the database of know faces)
-
-        :param embeddings: The embedded representation(s) of a face(s)
-        :return: the min distance(s) of the embedded vector compared with the database faces from the corresponding label(s)
-        """
-        distance_per_emb_final: List[List] = []
-        distance_per_emb = []
-
-        min_of_emb_final = []
-
-        min_index_list_per_emb = []
-        min_value_list_per_emb = []
-
-        # Calculate the L2 distance between the embedding and all the stored representations.
-        for idx, emb in enumerate(embeddings):  # New measurements
-            embeddings.l2_distances = [
-                L2Distance(self._get_min_l2_distance(
-                    face.representations, emb), face.label)
-                for face in self._trained_faces
-            ]
-
-            rospy.loginfo(f"{distance_per_emb=} for embedded with index {idx}")
-            distance_per_emb_final = [[distance_per_emb]]
-
-        rospy.loginfo(f"{distance_per_emb_final=}")
-
-        # Calculate the minimum distance for each labeled embedding
-        # e.g. min distance of all observations of label "Jake"
-        for distance in distance_per_emb_final:
-            min_of_emb = [min(j) for j in distance]
-            rospy.loginfo(f"{min_of_emb} min_of_emb")
-            min_of_emb_final.append(min_of_emb)
-        rospy.loginfo(f"{min_of_emb_final} min_of_emb_final")
-
-        # Iterate through the minimum distances of every label and find the corresponding index
-        for value in min_of_emb_final:
-            rospy.loginfo(f"{value} idx")
-            min_index_list_per_emb.append(value.index(min(value)))
-            min_value_list_per_emb.append(min(value))
-            rospy.loginfo(f"{min_index_list_per_emb=}")
-
-        labelling = [
-            self._trained_faces[i].label for i in min_index_list_per_emb]
-        rospy.loginfo(f"{labelling}, {min_value_list_per_emb}")
-
-        return min_value_list_per_emb, labelling
-
-    def threshold_check(self, dist: List[float], labelling: List[str], labels: List[str], threshold: float) -> None:
-        """
-        Updates the database with a new addition if the minimum distance is greater than the threshold.
-
-        :param dist: the list of minimum l2 norms of the embedded vectors compared with the database faces
-        :param labelling: the corresponding labels of the chosen minimum face representations.
-        :param labels: the general list of labels
-        :param threshold: the threshold value which denotes if a face is new or not
-        """
-        for idx, dis in enumerate(dist):
-            rospy.loginfo(f"distances are {dist} and labels are {labelling}")
-            if dis > threshold:
-                # you can always consider the last label or something similar
-                labelling[idx] = labels[idx]
-                rospy.loginfo(
-                    f"Distance is >{threshold} so assign new label: {self._trained_faces[-1].get_label()}, \
-                                Representations: {len(self._trained_faces[-1].get_representations())}"
-                )
-            else:
-                rospy.loginfo(f"Distance is <1 so no new label is needed")
-
-    def recognize(self, img: np.ndarray) -> List[RecognizedFace]:
-        """
-        Returns min l2 distance of the identified face (compared with the database of known faces)
-
-        :param img:
-        :return: the min distance(s) of the embedded vector compared with the database faces
-        :return: the corresponding label(s)
-        """
-
-        bboxes, probs, _ = self._mtcnn.detect(img)
-
-        faces = [self._get_recognized_face(img, bbox) for bbox in bboxes]
-        faces_only = [face._image for face in faces]
-        faces_only = torch.stack(faces_only, dim=0)
-        embeddings = self._get_embedding(faces_only)
-        recognized_faces = [RecognizedFace(img, bbox) for bbox in bboxes]
-        # rospy.loginfo(
-        #     f"{embeddings.size()}, {type(embeddings)}, embeddings size")
-
-        # if not self._trained_faces:
-        #     for idx, emb in enumerate(embeddings):
-        #         label = labels[idx]
-        #         index = self._get_trained_face_index(label)
-        #         if index == -1:
-        #             self._trained_faces.append(TrainedFace(label, [emb]))
-        #         else:
-        #             self._trained_faces[index].representations.append(emb)
-
-        # Calculate the L2 norm and check if the distance is bigger than 1 (face that we have not seen yet)
-        dist = self._get_distances(embeddings)
-        self.threshold_check(dist, labelling, labels, threshold=1)
-
-        rospy.loginfo(f"{len(self._trained_faces)}")
-        return dist, labelling
 
     def _get_trained_face_index(self, label: str) -> int:
         """
@@ -353,10 +247,9 @@ class FaceRecognizer:
         return -1
 
     def train(self, img: np.ndarray, name: str) -> TrainedFace:
-      
-        #face = self._mtcnn(img)
-        #embedding = self._get_embedding(
-            #torch.stack([face[0]], dim=0)).squeeze()
+        """
+        Trains the face recognizer with a new face (adds a new face to the trained faces)
+        """
         embedding = self._get_embedding(img)
         return self._train_impl(embedding, name)
 
