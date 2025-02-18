@@ -9,11 +9,12 @@ from image_recognition_face_recognition.face_recognizer import FaceRecognizer, R
 
 class TestFaceRecognizer(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """
         Create a FaceRecognizer object for testing
         """
-        self.face_recognizer = FaceRecognizer(device="cuda:o" if torch.cuda.is_available() else "cpu")
+        cls.face_recognizer = FaceRecognizer(device="cuda:o" if torch.cuda.is_available() else "cpu")
 
     def test_get_embedding(self):
         """ 
