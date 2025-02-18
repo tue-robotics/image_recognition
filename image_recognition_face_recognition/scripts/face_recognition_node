@@ -1,8 +1,10 @@
 #!/usr/bin/env python
+from __future__ import annotations
 
 import os
 import sys
 import traceback
+from pathlib import Path
 
 import diagnostic_updater
 import rospy
@@ -219,6 +221,9 @@ class FaceRecognitionRos:
 
         # Service response
         return {"recognitions": recognitions}
+
+    def restore_trained_faces(self, file_name: Path | str) -> None:
+        self._face_recognizer.restore_trained_faces(Path(file_name))
 
 
 if __name__ == "__main__":
