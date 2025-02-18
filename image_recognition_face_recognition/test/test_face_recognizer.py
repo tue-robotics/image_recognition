@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from pathlib import Path
+
 import unittest
 import cv2
 import numpy as np
@@ -60,16 +62,16 @@ class TestFaceRecognizer(unittest.TestCase):
         Test the detect method with different images (single/multiple faces, no faces)
         """
         # Test with an image containing one face
-        image_path = "doc/1.jpg"
-        single_face_image = cv2.imread(image_path)
+        image_path = Path(__file__).parent / "doc" / "1.jpg"
+        single_face_image = cv2.imread(str(image_path))
         self.assertIsNotNone(single_face_image, f"Image not found at {image_path}")
         recognized_faces = self.face_recognizer.detect(single_face_image)
         self.assertIsInstance(recognized_faces, list)
         self.assertEqual(len(recognized_faces), 1)  # Expect exactly 1 face
 
         # Test with an image containing multiple faces
-        image_path = "doc/example.png"
-        multiple_faces_image = cv2.imread(image_path)
+        image_path = Path(__file__).parent / "doc" / "example.png"
+        multiple_faces_image = cv2.imread(str(image_path))
         self.assertIsNotNone(multiple_faces_image, f"Image not found at {image_path}")
         recognized_faces = self.face_recognizer.detect(multiple_faces_image)
         self.assertIsInstance(recognized_faces, list)
