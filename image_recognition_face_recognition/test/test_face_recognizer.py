@@ -13,7 +13,7 @@ class TestFaceRecognizer(unittest.TestCase):
         """
         Create a FaceRecognizer object for testing
         """
-        self.face_recognizer = FaceRecognizer(device=0)    
+        self.face_recognizer = FaceRecognizer(device="cuda:o" if torch.cuda.is_available() else "cpu")
 
     def test_get_embedding(self):
         """ 
