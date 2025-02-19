@@ -6,6 +6,7 @@ import unittest
 import cv2
 import numpy as np
 import torch
+from parameterized import parameterized
 from image_recognition_face_recognition.face_recognizer import FaceRecognizer, RecognizedFace, ROI
 
 
@@ -16,10 +17,10 @@ class TestFaceRecognizer(unittest.TestCase):
         """
         Create a FaceRecognizer object for testing
         """
-        cls.face_recognizer = FaceRecognizer(device="cuda:o" if torch.cuda.is_available() else "cpu")
+        cls.face_recognizer = FaceRecognizer(device="cuda:0" if torch.cuda.is_available() else "cpu")
 
     def test_get_embedding(self):
-        """ 
+        """
         Test the get_embedding method dimensions
         """
         # Create a dummy image tensor [batch_size, C, H, W]
@@ -57,29 +58,25 @@ class TestFaceRecognizer(unittest.TestCase):
         updated_face = self.face_recognizer._update_with_categorical_distribution(recognized_face)
         self.assertIsInstance(updated_face, RecognizedFace)
 
-    def test_detect(self):
+    @parameterized.expand([
+        ("doc/1.jpg", 1),
+        ("doc/example.png", 7),
+    ])
+    def test_detect(self, image_name, expected_faces):
         """
-        Test the detect method with different images (single/multiple faces, no faces)
+        Test the detect method with different images (single/multiple faces)
         """
-        # Test with an image containing one face
-        image_path = Path(__file__).parent / "doc" / "1.jpg"
-        single_face_image = cv2.imread(str(image_path))
-        self.assertIsNotNone(single_face_image, f"Image not found at {image_path}")
-        recognized_faces = self.face_recognizer.detect(single_face_image)
+        image_path = Path(__file__).parent.parent / image_name
+        image = cv2.imread(str(image_path))
+        self.assertIsNotNone(image, f"Image not found at {image_path}")
+        recognized_faces = self.face_recognizer.detect(image)
         self.assertIsInstance(recognized_faces, list)
-        self.assertEqual(len(recognized_faces), 1)  # Expect exactly 1 face
+        self.assertEqual(len(recognized_faces), expected_faces)
 
-        # Test with an image containing multiple faces
-        image_path = Path(__file__).parent / "doc" / "example.png"
-        multiple_faces_image = cv2.imread(str(image_path))
-        self.assertIsNotNone(multiple_faces_image, f"Image not found at {image_path}")
-        recognized_faces = self.face_recognizer.detect(multiple_faces_image)
-        self.assertIsInstance(recognized_faces, list)
-        self.assertGreaterEqual(len(recognized_faces), 6)  # Expect at least 2 faces
-
+    def test_detect_no_faces(self):
         # Test with an image containing no faces
-        no_face_image = np.zeros((160, 160, 3), dtype=np.uint8)
-        recognized_faces = self.face_recognizer.detect(no_face_image)
+        image = np.zeros((160, 160, 3), dtype=np.uint8)
+        recognized_faces = self.face_recognizer.detect(image)
         self.assertEqual(len(recognized_faces), 0)
 
     def test_get_min_l2_distance(self):
