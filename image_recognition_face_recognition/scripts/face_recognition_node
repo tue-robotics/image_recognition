@@ -22,11 +22,11 @@ class FaceRecognitionRos:
     def __init__(
         self,
         device: str,
-        save_images_folder,
-        topic_save_images,
-        service_save_images,
-        topic_publish_result_image,
-        service_publish_result_image,
+        save_images_folder: Path,
+        topic_save_images: bool,
+        service_save_images: bool,
+        topic_publish_result_image: bool,
+        service_publish_result_image: bool,
     ):
         """
         FaceRecognitionRos class that wraps the FaceRecognizer in a ROS node
@@ -36,12 +36,12 @@ class FaceRecognitionRos:
         :param topic_save_images: whether to save images originated from image topic callback
         :param service_save_images: whether to save images originated from a service call
         :param topic_publish_result_image: whether to publish images originated from image topic callback
-        :param service_publish_result_image: whether to publish images originated from a serice call
+        :param service_publish_result_image: whether to publish images originated from a service call
         """
 
         # Openface ROS
         self._face_recognizer = FaceRecognizer(device)
-        self._save_images_folder = save_images_folder
+        self._save_images_folder = str(save_images_folder)
         self._topic_save_images = topic_save_images
         self._service_save_images = service_save_images
         self._topic_publish_result_image = topic_publish_result_image
@@ -230,7 +230,6 @@ if __name__ == "__main__":
     rospy.init_node("face_recognition")
     try:
         device = rospy.get_param("~device", "cuda:0")
-        save_images = rospy.get_param("~save_images", True)
         topic_save_images = rospy.get_param("~topic_save_images", False)
         service_save_images = rospy.get_param("~service_save_images", True)
         topic_publish_result_image = rospy.get_param(
@@ -240,14 +239,14 @@ if __name__ == "__main__":
 
         db = rospy.get_param("~db", None)
         if db:
-            db = os.path.expanduser(db)
+            db = Path(db).expanduser()
 
         save_images_folder = None
-        if save_images:
-            save_images_folder = os.path.expanduser(
+        if topic_save_images or service_save_images:
+            save_images_folder = Path(
                 rospy.get_param("~save_images_folder",
                                 "/tmp/face_recognition_saved_images")
-            )
+            ).expanduser()
     except KeyError as e:
         rospy.logerr("Parameter %s not found" % e)
         sys.exit(1)
