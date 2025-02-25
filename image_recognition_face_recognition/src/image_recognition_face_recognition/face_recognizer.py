@@ -54,14 +54,17 @@ class RecognizedFace:
         :param image: The original cropped image
         :param roi: Region of Interest
         """
-        self._image = image
+        self._image: torch.Tensor = image
         self._roi: ROI = roi
         self.l2_distances: List[L2Distance] = []
 
     @property
-    def image(self) -> np.ndarray:
-        # return self._image.permute(1, 2, 0).detach().cpu().numpy()
+    def image(self) -> torch.Tensor:
         return self._image
+
+    @property
+    def image_np(self) -> np.ndarray:
+        return self._image.squeeze(0).permute(1, 2, 0).detach().cpu().numpy()
 
     @property
     def roi(self) -> ROI:

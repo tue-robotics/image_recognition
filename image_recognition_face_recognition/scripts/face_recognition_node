@@ -158,7 +158,7 @@ class FaceRecognitionRos:
                     roi.y_offset:roi.y_offset + roi.height,
                     roi.x_offset:roi.x_offset + roi.width]
                 image_writer.write_annotated(
-                    self._save_images_folder, fr.image, label, False)
+                    self._save_images_folder, fr.image_np, label, False)
                 images.append(roi_image)
                 labels.append(label)
 
