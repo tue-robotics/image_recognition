@@ -21,6 +21,7 @@ from image_recognition_face_recognition.face_recognizer import FaceRecognizer
 class FaceRecognitionRos:
     def __init__(
         self,
+        distance_threshold: float,
         device: str,
         save_images_folder: Path,
         topic_save_images: bool,
@@ -31,6 +32,7 @@ class FaceRecognitionRos:
         """
         FaceRecognitionRos class that wraps the FaceRecognizer in a ROS node
 
+        :param distance_threshold: distance threshold for face recognition
         :param device: device to use for the face recognition
         :param save_images_folder: path where to store the images
         :param topic_save_images: whether to save images originated from image topic callback
@@ -40,7 +42,7 @@ class FaceRecognitionRos:
         """
 
         # Openface ROS
-        self._face_recognizer = FaceRecognizer(device)
+        self._face_recognizer = FaceRecognizer(device=device, distance_threshold=distance_threshold)
         self._save_images_folder = str(save_images_folder)
         self._topic_save_images = topic_save_images
         self._service_save_images = service_save_images
@@ -69,6 +71,7 @@ class FaceRecognitionRos:
                 "result_image", Image, queue_size=10)
 
         rospy.loginfo("FaceRecognitionRos initialized:")
+        rospy.loginfo(" - distance_threshold=%s", distance_threshold)
         rospy.loginfo(" - device=%s", device)
         rospy.loginfo(" - save_images_folder=%s", save_images_folder)
         rospy.loginfo(" - topic_save_images=%s", topic_save_images)
@@ -155,7 +158,7 @@ class FaceRecognitionRos:
                     roi.y_offset:roi.y_offset + roi.height,
                     roi.x_offset:roi.x_offset + roi.width]
                 image_writer.write_annotated(
-                    self._save_images_folder, fr.image, label, False)
+                    self._save_images_folder, fr.image_np, label, False)
                 images.append(roi_image)
                 labels.append(label)
 
@@ -229,6 +232,7 @@ class FaceRecognitionRos:
 if __name__ == "__main__":
     rospy.init_node("face_recognition")
     try:
+        distance_threshold = rospy.get_param("~distance_threshold", 1.0)
         device = rospy.get_param("~device", "cuda:0")
         topic_save_images = rospy.get_param("~topic_save_images", False)
         service_save_images = rospy.get_param("~service_save_images", True)
@@ -252,6 +256,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     face_recognition_node = FaceRecognitionRos(
+        distance_threshold=distance_threshold,
         device=device,
         save_images_folder=save_images_folder,
         topic_save_images=topic_save_images,
