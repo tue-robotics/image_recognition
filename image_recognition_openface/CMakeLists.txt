@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 project(image_recognition_openface)
 
 find_package(catkin REQUIRED COMPONENTS)
