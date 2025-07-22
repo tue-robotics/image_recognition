@@ -1,11 +1,15 @@
-import colorsys as cs
+from pathlib import Path
+from typing import Optional
 
 import numpy as np
+import rospy
 from sklearn.cluster import KMeans
 
+import pandas as pd
 
-class ColorExtractor(object):
-    def __init__(self, total_colors=3, dominant_range=10):
+
+class ColorExtractor:
+    def __init__(self, colors_config_file: Path, total_colors: int = 3, dominant_range: int = 10):
         """
         Constructor
 
@@ -17,8 +21,34 @@ class ColorExtractor(object):
         """
         self._total_colors = total_colors
         self._dominant_range = dominant_range
+        # Reading csv file with pandas and giving names to each column
+        column_names = ["color", "color_name", "hex", "R", "G", "B"]
+        if not colors_config_file.exists():
+            raise ValueError(f"Colors config file '{colors_config_file}' doesn't exist")
+        self._colors_csv = pd.read_csv(colors_config_file, names=column_names, header=None)
 
-    def recognize(self, img):
+    # function to calculate minimum distance from all colors and get the most matching color
+    def get_color_name(self, red: int, green: int, blue: int) -> Optional[str]:
+        """
+        Get the name of closest color
+
+        :param red: red value [0-255]
+        :param green: green value [0-255]
+        :param blue: blue value [0-255]
+
+        :return: Optional color name
+        """
+        min_distance = 1e9
+        cname = None
+        for _, row in self._colors_csv.iterrows():
+            d = abs(red - int(row["R"])) + abs(green - int(row["G"])) + abs(blue - int(row["B"]))
+            if d <= min_distance:
+                min_distance = d
+                cname = row["color_name"]
+
+        return cname
+
+    def recognize(self, img: np.ndarray):
         """
         Extract the most dominant color(s)
 
@@ -40,48 +70,16 @@ class ColorExtractor(object):
         unique_l, counts_l = np.unique(kmeans.labels_, return_counts=True)
 
         sort_ix = np.argsort(counts_l)
+        sort_ix = sort_ix[::-1]  # Reverse the list
         factor_counts = 100.0 / sum(counts_l)
-        percentages = [factor_counts * counts_l[ix] for ix in reversed(sort_ix)]
-        colors = list()
-        sort_ix = sort_ix[::-1]
+        percentages = [factor_counts * counts_l[ix] for ix in sort_ix]
+        colors = []
 
-        for i, cluster_center in enumerate(kmeans.cluster_centers_[sort_ix]):
-            hue, sat, val = cs.rgb_to_hsv(cluster_center[2] / 255.0, cluster_center[1] / 255.0,
-                                          cluster_center[0] / 255.0)
-            hue *= 360
-            if val < 0.3:
-                colors.append('black')
-            elif sat < 0.4:
-                if val < 0.3:
-                    colors.append('black')
-                elif val > 0.6:
-                    colors.append('white')
-                else:
-                    colors.append('grey')
-            elif hue < 15:
-                colors.append('red')
-            elif hue < 40:
-                colors.append('orange')
-            elif hue < 65:
-                colors.append('yellow')
-            elif hue < 85:
-                colors.append('light green')
-            elif hue < 155:
-                colors.append('green')
-            elif hue < 175:
-                colors.append('cyan')
-            elif hue < 195:
-                colors.append('light blue')
-            elif hue < 265:
-                colors.append('blue')
-            elif hue < 290:
-                colors.append('purple')
-            elif hue < 340:
-                colors.append('pink')
-            else:
-                colors.append('red')
+        for cluster_center in kmeans.cluster_centers_[sort_ix]:
+            colors.append(self.get_color_name(red=cluster_center[2], green=cluster_center[1], blue=cluster_center[0]))
 
-        dominant_colors.append((colors[0], percentages[0]))
+        if colors:
+            dominant_colors.append((colors[0], percentages[0]))
 
         for color, percentage in zip(colors[1:], percentages[1:]):
             if percentages[0] - percentage > self._dominant_range:
