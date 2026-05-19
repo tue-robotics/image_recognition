@@ -21,8 +21,6 @@
   <exec_depend>image_recognition_pose_estimation</exec_depend>
   <exec_depend>image_recognition_rqt</exec_depend>
   <exec_depend>image_recognition_skybiometry</exec_depend>
-  <exec_depend>image_recognition_tensorflow</exec_depend>
-  <exec_depend>image_recognition_tensorflow_rqt</exec_depend>
   <exec_depend>image_recognition_util</exec_depend>
 
   <export>
