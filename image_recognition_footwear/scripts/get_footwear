@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+
+from __future__ import print_function
+import argparse
+from image_recognition_footwear.model import Model
+from image_recognition_footwear.process_data import heroPreprocess, detection_RGB
+from PIL import Image
+import os
+import torch
+
+# Assign description to the help doc
+parser = argparse.ArgumentParser(description='Get footwear detected using PyTorch')
+
+# Add arguments
+parser.add_argument('image', type=str, help='Image')
+parser.add_argument('--weights-path', type=str, help='Path to the weights of the VGG model',
+                    default=os.path.expanduser('~/data/pytorch_models/footwearModel.pth'))
+
+parser.add_argument('--input-channel', type=int, help='Size of the input model channel', default=3)
+parser.add_argument('--channel1-size', type=int, help='Size channel 1', default=128)
+parser.add_argument('--channel2-size', type=int, help='Size channel 2', default=256)
+parser.add_argument('--channel3-size', type=int, help='Size channel 3', default=512)
+parser.add_argument('--nodes-fclayer1-size', type=int, help='Size fully connected layer 1 neurons', default=1024)
+parser.add_argument('--nodes-fclayer2-size', type=int, help='Size fully connected layer 2 neurons', default=1024)
+parser.add_argument('--class-size', type=int, help='Classes of the network', default=2)
+
+device = torch.device('cuda')
+dtype = torch.float32
+
+args = parser.parse_args()
+
+# Read the image and preprocess
+img = Image.open(args.image)
+preprocessed_img = heroPreprocess(img)
+
+# Load the model
+model = Model(in_channel=args.input_channel, channel_1=args.channel1_size, channel_2=args.channel2_size, channel_3=args.channel3_size, node_1=args.nodes_fclayer1_size, node_2=args.nodes_fclayer2_size, num_classes=args.class_size)
+model.load_state_dict(torch.load(args.weights_path))
+model.to(device=device)
+
+# Detection
+detector = detection_RGB(preprocessed_img, model)
+
+print(detector)
+
