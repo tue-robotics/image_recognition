@@ -1,5 +1,0 @@
-# Interface for recognizing regions of interest with labels in an image
-
-sensor_msgs/Image image
----
-Recognition[] recognitions
