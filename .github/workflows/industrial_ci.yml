@@ -21,9 +21,11 @@ jobs:
         env:
           - ROS_DISTRO: noetic
             ROS_REPO: main
-            BEFORE_INSTALL_TARGET_DEPENDENCIES: "pip3 install --upgrade --progress-bar=off pip && hash -r pip3 && pip3 install --upgrade --progress-bar=off 'scipy>=1.5'"
+            BEFORE_INSTALL_TARGET_DEPENDENCIES: "pip3 install --upgrade --progress-bar=off pip && hash -r pip3 && pip3 install --upgrade --progress-bar=off 'scipy>=1.5' && pip3 install --progress-bar=off --ignore-installed psutil"
             AFTER_INSTALL_TARGET_DEPENDENCIES: "pip install --progress-bar=off git+https://github.com/tue-robotics/facenet-pytorch.git --extra-index-url https://download.pytorch.org/whl/cpu"
             ADDITIONAL_DEBS: python3-pip
+            # Rosdep keys missing from the frozen noetic rosdistro snapshot, see .github/ci/rosdep.yaml
+            AFTER_SETUP_ROSDEP: "echo \"yaml file://${TARGET_REPO_PATH}/.github/ci/rosdep.yaml\" > /etc/ros/rosdep/sources.list.d/10-image-recognition.list && rosdep update --rosdistro noetic --include-eol-distros > /dev/null"
     env:
       ${{ matrix.env }}
     runs-on: ubuntu-latest

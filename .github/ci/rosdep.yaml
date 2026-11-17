@@ -1,0 +1,8 @@
+# Rosdep keys missing from the frozen noetic rosdistro snapshot that Industrial CI uses.
+# Remove once they are not needed anymore.
+build-essential:  # ros/rosdistro#55564, needed by python3-dlib-pip
+  ubuntu: [build-essential]
+python3-tensorflow-pip:  # ros/rosdistro#55565
+  ubuntu:
+    pip:
+      packages: [tensorflow]
