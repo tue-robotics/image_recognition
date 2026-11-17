@@ -1,5 +1,7 @@
 #include "detect_net.h"
 
+#include <unistd.h>
+
 #include <jetson-inference/detectNet.h>
 
 #include <jetson-inference/cudaMappedMemory.h>
@@ -58,7 +60,7 @@ DetectNet::~DetectNet()
   delete g_net;
 }
 
-std::vector<image_recognition_msgs::Recognition> DetectNet::processImage(const cv::Mat &cv_im)
+std::vector<image_recognition_interfaces::msg::Recognition> DetectNet::processImage(const cv::Mat &cv_im)
 {
   // allocate GPU data if necessary
   if (!g_gpu_data)
@@ -81,7 +83,7 @@ std::vector<image_recognition_msgs::Recognition> DetectNet::processImage(const c
 
   int number_of_bounding_boxes = g_max_boxes;
 
-  std::vector<image_recognition_msgs::Recognition> recognitions;
+  std::vector<image_recognition_interfaces::msg::Recognition> recognitions;
   if (g_net->Detect((float*)g_gpu_data, g_image_width, g_image_height, g_bounding_box_CPU, &number_of_bounding_boxes, g_confidence_CPU)) 
   {
     recognitions.resize(number_of_bounding_boxes);

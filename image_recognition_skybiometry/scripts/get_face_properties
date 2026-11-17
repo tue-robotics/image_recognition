@@ -1,7 +1,6 @@
-#!/usr/bin/env python
-from __future__ import  print_function
-
+#!/usr/bin/env python3
 import argparse
+import os
 from image_recognition_skybiometry import Skybiometry
 import cv2
 
@@ -12,9 +11,9 @@ parser = argparse.ArgumentParser(description='Get face properties using the Skyb
 parser.add_argument(
     '-i', '--image', type=str, help='Image', required=True)
 parser.add_argument(
-    '-k', '--key', type=str, help='API Key', required=False, default='69efefc20c7f42d8af1f2646ce6742ec')
+    '-k', '--key', type=str, help='API Key', required=False, default=os.environ.get('SKYBIOMETRY_API_KEY'))
 parser.add_argument(
-    '-s', '--secret', type=str, help='API Secret', required=False, default='5fab420ca6cf4ff28e7780efcffadb6c')
+    '-s', '--secret', type=str, help='API Secret', required=False, default=os.environ.get('SKYBIOMETRY_API_SECRET'))
 parser.add_argument(
     '-n', '--namespace', type=str, help='Namespace', required=False, default='techunited')
 parser.add_argument(
@@ -22,6 +21,8 @@ parser.add_argument(
 parser.add_argument(
     '-v', '--verbose', help="Increase output verbosity", action="store_true")
 args = parser.parse_args()
+if not args.key or not args.secret:
+    parser.error('Set SKYBIOMETRY_API_KEY and SKYBIOMETRY_API_SECRET or pass --key and --secret')
 
 # Read the image
 img = cv2.imread(args.image)

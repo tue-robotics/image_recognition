@@ -1,7 +1,7 @@
 import logging
 import os
 import sys
-from image_recognition_msgs.msg import Recognition, CategoricalDistribution, CategoryProbability
+from image_recognition_interfaces.msg import Recognition, CategoricalDistribution, CategoryProbability
 from sensor_msgs.msg import RegionOfInterest
 
 from .openpose_models import models

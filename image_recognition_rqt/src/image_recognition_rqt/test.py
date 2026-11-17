@@ -1,10 +1,9 @@
-import rospy
-import rosservice
-import rostopic
+from rclpy.qos import qos_profile_sensor_data
+from rosidl_runtime_py.utilities import get_service
 from cv_bridge import CvBridge, CvBridgeError
 from .dialogs import option_dialog, warning_dialog, info_dialog
-from image_recognition_msgs.msg import CategoryProbability, FaceProperties
-from image_recognition_msgs.srv import GetFaceProperties, Recognize
+from image_recognition_interfaces.msg import CategoryProbability, FaceProperties
+from image_recognition_interfaces.srv import GetFaceProperties, Recognize
 from .image_widget import ImageWidget
 from python_qt_binding.QtCore import *
 from python_qt_binding.QtGui import *
@@ -12,19 +11,22 @@ from python_qt_binding.QtWidgets import *
 from qt_gui.plugin import Plugin
 from sensor_msgs.msg import Image
 
-_SUPPORTED_SERVICES = ["image_recognition_msgs/Recognize",
-                       "image_recognition_msgs/GetFaceProperties"]
+_SUPPORTED_SERVICES = ["image_recognition_interfaces/srv/Recognize",
+                       "image_recognition_interfaces/srv/GetFaceProperties"]
 
 
 class TestPlugin(Plugin):
+    _image_received = Signal(object)
+    _service_finished = Signal(object, object)
 
     def __init__(self, context):
         """
-        TestPlugin class to evaluate the image_recognition_msgs interfaces
+        TestPlugin class to evaluate the image_recognition_interfaces interfaces
 
         :param context: QT context, aka parent
         """
         super(TestPlugin, self).__init__(context)
+        self._node = context.node
 
         # Widget setup
         self.setObjectName('Test Plugin')
@@ -54,6 +56,8 @@ class TestPlugin(Plugin):
         # Set subscriber and service to None
         self._sub = None
         self._srv = None
+        self._image_received.connect(self._image_callback, Qt.QueuedConnection)
+        self._service_finished.connect(self._handle_service_result, Qt.QueuedConnection)
 
     def recognize_srv_call(self, roi_image):
         """
@@ -62,10 +66,13 @@ class TestPlugin(Plugin):
         :param roi_image: Selected roi_image by the user
         """
         try:
-            result = self._srv(image=self.bridge.cv2_to_imgmsg(roi_image, "bgr8"))
-        except Exception as e:
-            warning_dialog("Service Exception", str(e))
+            request = Recognize.Request(image=self.bridge.cv2_to_imgmsg(roi_image, "bgr8"))
+        except CvBridgeError as error:
+            warning_dialog("Image conversion failed", str(error))
             return
+        self._call_service(request, self._show_recognize_result)
+
+    def _show_recognize_result(self, result):
 
         for r in result.recognitions:
             text_array = []
@@ -89,10 +96,13 @@ class TestPlugin(Plugin):
         :param roi_image: Selected roi_image by the user
         """
         try:
-            result = self._srv(face_image_array=[self.bridge.cv2_to_imgmsg(roi_image, "bgr8")])
-        except Exception as e:
-            warning_dialog("Service Exception", str(e))
+            request = GetFaceProperties.Request(face_image_array=[self.bridge.cv2_to_imgmsg(roi_image, "bgr8")])
+        except CvBridgeError as error:
+            warning_dialog("Image conversion failed", str(error))
             return
+        self._call_service(request, self._show_get_face_properties_result)
+
+    def _show_get_face_properties_result(self, result):
 
         msg = ""
         for properties in result.properties_array:
@@ -113,9 +123,9 @@ class TestPlugin(Plugin):
                            "Please first specify a service via the options button (top-right gear wheel)")
             return
 
-        if self._srv.service_class == Recognize:
+        if self._srv.srv_type == Recognize:
             self.recognize_srv_call(roi_image)
-        elif self._srv.service_class == GetFaceProperties:
+        elif self._srv.srv_type == GetFaceProperties:
             self.get_face_properties_srv_call(roi_image)
         else:
             warning_dialog("Unknown service class", "Service class is unkown!")
@@ -129,7 +139,8 @@ class TestPlugin(Plugin):
         try:
             cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         except CvBridgeError as e:
-            rospy.logerr(e)
+            self._node.get_logger().error(str(e))
+            return
             return
 
         self._image_widget.set_image(cv_image)
@@ -138,9 +149,9 @@ class TestPlugin(Plugin):
         """
         Callback when the configuration button is clicked
         """
-        image_topics = sorted(rostopic.find_by_type('sensor_msgs/Image'))
+        image_topics = sorted(name for name, types in self._node.get_topic_names_and_types() if 'sensor_msgs/msg/Image' in types)
         try:
-            topic_index = image_topics.index(self._sub.resolved_name)
+            topic_index = image_topics.index(self._sub.topic_name)
         except (AttributeError, ValueError):
             topic_index = 0
 
@@ -149,16 +160,13 @@ class TestPlugin(Plugin):
         if ok:
             self._create_subscriber(topic_name)
 
-        available_rosservices = []
-        for s in rosservice.get_service_list():
-            try:
-                if rosservice.get_service_type(s) in _SUPPORTED_SERVICES:
-                    available_rosservices.append(s)
-            except:
-                pass
+        available_rosservices = sorted(
+            name for name, types in self._node.get_service_names_and_types()
+            if any(service_type in _SUPPORTED_SERVICES for service_type in types)
+        )
 
         try:
-            srv_index = available_rosservices.index(self._srv.resolved_name)
+            srv_index = available_rosservices.index(self._srv.srv_name)
         except (AttributeError, ValueError):
             srv_index = 0
 
@@ -174,13 +182,12 @@ class TestPlugin(Plugin):
         :param topic_name: The topic_name
         """
         if self._sub:
-            if topic_name == self._sub.resolved_name:
+            if topic_name == self._sub.topic_name:
                 return
-            self._sub.unregister()
+            self._node.destroy_subscription(self._sub)
 
-        self._sub = rospy.Subscriber(topic_name, Image, self._image_callback)
-        rospy.loginfo("Listening to %s -- spinning .." % self._sub.resolved_name)
-        self._widget.setWindowTitle("Test plugin, listening to (%s)" % self._sub.resolved_name)
+        self._sub = self._node.create_subscription(Image, topic_name, lambda image: self._image_received.emit(image), qos_profile_sensor_data)
+        self._widget.setWindowTitle("Test plugin, listening to (%s)" % self._sub.topic_name)
 
     def _create_service_client(self, srv_name):
         """
@@ -188,20 +195,41 @@ class TestPlugin(Plugin):
 
         :param srv_name:
         """
+        if self._srv and srv_name == self._srv.srv_name:
+            return
+        service_types = dict(self._node.get_service_names_and_types()).get(srv_name, [])
+        service_type = next((name for name in service_types if name in _SUPPORTED_SERVICES), None)
+        if service_type is None:
+            return
         if self._srv:
-            if srv_name == self._srv.resolved_name:
-                return
-            self._srv.close()
+            self._node.destroy_client(self._srv)
+        self._srv = self._node.create_client(get_service(service_type), srv_name)
 
-        if srv_name in rosservice.get_service_list():
-            rospy.loginfo("Creating proxy for service '%s'" % srv_name)
-            self._srv = rospy.ServiceProxy(srv_name, rosservice.get_service_class_by_name(srv_name))
+    def _call_service(self, request, on_result=None):
+        if not self._srv.service_is_ready():
+            warning_dialog("Service unavailable", self._srv.srv_name)
+            return
+        future = self._srv.call_async(request)
+        future.add_done_callback(lambda result: self._service_finished.emit(result, on_result))
+
+    def _handle_service_result(self, future, on_result):
+        try:
+            result = future.result()
+        except Exception as error:
+            warning_dialog("Service Exception", str(error))
+            return
+        if on_result is not None:
+            on_result(result)
+
 
     def shutdown_plugin(self):
         """
         Callback function when shutdown is requested
         """
-        pass
+        if self._sub:
+            self._node.destroy_subscription(self._sub)
+        if self._srv:
+            self._node.destroy_client(self._srv)
 
     def save_settings(self, plugin_settings, instance_settings):
         """
@@ -211,9 +239,9 @@ class TestPlugin(Plugin):
         :param instance_settings: Settings of this instance
         """
         if self._sub:
-            instance_settings.set_value("topic_name", self._sub.resolved_name)
+            instance_settings.set_value("topic_name", self._sub.topic_name)
         if self._srv:
-            instance_settings.set_value("service_name", self._srv.resolved_name)
+            instance_settings.set_value("service_name", self._srv.srv_name)
 
     def restore_settings(self, plugin_settings, instance_settings):
         """

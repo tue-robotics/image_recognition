@@ -22,7 +22,6 @@ try:
 except ImportError:
     import simplejson as json
 
-from future.utils import iteritems
 
 API_HOST = 'api.skybiometry.com/fc'
 USE_SSL = True
@@ -318,7 +317,7 @@ class FaceClient(object):
 
     @staticmethod
     def __append_optional_arguments(data, **kwargs):
-        for key, value in iteritems(kwargs):
+        for key, value in kwargs.items():
             if value:
                 data.update({key: value})
 
@@ -335,7 +334,7 @@ class FaceClient(object):
             from .multipart import Multipart
             form = Multipart()
 
-            for key, value in iteritems(data):
+            for key, value in data.items():
                 form.field(key, value)
 
             if files:

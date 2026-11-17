@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from typing import List, Optional
 
 import cv2
-from image_recognition_msgs.msg import Recognition
+from image_recognition_interfaces.msg import Recognition
 from image_recognition_util import image_writer
 from sensor_msgs.msg import RegionOfInterest
 

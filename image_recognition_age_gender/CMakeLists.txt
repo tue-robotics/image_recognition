@@ -1,22 +1,24 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 project(image_recognition_age_gender)
 
-find_package(catkin REQUIRED)
+find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 
-catkin_python_setup()
-
-catkin_package()
+ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR src/${PROJECT_NAME})
 
 install(PROGRAMS
   scripts/download_model
   scripts/face_properties_node
   scripts/get_face_properties
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  DESTINATION lib/${PROJECT_NAME}
 )
 
-if(CATKIN_ENABLE_TESTING)
-  find_package(catkin_lint_cmake REQUIRED)
-  catkin_add_catkin_lint_test()
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 
-  catkin_add_nosetests(test)
+  find_package(ament_cmake_pytest REQUIRED)
+  ament_add_pytest_test(face_properties test/test_face_properties.py)
 endif()
+
+ament_package()

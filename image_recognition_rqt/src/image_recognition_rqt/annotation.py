@@ -1,6 +1,6 @@
+from rclpy.qos import qos_profile_sensor_data
+from rosidl_runtime_py.utilities import get_service
 import os
-import rospy
-import rostopic
 
 from qt_gui.plugin import Plugin
 
@@ -11,20 +11,20 @@ from python_qt_binding.QtCore import *
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 import re
-import rosservice
 
 from .image_widget import ImageWidget
 from .dialogs import option_dialog, warning_dialog
 
-from image_recognition_msgs.msg import Annotation
+from image_recognition_interfaces.msg import Annotation
+from image_recognition_interfaces.srv import Annotate
 from image_recognition_util import image_writer
 from sensor_msgs.msg import RegionOfInterest
 
-_SUPPORTED_SERVICES = ["image_recognition_msgs/Annotate"]
+_SUPPORTED_SERVICES = ["image_recognition_interfaces/srv/Annotate"]
 
 
 def _sanitize(label):
-    """
+    r"""
     Sanitize string, only allow \w regex chars
 
     :param label: Input that needs to be sanitized
@@ -34,6 +34,8 @@ def _sanitize(label):
 
 
 class AnnotationPlugin(Plugin):
+    _image_received = Signal(object)
+    _service_finished = Signal(object, object)
 
     def __init__(self, context):
         """
@@ -42,6 +44,7 @@ class AnnotationPlugin(Plugin):
         :param context: Parent QT widget
         """
         super(AnnotationPlugin, self).__init__(context)
+        self._node = context.node
 
         # Widget setup
         self.setObjectName('Label Plugin')
@@ -86,6 +89,8 @@ class AnnotationPlugin(Plugin):
         # Set subscriber to None
         self._sub = None
         self._srv = None
+        self._image_received.connect(self._image_callback, Qt.QueuedConnection)
+        self._service_finished.connect(self._handle_service_result, Qt.QueuedConnection)
 
         self.labels = []
         self.label = ""
@@ -134,10 +139,10 @@ class AnnotationPlugin(Plugin):
         if roi_image is not None and self.label is not None and self._srv is not None:
             height, width = roi_image.shape[:2]
             try:
-                self._srv(image=self.bridge.cv2_to_imgmsg(roi_image, "bgr8"),
+                self._call_service(Annotate.Request(image=self.bridge.cv2_to_imgmsg(roi_image, "bgr8"),
                           annotations=[Annotation(label=self.label,
                                                   roi=RegionOfInterest(x_offset=0, y_offset=0,
-                                                                       width=width, height=height))])
+                                                                       width=width, height=height))]))
             except Exception as e:
                 warning_dialog("Service Exception", str(e))
 
@@ -147,15 +152,33 @@ class AnnotationPlugin(Plugin):
 
         :param srv_name: Name of the service
         """
+        if self._srv and srv_name == self._srv.srv_name:
+            return
+        service_types = dict(self._node.get_service_names_and_types()).get(srv_name, [])
+        service_type = next((name for name in service_types if name in _SUPPORTED_SERVICES), None)
+        if service_type is None:
+            return
         if self._srv:
-            if srv_name == self._srv.resolved_name:
-                return
-            self._srv.close()
+            self._node.destroy_client(self._srv)
+        self._srv = self._node.create_client(get_service(service_type), srv_name)
 
-        if srv_name in rosservice.get_service_list():
-            rospy.loginfo("Creating proxy for service '%s'" % srv_name)
-            self._srv = rospy.ServiceProxy(srv_name, rosservice.get_service_class_by_name(srv_name))
-            
+    def _call_service(self, request, on_result=None):
+        if not self._srv.service_is_ready():
+            warning_dialog("Service unavailable", self._srv.srv_name)
+            return
+        future = self._srv.call_async(request)
+        future.add_done_callback(lambda result: self._service_finished.emit(result, on_result))
+
+    def _handle_service_result(self, future, on_result):
+        try:
+            result = future.result()
+        except Exception as error:
+            warning_dialog("Service Exception", str(error))
+            return
+        if on_result is not None:
+            on_result(result)
+
+
     def store_image(self, roi_image):
         """
         Store the image
@@ -212,7 +235,8 @@ class AnnotationPlugin(Plugin):
         try:
             cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         except CvBridgeError as e:
-            rospy.logerr(e)
+            self._node.get_logger().error(str(e))
+            return
 
         self._image_widget.set_image(cv_image)
 
@@ -220,9 +244,9 @@ class AnnotationPlugin(Plugin):
         """
         Callback when the configuration button is clicked
         """
-        image_topics = sorted(rostopic.find_by_type('sensor_msgs/Image'))
+        image_topics = sorted(name for name, types in self._node.get_topic_names_and_types() if 'sensor_msgs/msg/Image' in types)
         try:
-            topic_index = image_topics.index(self._sub.resolved_name)
+            topic_index = image_topics.index(self._sub.topic_name)
         except (AttributeError, ValueError):
             topic_index = 0
 
@@ -231,16 +255,13 @@ class AnnotationPlugin(Plugin):
         if ok:
             self._create_subscriber(topic_name)
 
-        available_rosservices = []
-        for s in rosservice.get_service_list():
-            try:
-                if rosservice.get_service_type(s) in _SUPPORTED_SERVICES:
-                    available_rosservices.append(s)
-            except:
-                pass
+        available_rosservices = sorted(
+            name for name, types in self._node.get_service_names_and_types()
+            if any(service_type in _SUPPORTED_SERVICES for service_type in types)
+        )
 
         try:
-            srv_index = available_rosservices.index(self._srv.resolved_name)
+            srv_index = available_rosservices.index(self._srv.srv_name)
         except (AttributeError, ValueError):
             srv_index = 0
 
@@ -255,19 +276,21 @@ class AnnotationPlugin(Plugin):
         :param topic_name: The topic_name
         """
         if self._sub:
-            if topic_name == self._sub.resolved_name:
+            if topic_name == self._sub.topic_name:
                 return
-            self._sub.unregister()
+            self._node.destroy_subscription(self._sub)
 
-        self._sub = rospy.Subscriber(topic_name, Image, self._image_callback)
-        rospy.loginfo("Listening to %s -- spinning .." % self._sub.name)
-        self._widget.setWindowTitle("Label plugin, listening to (%s)" % self._sub.name)
+        self._sub = self._node.create_subscription(Image, topic_name, lambda image: self._image_received.emit(image), qos_profile_sensor_data)
+        self._widget.setWindowTitle("Label plugin, listening to (%s)" % self._sub.topic_name)
 
     def shutdown_plugin(self):
         """
         Callback function when shutdown is requested
         """
-        pass
+        if self._sub:
+            self._node.destroy_subscription(self._sub)
+        if self._srv:
+            self._node.destroy_client(self._srv)
 
     def save_settings(self, plugin_settings, instance_settings):
         """
@@ -279,9 +302,9 @@ class AnnotationPlugin(Plugin):
         instance_settings.set_value("output_directory", self.output_directory)
         instance_settings.set_value("labels", self.labels)
         if self._sub:
-            instance_settings.set_value("topic_name", self._sub.resolved_name)
+            instance_settings.set_value("topic_name", self._sub.topic_name)
         if self._srv:
-            instance_settings.set_value("service_name", self._srv.resolved_name)
+            instance_settings.set_value("service_name", self._srv.srv_name)
 
     def restore_settings(self, plugin_settings, instance_settings):
         """

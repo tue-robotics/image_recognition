@@ -1,7 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 
-#include <image_recognition_msgs/Recognitions.h>
+#include <image_recognition_interfaces/msg/recognition.hpp>
 
 class DetectNet
 {
@@ -11,7 +11,7 @@ public:
 
   ~DetectNet();
 
-  std::vector<image_recognition_msgs::Recognition> processImage(const cv::Mat& cv_im);
+  std::vector<image_recognition_interfaces::msg::Recognition> processImage(const cv::Mat& cv_im);
 
 private:
   int mean_pixel_;

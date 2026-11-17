@@ -4,7 +4,7 @@ Contains rqt plugins for image recognition
 
 ## Test plugin
 
-RQT plugin to test servers that expose the interface defined in package: [image_recognition_msgs](https://github.com/tue-robotics/image_recognition/tree/master/image_recognition_msgs)
+RQT plugin to test servers that expose the interfaces in [image_recognition_interfaces](../image_recognition_interfaces).
 
 ![GUI Overview](doc/img/test.png)
 
@@ -12,9 +12,9 @@ RQT plugin to test servers that expose the interface defined in package: [image_
 
 Start the rqt plugin stand alone (if this does not work, try a `rqt --force-rediscover`):
 
-    rosrun image_recognition_rqt test_gui # Calls a rqt -s image_recognition_rqt.test.TestPlugin
+    ros2 run image_recognition_rqt test_gui
     
-Select a rostopic of type `sensor_msgs/Image` and a service of type `image_recognition_msgs/Recognize` or `image_recognition_msgs/GetFaceProperties` with use of the configuration button in the menu-bar (gear wheel icon):
+Use the configuration button (gear icon) to select a topic of type `sensor_msgs/msg/Image` and a service of type `image_recognition_interfaces/srv/Recognize` or `image_recognition_interfaces/srv/GetFaceProperties`:
 
 ![Select ROS topic](doc/img/select_topic.png)
 
@@ -57,7 +57,7 @@ This plugin can also be used to test / use the `Annotate.srv`, see https://githu
 
 Start the rqt plugin stand alone (if this does not work, try a `rqt --force-rediscover`):
 
-    rosrun image_recognition_rqt annotation_gui # Calls a rqt -s image_recognition_rqt.annotation.AnnotationPlugin
+    ros2 run image_recognition_rqt annotation_gui
     
 Select a rostopic of type `sensor_msgs/Image` with use of the configuration button in the menu-bar (gear wheel icon):
 

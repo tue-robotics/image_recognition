@@ -45,7 +45,7 @@ class ColorExtractor(object):
         colors = list()
         sort_ix = sort_ix[::-1]
 
-        for i, cluster_center in enumerate(kmeans.cluster_centers_[sort_ix]):
+        for cluster_center in kmeans.cluster_centers_[unique_l[sort_ix]]:
             hue, sat, val = cs.rgb_to_hsv(cluster_center[2] / 255.0, cluster_center[1] / 255.0,
                                           cluster_center[0] / 255.0)
             hue *= 360

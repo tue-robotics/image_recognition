@@ -1,6 +1,4 @@
-import rospy
-import rostopic
-import rosservice
+from threading import Event
 
 from qt_gui.plugin import Plugin
 
@@ -10,17 +8,17 @@ from python_qt_binding.QtCore import *
 
 from sensor_msgs.msg import RegionOfInterest
 from cv_bridge import CvBridge, CvBridgeError
-from image_recognition_msgs.msg import CategoryProbability, Recognition
+from image_recognition_interfaces.msg import CategoryProbability, Recognition
 
 from .image_widget import ImageWidget
 from .dialogs import option_dialog, warning_dialog
 
-from image_recognition_msgs.srv import Recognize, RecognizeResponse
+from image_recognition_interfaces.srv import Recognize
 import re
 
 
 def _sanitize(label):
-    """
+    r"""
     Sanitize string, only allow \w regex chars
 
     :param label: Input that needs to be sanitized
@@ -30,6 +28,8 @@ def _sanitize(label):
 
 
 class ManualPlugin(Plugin):
+    _display_request = Signal(object)
+    _clear_request = Signal()
 
     def __init__(self, context):
         """
@@ -38,6 +38,7 @@ class ManualPlugin(Plugin):
         :param context: QT context, aka parent
         """
         super(ManualPlugin, self).__init__(context)
+        self._node = context.node
 
         # Widget setup
         self.setObjectName('Manual Plugin')
@@ -75,8 +76,11 @@ class ManualPlugin(Plugin):
         # Set service to None
         self._srv = None
         self._srv_name = None
+        self._done = Event()
+        self._display_request.connect(self._show_request, Qt.QueuedConnection)
+        self._clear_request.connect(self._clear_image, Qt.QueuedConnection)
 
-        self._response = RecognizeResponse()
+        self._response = Recognize.Response()
         self._recognizing = False
 
     def _get_labels(self):
@@ -103,38 +107,37 @@ class ManualPlugin(Plugin):
         self.labels = labels
         self._labels_edit.setText("%s" % labels)
 
-    def _done_recognizing(self):
+    def _clear_image(self):
         self._image_widget.clear()
-        self._recognizing = False
-
-    def recognize_srv_callback(self, req):
-        """
-        Method callback for the Recognize.srv
-
-        :param req: The service request
-        """
-        self._response.recognitions = []
-        self._recognizing = True
-
-        try:
-            cv_image = self.bridge.imgmsg_to_cv2(req.image, "bgr8")
-        except CvBridgeError as e:
-            rospy.logerr(e)
-
-        self._image_widget.set_image(cv_image)
-        self._done_recognizing_button.setDisabled(False)
-
-        timeout = 60.0  # Maximum of 60 seconds
-        future = rospy.Time.now() + rospy.Duration(timeout)
-        rospy.loginfo("Waiting for manual recognition, maximum of %d seconds", timeout)
-        while not rospy.is_shutdown() and self._recognizing:
-            if rospy.Time.now() > future:
-                raise rospy.ServiceException("Timeout of %d seconds exceeded .." % timeout)
-            rospy.sleep(rospy.Duration(0.1))
-
         self._done_recognizing_button.setDisabled(True)
 
-        return self._response
+    def _done_recognizing(self):
+        self._recognizing = False
+        self._clear_image()
+        self._done.set()
+
+    def _show_request(self, image):
+        if self._recognizing:
+            self._image_widget.set_image(image)
+            self._done_recognizing_button.setDisabled(False)
+
+    def recognize_srv_callback(self, req, response):
+        try:
+            image = self.bridge.imgmsg_to_cv2(req.image, "bgr8")
+        except CvBridgeError as error:
+            self._node.get_logger().error(str(error))
+            return response
+
+        self._response = response
+        self._done.clear()
+        self._recognizing = True
+        self._display_request.emit(image)
+        if not self._done.wait(60.0):
+            self._node.get_logger().warning("Manual recognition timed out")
+            self._recognizing = False
+            self._clear_request.emit()
+            response.recognitions = []
+        return response
 
     def image_roi_callback(self, roi_image):
         """
@@ -183,18 +186,21 @@ class ManualPlugin(Plugin):
         :param srv_name:
         """
         if self._srv:
-            self._srv.shutdown()
+            self._node.destroy_service(self._srv)
+            self._srv = None
 
         if srv_name:
-            rospy.loginfo("Creating service '%s'" % srv_name)
             self._srv_name = srv_name
-            self._srv = rospy.Service(srv_name, Recognize, self.recognize_srv_callback)
+            self._srv = self._node.create_service(Recognize, srv_name, self.recognize_srv_callback)
 
     def shutdown_plugin(self):
         """
         Callback function when shutdown is requested
         """
-        pass
+        self._recognizing = False
+        self._done.set()
+        if self._srv:
+            self._node.destroy_service(self._srv)
 
     def save_settings(self, plugin_settings, instance_settings):
         """

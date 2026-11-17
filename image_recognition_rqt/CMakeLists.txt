@@ -1,17 +1,13 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 project(image_recognition_rqt)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 
-catkin_python_setup()
-
-catkin_package()
+ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR src/${PROJECT_NAME})
 
 install(FILES plugin.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DESTINATION share/${PROJECT_NAME}
 )
 
 install(PROGRAMS
@@ -19,10 +15,12 @@ install(PROGRAMS
   scripts/folder_image_publisher
   scripts/manual_gui
   scripts/test_gui
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  DESTINATION lib/${PROJECT_NAME}
 )
 
-if(CATKIN_ENABLE_TESTING)
-  find_package(catkin_lint_cmake REQUIRED)
-  catkin_add_catkin_lint_test()
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 endif()
+
+ament_package()

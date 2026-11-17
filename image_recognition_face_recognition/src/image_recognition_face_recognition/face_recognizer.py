@@ -7,7 +7,7 @@ from os import PathLike
 from typing import List, Tuple
 
 import numpy as np
-import rospy
+import logging
 import torch
 from facenet_pytorch import MTCNN, InceptionResnetV1
 from facenet_pytorch.models.utils.detect_face import extract_box
@@ -118,7 +118,7 @@ class FaceRecognizer:
                 )
 
         self._device = torch.device(device_type, device_id)
-        rospy.loginfo(f"Running on device: {self._device}")
+        logging.getLogger(__name__).info(f"Running on device: {self._device}")
         
         self._mtcnn = MTCNN(
             keep_all=True,
@@ -148,7 +148,7 @@ class FaceRecognizer:
             recognition_embedding = self._get_embedding(
                 recognition.image)
         except Exception as e:
-            rospy.logerr(f"Error getting the embedding: {e}")
+            logging.getLogger(__name__).error(f"Error getting the embedding: {e}")
 
         if recognition_embedding is not None:
             # Calculate the L2 distance between the embedding and all the stored representations.
@@ -268,9 +268,9 @@ class FaceRecognizer:
             self._trained_faces.append(TrainedFace(name))
 
         self._trained_faces[index].representations.append(face_representation)
-        rospy.loginfo(f"Trained faces:")
+        logging.getLogger(__name__).info(f"Trained faces:")
         for trained_face in self._trained_faces:
-            rospy.loginfo(
+            logging.getLogger(__name__).info(
                 f"Label: {trained_face.label}, Representations: {len(trained_face.representations)}"
             )
 

@@ -1,36 +1,52 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import message_filters
-import rospy
+import rclpy
 from cv_bridge import CvBridge
+from rclpy.executors import ExternalShutdownException
+from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image
-from image_recognition_msgs.msg import Recognitions
+from image_recognition_interfaces.msg import Recognitions
 from image_recognition_util import image_writer
 
 
-class OverlayPublisher(object):
+class OverlayPublisher(Node):
 
     def __init__(self):
+        super().__init__('publish_image_with_recognitions_overlay')
         self._bridge = CvBridge()
 
-        # Topics
-        image_sub = message_filters.Subscriber('image', Image, queue_size=1)
-        recognitions_sub = message_filters.Subscriber('recognitions', Recognitions, queue_size=1)
+        image_qos = QoSProfile(depth=1, reliability=ReliabilityPolicy.BEST_EFFORT)
+        self._image_sub = message_filters.Subscriber(self, Image, 'image', qos_profile=image_qos)
+        self._recognitions_sub = message_filters.Subscriber(self, Recognitions, 'recognitions', qos_profile=1)
 
-        self._ts = message_filters.TimeSynchronizer([image_sub, recognitions_sub], queue_size=100)
+        self._ts = message_filters.TimeSynchronizer([self._image_sub, self._recognitions_sub], queue_size=100)
         self._ts.registerCallback(self.callback)
 
-        self._result_image_publisher = rospy.Publisher("image_recognitions_overlay", Image, queue_size=10)
+        self._result_image_publisher = self.create_publisher(Image, 'image_recognitions_overlay', 10)
 
     def callback(self, image_msg, recognitions_msg):
-        rospy.loginfo('got image cb')
+        self.get_logger().info('got image cb')
 
         cv_image = self._bridge.imgmsg_to_cv2(image_msg, "bgr8")
         annotated_image = image_writer.get_annotated_cv_image(cv_image, recognitions_msg.recognitions)
         self._result_image_publisher.publish(self._bridge.cv2_to_imgmsg(annotated_image, "bgr8"))
 
 
+def main():
+    rclpy.init()
+    try:
+        node = OverlayPublisher()
+        try:
+            rclpy.spin(node)
+        finally:
+            node.destroy_node()
+    except (KeyboardInterrupt, ExternalShutdownException):
+        pass
+    finally:
+        rclpy.try_shutdown()
+
+
 if __name__ == '__main__':
-    rospy.init_node('publish_image_with_recognitions_overlay')
-    OverlayPublisher()
-    rospy.spin()
+    main()

@@ -1,44 +1,58 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import rospy
-from cv_bridge import CvBridge
-from image_recognition_color_extractor import ColorExtractor
-from image_recognition_msgs.msg import CategoryProbability, CategoricalDistribution, Recognition
-from image_recognition_msgs.srv import Recognize, RecognizeResponse
+import rclpy
+from cv_bridge import CvBridge, CvBridgeError
+from rclpy.executors import ExternalShutdownException
+from rclpy.node import Node
 from sensor_msgs.msg import RegionOfInterest
 
+from image_recognition_color_extractor import ColorExtractor
+from image_recognition_interfaces.msg import CategoryProbability, CategoricalDistribution, Recognition
+from image_recognition_interfaces.srv import Recognize
 
-class ColorExtractorNode:
-    def __init__(self, total_colors=3, dominant_range=10):
+
+class ColorExtractorNode(Node):
+    def __init__(self):
+        super().__init__('color_extractor')
         self._bridge = CvBridge()
+        total_colors = self.declare_parameter('total_colors', 3).value
+        dominant_range = self.declare_parameter('dominant_range', 10).value
         self._color_extractor = ColorExtractor(total_colors, dominant_range)
-        self._extract_color_srv = rospy.Service('extract_color', Recognize, self._extract_color_srv)
+        self._service = self.create_service(Recognize, 'extract_color', self._extract_color)
 
-    def _extract_color_srv(self, req):
-        img = self._bridge.imgmsg_to_cv2(req.image)
-
+    def _extract_color(self, request, response):
         try:
-            colors = self._color_extractor.recognize(img)
-        except RuntimeError as e:
-            raise rospy.ServiceException(e)
+            image = self._bridge.imgmsg_to_cv2(request.image, 'bgr8')
+            colors = self._color_extractor.recognize(image)
+        except (CvBridgeError, RuntimeError, ValueError) as error:
+            self.get_logger().error(f'Color extraction failed: {error}')
+            return response
 
-        return RecognizeResponse(
-            recognitions=[Recognition(
-                categorical_distribution=CategoricalDistribution(
-                    unknown_probability=0.0,
-                    probabilities=[CategoryProbability(label=color[0], probability=color[1]/100.0) for color in colors]
-                ),
-                roi=RegionOfInterest(width=req.image.width, height=req.image.height)
-            )]
-        )
+        response.recognitions = [Recognition(
+            categorical_distribution=CategoricalDistribution(
+                probabilities=[
+                    CategoryProbability(label=label, probability=float(percentage) / 100.0)
+                    for label, percentage in colors
+                ],
+            ),
+            roi=RegionOfInterest(width=request.image.width, height=request.image.height),
+        )]
+        return response
 
 
-if __name__ == "__main__":
-    rospy.init_node('color_extractor')
+def main():
+    rclpy.init()
     try:
-        ColorExtractorNode(rospy.get_param('~total_colors', 3), rospy.get_param('~dominant_range', 10))
-        rospy.spin()
-    except Exception as e:
-        rospy.logfatal("Exception: %s" % e)
-        rospy.sleep(0.5)  # Some time to send the fatal message
-        raise
+        node = ColorExtractorNode()
+        try:
+            rclpy.spin(node)
+        finally:
+            node.destroy_node()
+    except (KeyboardInterrupt, ExternalShutdownException):
+        pass
+    finally:
+        rclpy.try_shutdown()
+
+
+if __name__ == '__main__':
+    main()

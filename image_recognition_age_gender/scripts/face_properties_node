@@ -1,54 +1,57 @@
 #!/usr/bin/env python3
 import os
-import sys
 
 import diagnostic_updater
-import rospy
+import rclpy
+from rclpy.executors import ExternalShutdownException
+from rclpy.node import Node
 from cv_bridge import CvBridge, CvBridgeError
 from image_recognition_age_gender.age_gender_estimator import AgeGenderEstimator
-from image_recognition_msgs.msg import FaceProperties
-from image_recognition_msgs.srv import GetFaceProperties
+from image_recognition_interfaces.msg import FaceProperties
+from image_recognition_interfaces.srv import GetFaceProperties
 from image_recognition_util import image_writer
 
 
-class FacePropertiesNode:
-    def __init__(self, weights_file_path: str, img_size: int, save_images_folder: bool, use_gpu: bool):
+class FacePropertiesNode(Node):
+    def __init__(self):
         """
         ROS node that wraps the PyTorch age gender estimator
         """
+        super().__init__('face_properties')
+        default_weights_path = os.path.expanduser('~/data/pytorch_models/best-epoch47-0.9314.onnx')
+        weights_file_path = os.path.expanduser(self.declare_parameter('weights_file_path', default_weights_path).value)
+        img_size = self.declare_parameter('image_size', 64).value
+        save_images = self.declare_parameter('save_images', True).value
+        save_images_folder = self.declare_parameter('save_images_folder', '/tmp/image_recognition_pytorch').value
+        use_gpu = self.declare_parameter('use_gpu', False).value
         self._bridge = CvBridge()
-        self._properties_srv = rospy.Service('get_face_properties', GetFaceProperties, self._get_face_properties_srv)
         self._estimator = AgeGenderEstimator(weights_file_path, img_size, use_gpu)
 
-        if save_images_folder:
+        if save_images and save_images_folder:
             self._save_images_folder = os.path.expanduser(save_images_folder)
             if not os.path.exists(self._save_images_folder):
                 os.makedirs(self._save_images_folder)
         else:
             self._save_images_folder = None
 
-        rospy.loginfo("PytorchFaceProperties node initialized:")
-        rospy.loginfo(" - weights_file_path=%s", weights_file_path)
-        rospy.loginfo(" - img_size=%s", img_size)
-        rospy.loginfo(" - save_images_folder=%s", save_images_folder)
-        rospy.loginfo(" - use_gpu=%s", use_gpu)
+        self._properties_srv = self.create_service(GetFaceProperties, 'get_face_properties', self._get_face_properties)
+        self._updater = diagnostic_updater.Updater(self)
+        self._updater.setHardwareID('none')
+        self._updater.add(diagnostic_updater.Heartbeat())
+        self.get_logger().info(f'Loaded {weights_file_path} (image size {img_size}, GPU {use_gpu})')
 
-    def _get_face_properties_srv(self, req):
-        """
-        Callback when the GetFaceProperties service is called
-
-        :param req: Input images
-        :return: properties
-        """
+    def _get_face_properties(self, req, response):
         # Convert to opencv images
         try:
             bgr_images = [self._bridge.imgmsg_to_cv2(image, "bgr8") for image in req.face_image_array]
         except CvBridgeError as e:
-            raise Exception("Could not convert image to opencv image: %s" % str(e))
+            self.get_logger().error(f"Could not convert image to OpenCV: {e}")
+            return response
 
-        rospy.loginfo("Estimating the age and gender of %d incoming images ...", len(bgr_images))
+        if not bgr_images:
+            return response
+        self.get_logger().info(f"Estimating properties of {len(bgr_images)} incoming images")
         estimations = self._estimator.estimate(bgr_images)
-        rospy.loginfo("Done")
 
         face_properties_array = []
         for (age, gender_prob) in estimations:
@@ -57,7 +60,7 @@ class FacePropertiesNode:
             face_properties_array.append(FaceProperties(
                 age=int(age),
                 gender=gender,
-                gender_confidence=gender_confidence
+                gender_confidence=float(gender_confidence)
             ))
 
         # Store images if specified
@@ -70,32 +73,23 @@ class FacePropertiesNode:
                                            suffix="_face_properties")
 
         # Service response
-        return {"properties_array": face_properties_array}
+        response.properties_array = face_properties_array
+        return response
+
+
+def main():
+    rclpy.init()
+    try:
+        node = FacePropertiesNode()
+        try:
+            rclpy.spin(node)
+        finally:
+            node.destroy_node()
+    except (KeyboardInterrupt, ExternalShutdownException):
+        pass
+    finally:
+        rclpy.try_shutdown()
 
 
 if __name__ == '__main__':
-    rospy.init_node("face_properties")
-
-    try:
-        default_weights_path = os.path.expanduser('~/data/pytorch_models/best-epoch47-0.9314.onnx')
-        weights_file_path = rospy.get_param("~weights_file_path", default_weights_path)
-        img_size = rospy.get_param("~image_size", 64)
-        save_images = rospy.get_param("~save_images", True)
-        use_gpu = rospy.get_param("~use_gpu", False)
-
-        save_images_folder = None
-        if save_images:
-            save_images_folder = rospy.get_param("~save_images_folder", "/tmp/image_recognition_pytorch")
-    except KeyError as e:
-        rospy.logerr("Parameter %s not found" % e)
-        sys.exit(1)
-
-    try:
-        FacePropertiesNode(weights_file_path, img_size, save_images_folder, use_gpu)
-        updater = diagnostic_updater.Updater()
-        updater.setHardwareID("none")
-        updater.add(diagnostic_updater.Heartbeat())
-        rospy.Timer(rospy.Duration(1), lambda event: updater.force_update())
-        rospy.spin()
-    except Exception as e:
-        rospy.logfatal(e)
+    main()

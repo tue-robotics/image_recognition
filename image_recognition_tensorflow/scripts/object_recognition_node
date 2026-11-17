@@ -1,54 +1,54 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # System
 import os
-import sys
 
 # ROS
-import rospy
+import rclpy
+from rclpy.executors import ExternalShutdownException
+from rclpy.node import Node
 import diagnostic_updater
 
 # OpenCV
 from cv_bridge import CvBridge, CvBridgeError
 
 # TU/e Robotics
-from image_recognition_msgs.srv import Recognize
-from image_recognition_msgs.msg import Recognition, CategoryProbability
+from image_recognition_interfaces.srv import Recognize
+from image_recognition_interfaces.msg import Recognition, CategoryProbability
 from image_recognition_util import image_writer
 
 from image_recognition_tensorflow.object_recognizer import ObjectRecognizer
 
 
-class TensorflowObjectRecognition:
+class TensorflowObjectRecognition(Node):
     """ Performs object recognition using Tensorflow neural networks """
-    def __init__(self, recognizer, save_images_folder):
-        """
-        Constructor
-
-        :param recognizer: an object recognition object with a .classify-method, taking a numpy image and returning a
-        list of (class, prob) tuples
-        :param save_images_folder: Where to store images for debugging or data collection
-        """
-
-        self._recognizer = recognizer
-
+    def __init__(self):
+        super().__init__('image_recognition_tensorflow')
+        graph_path = os.path.expanduser(self.declare_parameter('graph_path', '').value)
+        labels_path = os.path.expanduser(self.declare_parameter('labels_path', '').value)
+        if not graph_path or not labels_path:
+            raise ValueError('Set the graph_path and labels_path parameters')
+        input_tensor = self.declare_parameter('input_tensor', 'Cast:0').value
+        output_tensor = self.declare_parameter('output_tensor', 'final_result:0').value
+        save_images = self.declare_parameter('save_images', True).value
+        save_images_folder = self.declare_parameter('save_images_folder', '/tmp/image_recognition_tensorflow').value
+        self._save_images_folder = os.path.expanduser(save_images_folder) if save_images else None
+        self._recognizer = ObjectRecognizer(graph_path, labels_path, input_tensor, output_tensor)
         self._bridge = CvBridge()
-        self._save_images_folder = save_images_folder
+        self._service = self.create_service(Recognize, 'recognize', self._recognize_srv_callback)
+        self._updater = diagnostic_updater.Updater(self)
+        self._updater.setHardwareID('none')
+        self._updater.add(diagnostic_updater.Heartbeat())
+        self.get_logger().info(f'Loaded labels: {self._recognizer.labels}')
 
-        self._recognize_srv = rospy.Service('recognize', Recognize, self._recognize_srv_callback)
-
-        rospy.loginfo("TensorflowObjectRecognition initialized")
-
-        rospy.loginfo(" - Labels: {}".format(self._recognizer.labels))
-
-    def _recognize_srv_callback(self, req):
+    def _recognize_srv_callback(self, req, response):
         """
         Callback function for the recognize. It saves the image on a temporary location and sets _do_recognition
         to True. Subsequently, it waits until the image has been processed (i.e., until _do_recognition is False again)
         and then returns the result
 
-        :param req: image_recognition_msgs.srv.RecognizeRequest
-        :return: image_recognition_msgs.srv.RecognizeResponse
+        :param req: image_recognition_interfaces.srv.RecognizeRequest
+        :return: image_recognition_interfaces.srv.RecognizeResponse
         """
 
         # Convert to cv2/numpy image
@@ -56,8 +56,8 @@ class TensorflowObjectRecognition:
             self._bgr_image = self._bridge.imgmsg_to_cv2(req.image, "bgr8")
         except CvBridgeError as e:
             error_msg = "Could not convert to opencv image: %s" % e
-            rospy.logerr(error_msg)
-            raise Exception(error_msg)
+            self.get_logger().error(error_msg)
+            return response
 
         # Write raw image
         if self._save_images_folder:
@@ -72,16 +72,16 @@ class TensorflowObjectRecognition:
         recognition.roi.width = self._bgr_image.shape[:2][1]
         recognition.categorical_distribution.unknown_probability = 0.1  # TODO: How do we know this? @LoyVanBeek
         for label, score in zip(self._recognizer.labels, predictions):
-            category_probability = CategoryProbability(label=label, probability=score)
+            category_probability = CategoryProbability(label=label, probability=float(score))
             recognition.categorical_distribution.probabilities.append(category_probability)
 
         # Do some logging
-        if predictions:
+        if len(predictions):
             sorted_predictions = sorted(zip(self._recognizer.labels, predictions), key=lambda x: x[1], reverse=True)
             best_label = sorted_predictions[0][0]
             best_prob = sorted_predictions[0][1]
 
-            rospy.loginfo("Best recognition result: {} with probability: {}".format(best_label, best_prob))
+            self.get_logger().info("Best recognition result: {} with probability: {}".format(best_label, best_prob))
 
             # Write unverified annotated image
             if self._save_images_folder:
@@ -89,48 +89,23 @@ class TensorflowObjectRecognition:
                 image_writer.write_estimation(self._save_images_folder, self._bgr_image, best_label,
                                               suffix="_object_recognition")
 
-        return {"recognitions": [recognition]}
+        response.recognitions = [recognition]
+        return response
+
+
+def main():
+    rclpy.init()
+    try:
+        node = TensorflowObjectRecognition()
+        try:
+            rclpy.spin(node)
+        finally:
+            node.destroy_node()
+    except (KeyboardInterrupt, ExternalShutdownException):
+        pass
+    finally:
+        rclpy.try_shutdown()
 
 
 if __name__ == '__main__':
-    # Start ROS node
-    rospy.init_node('image_recognition_tensorflow')
-
-    try:
-        _graph_path = os.path.expanduser(rospy.get_param("~graph_path"))
-        _labels_path = os.path.expanduser(rospy.get_param("~labels_path"))
-        _input_tensor = os.path.expanduser(rospy.get_param("~input_tensor", "Cast:0"))
-        _output_tensor = os.path.expanduser(rospy.get_param("~output_tensor", "final_result:0"))
-        save_images = rospy.get_param("~save_images", True)
-
-        save_images_folder = None
-        if save_images:
-            save_images_folder = os.path.expanduser(rospy.get_param("~save_images_folder", "/tmp/image_recognition_tensorflow"))
-    except KeyError as e:
-        rospy.logerr("Parameter %s not found" % e)
-        sys.exit(1)
-
-    try:
-        recognizer = ObjectRecognizer(_graph_path, _labels_path, _input_tensor, _output_tensor)
-
-        # Create object
-        object_recognition = TensorflowObjectRecognition(recognizer, save_images_folder=save_images_folder)
-
-        rospy.loginfo(" - graph_path=%s", _graph_path)
-        rospy.loginfo(" - labels_path=%s", _labels_path)
-        rospy.loginfo(" - input_tensor=%s", recognizer.input_tensor_name)
-        rospy.loginfo(" - output_tensor=%s", recognizer.output_tensor_name)
-
-        rospy.loginfo(" - save_images_folder=%s", save_images_folder)
-    except Exception as e:
-        err_msg = "Could not instantiate ObjectRecognizer(graph_path='{}', labels_path='{}': {})".format(_graph_path,
-                                                                                                         _labels_path, e)
-        rospy.logerr(err_msg)
-        sys.exit(err_msg)
-
-    updater = diagnostic_updater.Updater()
-    updater.setHardwareID("none")
-    updater.add(diagnostic_updater.Heartbeat())
-    rospy.Timer(rospy.Duration(1), lambda event: updater.force_update())
-
-    rospy.spin()
+    main()

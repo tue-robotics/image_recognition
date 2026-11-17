@@ -16,7 +16,7 @@
   </class>
   <class name="Test Plugin" type="image_recognition_rqt.test.TestPlugin" base_class_type="rqt_gui_py::Plugin">
     <description>
-      A Python GUI plugin for testing the image_recognition_msgs interface
+      A Python GUI plugin for testing the image_recognition_interfaces interface
     </description>
     <qtgui>
         <group>

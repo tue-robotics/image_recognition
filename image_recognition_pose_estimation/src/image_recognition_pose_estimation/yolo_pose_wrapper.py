@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 import numpy as np
 import torch
-from image_recognition_msgs.msg import CategoricalDistribution, CategoryProbability, Recognition
+from image_recognition_interfaces.msg import CategoricalDistribution, CategoryProbability, Recognition
 from image_recognition_pose_estimation.body_parts import BODY_PARTS
 from sensor_msgs.msg import RegionOfInterest
 from ultralytics import YOLO

@@ -1,87 +1,63 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import annotations
 
 import os
-import sys
 import traceback
 from pathlib import Path
 
 import diagnostic_updater
-import rospy
+import rclpy
+from rclpy.executors import ExternalShutdownException
+from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
 from cv_bridge import CvBridge, CvBridgeError
-from image_recognition_msgs.msg import CategoricalDistribution, CategoryProbability, Recognition, Recognitions
-from image_recognition_msgs.srv import Annotate, Recognize, AnnotateRequest
+from image_recognition_interfaces.msg import CategoricalDistribution, CategoryProbability, Recognition, Recognitions
+from image_recognition_interfaces.srv import Annotate, Recognize
 from image_recognition_util import image_writer
 from sensor_msgs.msg import Image, RegionOfInterest
-from std_srvs.srv import Empty, EmptyRequest, EmptyResponse
+from std_srvs.srv import Empty
 
 from image_recognition_face_recognition.face_recognizer import FaceRecognizer
 
 
-class FaceRecognitionRos:
-    def __init__(
-        self,
-        distance_threshold: float,
-        device: str,
-        save_images_folder: Path,
-        topic_save_images: bool,
-        service_save_images: bool,
-        topic_publish_result_image: bool,
-        service_publish_result_image: bool,
-    ):
-        """
-        FaceRecognitionRos class that wraps the FaceRecognizer in a ROS node
+class FaceRecognitionRos(Node):
+    def __init__(self):
+        super().__init__('face_recognition')
+        distance_threshold = self.declare_parameter('distance_threshold', 1.0).value
+        device = self.declare_parameter('device', 'cuda:0').value
+        save_images_folder = self.declare_parameter('save_images_folder', '/tmp/face_recognition_saved_images').value
+        topic_save_images = self.declare_parameter('topic_save_images', False).value
+        service_save_images = self.declare_parameter('service_save_images', True).value
+        topic_publish_result_image = self.declare_parameter('topic_publish_result_image', True).value
+        service_publish_result_image = self.declare_parameter('service_publish_result_image', True).value
+        db = self.declare_parameter('db', '').value
 
-        :param distance_threshold: distance threshold for face recognition
-        :param device: device to use for the face recognition
-        :param save_images_folder: path where to store the images
-        :param topic_save_images: whether to save images originated from image topic callback
-        :param service_save_images: whether to save images originated from a service call
-        :param topic_publish_result_image: whether to publish images originated from image topic callback
-        :param service_publish_result_image: whether to publish images originated from a service call
-        """
-
-        # Openface ROS
         self._face_recognizer = FaceRecognizer(device=device, distance_threshold=distance_threshold)
-        self._save_images_folder = str(save_images_folder)
+        self._save_images_folder = os.path.expanduser(save_images_folder) if save_images_folder else None
         self._topic_save_images = topic_save_images
         self._service_save_images = service_save_images
         self._topic_publish_result_image = topic_publish_result_image
         self._service_publish_result_image = service_publish_result_image
 
-        self._bridge = CvBridge()
-        self._annotate_srv = rospy.Service(
-            "annotate", Annotate, self._annotate_srv)
-        self._recognize_srv = rospy.Service(
-            "recognize", Recognize, self._recognize_srv)
-        self._clear_srv = rospy.Service("clear", Empty, self._clear_srv)
-
-        self._image_subscriber = rospy.Subscriber(
-            "image", Image, self._image_callback)
-        self._recognitions_publisher = rospy.Publisher(
-            "recognitions", Recognitions, queue_size=10)
-
         if not self._save_images_folder and (self._topic_save_images or self._service_save_images):
-            rospy.logerr(
-                "~save_images_folder is not defined but we would like to save images ...")
-            rospy.signal_shutdown("")
+            raise ValueError('Set save_images_folder to save images')
+        if db:
+            self.restore_trained_faces(os.path.expanduser(db))
 
+        self._bridge = CvBridge()
+        self._annotate_service = self.create_service(Annotate, 'annotate', self._annotate_srv)
+        self._recognize_service = self.create_service(Recognize, 'recognize', self._recognize_srv)
+        self._clear_service = self.create_service(Empty, 'clear', self._clear_srv)
+        self._image_subscriber = self.create_subscription(Image, 'image', self._image_callback, qos_profile_sensor_data)
+        self._recognitions_publisher = self.create_publisher(Recognitions, 'recognitions', 10)
         if self._topic_publish_result_image or self._service_publish_result_image:
-            self._result_image_publisher = rospy.Publisher(
-                "result_image", Image, queue_size=10)
+            self._result_image_publisher = self.create_publisher(Image, 'result_image', 10)
 
-        rospy.loginfo("FaceRecognitionRos initialized:")
-        rospy.loginfo(" - distance_threshold=%s", distance_threshold)
-        rospy.loginfo(" - device=%s", device)
-        rospy.loginfo(" - save_images_folder=%s", save_images_folder)
-        rospy.loginfo(" - topic_save_images=%s", topic_save_images)
-        rospy.loginfo(" - service_save_images=%s", service_save_images)
-        rospy.loginfo(" - topic_publish_result_image=%s",
-                      topic_publish_result_image)
-        rospy.loginfo(" - service_publish_result_image=%s",
-                      service_publish_result_image)
+        self._updater = diagnostic_updater.Updater(self)
+        self._updater.setHardwareID('none')
+        self._updater.add(diagnostic_updater.Heartbeat())
 
-    def _annotate_srv(self, req: AnnotateRequest):
+    def _annotate_srv(self, req, response):
         # Convert to opencv image
         """
         Annotate service callback that trains the face of the user
@@ -92,7 +68,8 @@ class FaceRecognitionRos:
         try:
             bgr_image = self._bridge.imgmsg_to_cv2(req.image, "bgr8")
         except CvBridgeError as e:
-            raise RuntimeError(f"Could not convert to opencv image: {e}")
+            self.get_logger().error(f"Could not convert to OpenCV: {e}")
+            return response
 
         for annotation in req.annotations:
             roi_image = bgr_image[
@@ -107,18 +84,19 @@ class FaceRecognitionRos:
             try:
                 self._face_recognizer.train(roi_image, annotation.label)
             except Exception as e:
-                raise RuntimeError(
-                    f"Could not get representation of face image: {e}")
+                self.get_logger().error(f"Could not get representation of face image: {e}")
+                return response
 
-            rospy.loginfo("Succesfully learned face of '%s'" %
+            self.get_logger().info("Succesfully learned face of '%s'" %
                           annotation.label)
+        return response
 
-    def _clear_srv(self, _: EmptyRequest):
+    def _clear_srv(self, _, response):
         """
         Service to clear the trained faces
         """
         self._face_recognizer.clear_trained_faces()
-        return EmptyResponse()
+        return response
 
     def _get_recognitions(self, image_msg: Image, save_images: bool, publish_images: bool):
         # Convert to opencv image
@@ -147,7 +125,6 @@ class FaceRecognitionRos:
         # Fill recognitions
         recognitions = []
 
-        # rospy.loginfo("Face recognitions: %s", face_recognitions)
 
         for fr in face_recognitions:
             label = fr.l2_distances[0].label if fr.l2_distances else "face_unknown"
@@ -209,13 +186,13 @@ class FaceRecognitionRos:
                 publish_images=self._topic_publish_result_image,
             )
         except Exception as e:
-            rospy.logerr(f"{e}\n" + traceback.format_exc())
+            self.get_logger().error(f"{e}\n" + traceback.format_exc())
             return
 
         self._recognitions_publisher.publish(Recognitions(
             header=image_msg.header, recognitions=recognitions))
 
-    def _recognize_srv(self, req):
+    def _recognize_srv(self, req, response):
         recognitions = self._get_recognitions(
             req.image,
             save_images=self._service_save_images,
@@ -223,55 +200,26 @@ class FaceRecognitionRos:
         )
 
         # Service response
-        return {"recognitions": recognitions}
+        response.recognitions = recognitions
+        return response
 
     def restore_trained_faces(self, file_name: Path | str) -> None:
         self._face_recognizer.restore_trained_faces(Path(file_name))
 
 
-if __name__ == "__main__":
-    rospy.init_node("face_recognition")
+def main():
+    rclpy.init()
     try:
-        distance_threshold = rospy.get_param("~distance_threshold", 1.0)
-        device = rospy.get_param("~device", "cuda:0")
-        topic_save_images = rospy.get_param("~topic_save_images", False)
-        service_save_images = rospy.get_param("~service_save_images", True)
-        topic_publish_result_image = rospy.get_param(
-            "~topic_publish_result_image", True)
-        service_publish_result_image = rospy.get_param(
-            "~service_publish_result_image", True)
+        node = FaceRecognitionRos()
+        try:
+            rclpy.spin(node)
+        finally:
+            node.destroy_node()
+    except (KeyboardInterrupt, ExternalShutdownException):
+        pass
+    finally:
+        rclpy.try_shutdown()
 
-        db = rospy.get_param("~db", None)
-        if db:
-            db = Path(db).expanduser()
 
-        save_images_folder = None
-        if topic_save_images or service_save_images:
-            save_images_folder = Path(
-                rospy.get_param("~save_images_folder",
-                                "/tmp/face_recognition_saved_images")
-            ).expanduser()
-    except KeyError as e:
-        rospy.logerr("Parameter %s not found" % e)
-        sys.exit(1)
-
-    face_recognition_node = FaceRecognitionRos(
-        distance_threshold=distance_threshold,
-        device=device,
-        save_images_folder=save_images_folder,
-        topic_save_images=topic_save_images,
-        service_save_images=service_save_images,
-        topic_publish_result_image=topic_publish_result_image,
-        service_publish_result_image=service_publish_result_image,
-    )
-
-    if db:
-        rospy.loginfo(f"loading face database from {db}")
-        face_recognition_node.restore_trained_faces(db)
-
-    updater = diagnostic_updater.Updater()
-    updater.setHardwareID("none")
-    updater.add(diagnostic_updater.Heartbeat())
-    rospy.Timer(rospy.Duration(1), lambda event: updater.force_update())
-
-    rospy.spin()
+if __name__ == '__main__':
+    main()

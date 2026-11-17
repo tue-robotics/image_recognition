@@ -15,7 +15,7 @@ def plot_confusion_matrix(labels, classifications_ground_truth, classifications_
     """
     plt.figure()
 
-    cnf_matrix = confusion_matrix(classifications_ground_truth, classifications_predicted_label, labels)
+    cnf_matrix = confusion_matrix(classifications_ground_truth, classifications_predicted_label, labels=labels)
 
     # Plot normalized confusion matrix
     plt.imshow(cnf_matrix, interpolation='nearest', cmap=plt.cm.Blues)

@@ -1,62 +1,51 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 project(image_recognition_jetson)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
-
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  cv_bridge
-  image_recognition_msgs
-  image_recognition_util
-  image_transport
-  roscpp
-  sensor_msgs
-)
-
-catkin_package(
-  CATKIN_DEPENDS cv_bridge image_recognition_msgs image_recognition_util image_transport roscpp sensor_msgs
-)
-
-include_directories(${catkin_INCLUDE_DIRS})
-
-find_package(jetson-utils)
-find_package(jetson-inference)
-if(jetson-inference_FOUND) # If we are on Jetson, use the actual impl, otherwise a mock
-    find_package(CUDA REQUIRED)
-    find_package(Qt4 REQUIRED)
-    include(${QT_USE_FILE})
-    add_definitions(${QT_DEFINITIONS})
-    include_directories(${CUDA_INCLUDE_DIRS})
-    add_library(detect_net src/detect_net.cpp)
-    target_link_libraries(detect_net ${catkin_LIBRARIES} jetson-inference)
-else()
-  message(WARNING "Jetson-inference not found, using a mock instead ...")
-  message(WARNING "The library can be installed using scripts/install_jetson_inference.bash")
-  add_library(detect_net src/detect_net_mock.cpp)
-  target_link_libraries(detect_net ${catkin_LIBRARIES})
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
-add_dependencies(detect_net ${catkin_EXPORTED_TARGETS})
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+find_package(ament_cmake REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(image_recognition_interfaces REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(OpenCV REQUIRED COMPONENTS core imgproc)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+
+find_package(jetson-utils QUIET)
+find_package(jetson-inference QUIET)
+if(jetson-inference_FOUND)
+  find_package(CUDAToolkit REQUIRED)
+  add_library(detect_net STATIC src/detect_net.cpp)
+  target_link_libraries(detect_net PRIVATE jetson-inference CUDA::cudart)
+else()
+  message(STATUS "Jetson inference unavailable, building the mock detector")
+  add_library(detect_net STATIC src/detect_net_mock.cpp)
+endif()
+target_link_libraries(detect_net PUBLIC
+  ${image_recognition_interfaces_TARGETS}
+  opencv_core
+  opencv_imgproc
+)
 
 add_executable(detect_net_ros src/detect_net_ros.cpp)
-target_link_libraries(detect_net_ros detect_net)
-
-install(TARGETS
-  detect_net_ros
+target_link_libraries(detect_net_ros PRIVATE
   detect_net
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  cv_bridge::cv_bridge
+  image_transport::image_transport
+  rclcpp::rclcpp
+  sensor_msgs::sensor_msgs__rosidl_typesupport_cpp
 )
 
-install(PROGRAMS
-  scripts/install_jetson_inference.bash
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+install(TARGETS detect_net_ros DESTINATION lib/${PROJECT_NAME})
+install(PROGRAMS scripts/install_jetson_inference.bash DESTINATION lib/${PROJECT_NAME})
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
-if(CATKIN_ENABLE_TESTING)
-  find_package(catkin_lint_cmake REQUIRED)
-  catkin_add_catkin_lint_test()
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 endif()
+
+ament_package()

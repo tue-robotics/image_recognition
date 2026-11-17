@@ -16,7 +16,11 @@ Provides a service and topic interface for jetson inference. For now only the de
 
 Run the install jetson-inference script
 
-    rosrun image_recognition_jetson install_jetson_inference.bash 
+    ros2 run image_recognition_jetson install_jetson_inference.bash
 
 If the jetson-inference cannot be found using CMake, it will compile a mock.
+
+Launch the detector and overlay together:
+
+    ros2 launch image_recognition_jetson static_kinect.launch.py
 

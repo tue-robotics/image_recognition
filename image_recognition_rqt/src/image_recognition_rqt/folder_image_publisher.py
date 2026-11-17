@@ -1,4 +1,3 @@
-import rospy
 from functools import partial
 import os
 import fnmatch
@@ -39,6 +38,7 @@ class FolderImagePublisherPlugin(Plugin):
         :param context: QT context, aka parent
         """
         super(FolderImagePublisherPlugin, self).__init__(context)
+        self._node = context.node
 
         # Widget setup
         self.setObjectName('FolderImagePublisherPlugin')
@@ -64,7 +64,7 @@ class FolderImagePublisherPlugin(Plugin):
         layout.addWidget(self._right_button)
 
         # Set subscriber and service to None
-        self._pub = rospy.Publisher("folder_image", Image, queue_size=1)
+        self._pub = self._node.create_publisher(Image, "folder_image", 1)
 
         self._bridge = CvBridge()
 
@@ -101,3 +101,6 @@ class FolderImagePublisherPlugin(Plugin):
         """
         self._files.rotate(rotate_arg)
         self._publish_image()
+
+    def shutdown_plugin(self):
+        self._node.destroy_publisher(self._pub)

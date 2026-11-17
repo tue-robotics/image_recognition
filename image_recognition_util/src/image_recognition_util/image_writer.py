@@ -5,7 +5,7 @@ from typing import List, Optional
 
 import cv2
 import numpy as np
-from image_recognition_msgs.msg import Recognition
+from image_recognition_interfaces.msg import Recognition
 
 
 def mkdir_p(directory: str) -> None:

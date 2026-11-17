@@ -1,17 +1,17 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import re
-from future.moves.urllib.request import urlretrieve
+from urllib.request import urlretrieve
 import unittest
 
 import cv2
-import rospkg
-from image_recognition_age_gender.age_gender_estimator import AgeGenderEstimator
 
 
-@unittest.skip
+@unittest.skip("Requires downloading model weights")
 def test_face_properties():
+    from image_recognition_age_gender.age_gender_estimator import AgeGenderEstimator
+
     local_path = "/tmp/best-epoch47-0.9314.onnx"
 
     if not os.path.exists(local_path):
@@ -21,10 +21,10 @@ def test_face_properties():
         print("Downloaded weights to {}".format(local_path))
 
     def age_is_female_from_asset_name(asset_name):
-        age_str, gender_str = re.search("age_(\d+)_gender_(\w+)", asset_name).groups()
+        age_str, gender_str = re.search(r"age_(\d+)_gender_(\w+)", asset_name).groups()
         return int(age_str), gender_str == "female"
 
-    assets_path = os.path.join(rospkg.RosPack().get_path("image_recognition_age_gender"), 'test/assets')
+    assets_path = os.path.join(os.path.dirname(__file__), 'assets')
     images_gt = [(cv2.imread(os.path.join(assets_path, asset)), age_is_female_from_asset_name(asset))
                  for asset in os.listdir(assets_path)]
 

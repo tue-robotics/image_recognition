@@ -1,6 +1,0 @@
-<launch>
-  <include file="$(find image_recognition_jetson)/launch/static_kinect.launch">
-    <arg name="prototxt_path" value="DetectNet-COCO-Bottle/deploy.prototxt" />
-    <arg name="model_path" value="DetectNet-COCO-Bottle/snapshot_iter_59700.caffemodel" />
-  </include> 
-</launch>

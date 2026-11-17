@@ -4,21 +4,24 @@ from __future__ import print_function
 import os
 import re
 
+import pytest
+
 import cv2
-import rospkg
 from image_recognition_skybiometry.skybiometry import Skybiometry
 
 
 def test_face_properties():
-    test_key = '69efefc20c7f42d8af1f2646ce6742ec'
-    test_secret = '5fab420ca6cf4ff28e7780efcffadb6c'
+    test_key = os.environ.get('SKYBIOMETRY_API_KEY')
+    test_secret = os.environ.get('SKYBIOMETRY_API_SECRET')
+    if not test_key or not test_secret:
+        pytest.skip('Skybiometry test credentials are unavailable')
     test_namespace = 'techunited'
 
     def age_is_female_from_asset_name(asset_name):
-        age_str, gender_str = re.search("age_(\d+)_gender_(\w+)", asset_name).groups()
+        age_str, gender_str = re.search(r"age_(\d+)_gender_(\w+)", asset_name).groups()
         return int(age_str), gender_str == "female"
 
-    assets_path = os.path.join(rospkg.RosPack().get_path("image_recognition_skybiometry"), 'test/assets')
+    assets_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'test/assets')
     images_gt = [(cv2.imread(os.path.join(assets_path, asset)), age_is_female_from_asset_name(asset))
                  for asset in os.listdir(assets_path)]
 

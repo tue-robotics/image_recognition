@@ -1,35 +1,55 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 import argparse
 
-import rospy
-
+import rclpy
+from rclpy.executors import ExternalShutdownException
+from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
+from rclpy.utilities import remove_ros_args
 from sensor_msgs.msg import Image
 
-from image_recognition_msgs.srv import Recognize
+from image_recognition_interfaces.srv import Recognize
 
-class ExtractColorClient:
+
+class ExtractColorClient(Node):
     def __init__(self, image_topic, color_service):
-        self.color_proxy = rospy.ServiceProxy(color_service, Recognize)
-        self.color_proxy.wait_for_service(timeout=20)
+        super().__init__('color_extractor_stream')
+        self._client = self.create_client(Recognize, color_service)
+        self._pending = None
+        self._image_sub = self.create_subscription(Image, image_topic, self._on_image, qos_profile_sensor_data)
 
-        # Subscriber will start immediately
-        self.image_sub = rospy.Subscriber(image_topic, Image, self.color_callback)
+    def _on_image(self, image):
+        if self._pending is None and self._client.service_is_ready():
+            self._pending = self._client.call_async(Recognize.Request(image=image))
+            self._pending.add_done_callback(self._on_colors)
 
-    def color_callback(self, msg):
-        # Simply print out values in our custom message.
-        colors = self.color_proxy(msg)
-        rospy.loginfo(colors)
+    def _on_colors(self, future):
+        self._pending = None
+        try:
+            self.get_logger().info(str(future.result()))
+        except Exception as error:
+            self.get_logger().error(f'Color service request failed: {error}')
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Get dominant colors from image')
+    parser.add_argument('--topic', default='/image', help='Topic')
+    parser.add_argument('--service', default='extract_color', help='Service')
+    args = parser.parse_args(remove_ros_args()[1:])
+
+    rclpy.init()
+    try:
+        node = ExtractColorClient(args.topic, args.service)
+        try:
+            rclpy.spin(node)
+        finally:
+            node.destroy_node()
+    except (KeyboardInterrupt, ExternalShutdownException):
+        pass
+    finally:
+        rclpy.try_shutdown()
+
 
 if __name__ == '__main__':
-
-    myargs = rospy.myargv()
-    parser = argparse.ArgumentParser(description='Get dominant colors from image')
-    parser.add_argument('--topic', required=False, default='/image', type=str, help='Topic')
-    parser.add_argument('--service', required=False, default='extract_color', type=str, help='Service')
-    args = parser.parse_args(myargs[1:])
-
-    rospy.init_node('color_extractor_stream')
-
-    extract_color_client = ExtractColorClient(args.topic, args.service)
-
-    rospy.spin()
+    main()
