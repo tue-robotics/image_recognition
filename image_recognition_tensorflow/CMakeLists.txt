@@ -17,7 +17,8 @@ install(PROGRAMS
 
 if(CATKIN_ENABLE_TESTING)
   find_package(catkin_lint_cmake REQUIRED)
-  catkin_add_catkin_lint_test()
+  # TODO: drop the ignore once python3-tensorflow-pip is in rosdistro (ros/rosdistro#55565)
+  catkin_add_catkin_lint_test("--ignore unknown_package")
 
   catkin_add_nosetests(test)
 endif()
