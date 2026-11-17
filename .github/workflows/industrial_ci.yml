@@ -21,11 +21,13 @@ jobs:
         env:
           - ROS_DISTRO: noetic
             ROS_REPO: main
-            BEFORE_INSTALL_TARGET_DEPENDENCIES: "pip3 install --upgrade --progress-bar=off pip && hash -r pip3 && pip3 install --upgrade --progress-bar=off 'scipy>=1.5' && pip3 install --progress-bar=off --ignore-installed psutil && pip3 install --progress-bar=off dlib"
+            BEFORE_INSTALL_TARGET_DEPENDENCIES: "pip3 install --upgrade --progress-bar=off pip && hash -r pip3 && pip3 install --upgrade --progress-bar=off 'scipy>=1.5' && pip3 install --progress-bar=off --ignore-installed psutil && pip3 install --progress-bar=off dlib tensorflow"
             AFTER_INSTALL_TARGET_DEPENDENCIES: "pip install --progress-bar=off git+https://github.com/tue-robotics/facenet-pytorch.git --extra-index-url https://download.pytorch.org/whl/cpu"
             ADDITIONAL_DEBS: python3-dev python3-pip
-            # python3-dlib-pip depends on the undefined rosdep key build-essential, which crashes rosdep; dlib is installed above (python3-dev for its build)
-            ROSDEP_SKIP_KEYS: python3-dlib-pip
+            # Installed with pip above:
+            # - python3-dlib-pip depends on the undefined rosdep key build-essential, which crashes rosdep (python3-dev for its build)
+            # - python3-tensorflow-pip is not in the frozen noetic rosdep snapshot
+            ROSDEP_SKIP_KEYS: python3-dlib-pip python3-tensorflow-pip
     env:
       ${{ matrix.env }}
     runs-on: ubuntu-latest
